@@ -41,6 +41,24 @@ export type Bio = {
   body: string[];
 };
 
+/** Action button on a service card. `href` is freeform so editors can use
+ *  `mailto:`, `tel:`, or an external booking-service URL. `kind` affects
+ *  styling only — content stays the same across primary/secondary. */
+export type ServiceCTA = {
+  label: string;
+  href: string;
+  kind?: 'primary' | 'secondary';
+};
+
+/** Studio credit / client logo. `logo` is a path relative to the site root
+ *  (typically `/img/studios/<slug>.svg`). `url` is optional — when set, the
+ *  logo links out to the studio's site. */
+export type StudioCredit = {
+  name: string;
+  logo: string;
+  url?: string;
+};
+
 export type Service = {
   slug: string;
   number: string;
@@ -50,6 +68,8 @@ export type Service = {
   bullets: string[];
   supports?: string[];
   testimonial?: { quote: string; source: string };
+  cta?: ServiceCTA;
+  studios?: StudioCredit[];
 };
 
 export type ManifestEntry = { word: string; text: string };

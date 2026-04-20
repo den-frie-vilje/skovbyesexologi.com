@@ -14,5 +14,22 @@
   "testimonial": {
     "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
     "source": "Michael Panduro, filminstruktør"
+  },
+  "studios": [
+    {
+      "name": "Zentropa",
+      "logo": "/img/studios/zentropa.svg",
+      "url": "https://www.zentropa.dk"
+    },
+    {
+      "name": "Nordisk Film",
+      "logo": "/img/studios/nordisk-film.svg",
+      "url": "https://www.nordiskfilm.com"
+    }
+  ],
+  "cta": {
+    "label": "Kom i kontakt",
+    "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
+    "kind": "primary"
   }
 }

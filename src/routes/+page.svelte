@@ -13,10 +13,19 @@
   // scrolling up behind the 3D stage from the chapter-II line.
   let chapterMode = $state(0);
 
+  // Sticky CTA state.
+  // Therapy CTA is visible from page load; hides (slides up) when the
+  // chapter-konsulent divider approaches the CTA's top edge.
+  // Konsulent CTA slides up from below when chapter-konsulent enters the
+  // viewport, then slides up out when for-work's bottom passes the CTA.
+  let therapyCtaShown = $state(true);
+  let konsulentCtaPhase = $state<'before' | 'in' | 'after'>('before');
+
   onMount(() => {
     if (!browser) return;
     const flodEl = document.querySelector('.flod') as HTMLElement | null;
     const chapterEl = document.querySelector('.chapter-konsulent');
+    const forWorkEl = document.querySelector('.for-work');
     if (!flodEl || !chapterEl) return;
     let raf = 0;
     const measure = () => {
@@ -34,6 +43,28 @@
       const endY = vh * 0.15; // full konsulent when divider is at 15%
       const raw = (startY - chapterRect.top) / Math.max(1, startY - endY);
       chapterMode = Math.max(0, Math.min(1, raw));
+
+      // Sticky CTA visibility. The CTA occupies the bottom ~60px of the
+      // viewport (with a 24px gutter). Therapy CTA hides when the
+      // chapter-konsulent divider enters a 100px anticipation band above
+      // the CTA's top edge — gives clean visual separation from the
+      // section divider before the button leaves.
+      const ctaGutter = 24;
+      const ctaHeight = 60;
+      const anticipation = 100;
+      const therapyCutoff = vh - ctaGutter - ctaHeight - anticipation;
+      therapyCtaShown = chapterRect.top > therapyCutoff;
+
+      // Konsulent CTA: enters when chapter-konsulent top crosses ~65% vh
+      // (well into frame), exits when for-work's bottom has scrolled past
+      // the CTA's bottom edge (plus small fade anticipation).
+      const konsulentEntry = vh * 0.65;
+      const isEntering = chapterRect.top < konsulentEntry;
+      const forWorkBottom =
+        (forWorkEl as HTMLElement | null)?.getBoundingClientRect().bottom ?? vh * 3;
+      const konsulentExit = vh - ctaGutter + 40;
+      const isBeforeEnd = forWorkBottom > konsulentExit;
+      konsulentCtaPhase = !isEntering ? 'before' : !isBeforeEnd ? 'after' : 'in';
     };
     const onScroll = () => {
       if (raf) return;
@@ -95,6 +126,34 @@
 
 <div class="flod" class:in-konsulent={chapterMode === 1}>
   <FlodStage anchors={stageAnchors} {chapterMode} />
+
+  <!--
+    Sticky floating CTAs. Positioned `fixed` at bottom-right of the
+    viewport with horizontal gutter matching the pronouns-to-viewport-
+    edge distance on wide screens (via var(--cta-h)). Visibility +
+    slide transitions are driven by scroll state in the mount effect.
+  -->
+  {#if therapyService?.cta}
+    <a
+      class="sticky-cta"
+      class:hidden-up={!therapyCtaShown}
+      href={therapyService.cta.href}
+      aria-label={therapyService.cta.label}
+    >
+      {therapyService.cta.label}
+    </a>
+  {/if}
+  {#if intimacyService?.cta}
+    <a
+      class="sticky-cta"
+      class:hidden-down={konsulentCtaPhase === 'before'}
+      class:hidden-up={konsulentCtaPhase === 'after'}
+      href={intimacyService.cta.href}
+      aria-label={intimacyService.cta.label}
+    >
+      {intimacyService.cta.label}
+    </a>
+  {/if}
 
   <nav class="top">
     <span class="mark">Skovbye Sexologi</span>
@@ -262,6 +321,24 @@
           <p>"{intimacyService.testimonial.quote}"</p>
           <cite>— {intimacyService.testimonial.source}</cite>
         </footer>
+      {/if}
+      {#if intimacyService.studios?.length}
+        <div class="studios reveal">
+          <p class="studios-lede">Tidligere samarbejder</p>
+          <ul class="studios-list">
+            {#each intimacyService.studios as studio}
+              <li>
+                {#if studio.url}
+                  <a href={studio.url} target="_blank" rel="noopener">
+                    <img src={studio.logo} alt={studio.name} loading="lazy" />
+                  </a>
+                {:else}
+                  <img src={studio.logo} alt={studio.name} loading="lazy" />
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        </div>
       {/if}
     </section>
   {/if}
@@ -866,6 +943,114 @@
     text-transform: uppercase;
     color: var(--graphite-soft);
     font-style: normal;
+  }
+
+  /* ============== STICKY CTAs (therapy + konsulent) ============== */
+  /*
+    Horizontal gutter matches the distance from the pronouns text to
+    the left viewport edge: on wide screens (vw > 1320px), that's
+    (vw - 1320) / 2 + 1.25rem. On narrow screens, it collapses to the
+    minimum 1.25rem that matches section padding.
+  */
+  .sticky-cta {
+    --cta-h: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
+    --cta-v: 1.5rem;
+
+    position: fixed;
+    bottom: var(--cta-v);
+    right: var(--cta-h);
+    z-index: 50;
+
+    display: inline-block;
+    padding: 0.75em 1.9em;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    background: var(--graphite);
+    color: var(--bone);
+    border: 1px solid var(--graphite);
+    border-radius: 2px;
+    box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--graphite) 60%, transparent);
+
+    transition:
+      transform 0.45s cubic-bezier(0.25, 0.4, 0.25, 1),
+      opacity 0.35s ease,
+      background 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .sticky-cta:hover {
+    background: var(--tangerine);
+    color: var(--graphite);
+    border-color: var(--tangerine);
+  }
+  /* Slide up + fade out when therapy chapter ends or konsulent chapter ends */
+  .sticky-cta.hidden-up {
+    transform: translateY(calc(-1 * (100% + var(--cta-v) * 3)));
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Hidden below viewport until konsulent chapter enters */
+  .sticky-cta.hidden-down {
+    transform: translateY(calc(100% + var(--cta-v) * 3));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ============== STUDIO CREDITS ============== */
+  .studios {
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .studios-lede {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+    margin: 0 0 1.1rem;
+  }
+  /* Single row, scrolls sideways when more logos are added. */
+  .studios-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0.25rem;
+    display: flex;
+    gap: 2.25rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--graphite) 25%, transparent) transparent;
+  }
+  .studios-list::-webkit-scrollbar {
+    height: 3px;
+  }
+  .studios-list::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--graphite) 25%, transparent);
+    border-radius: 2px;
+  }
+  .studios-list li {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .studios-list img {
+    display: block;
+    max-height: 28px;
+    width: auto;
+    color: var(--graphite);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+  }
+  .studios-list a {
+    display: block;
+    line-height: 0;
+  }
+  .studios-list a:hover img {
+    opacity: 1;
   }
 
   /* ============== FOR YOU (shared styles for .for-personal + .for-work) ============== */
