@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { site } from '$lib/content';
+  import { bio, contact, home, serviceBySlug } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
-  import { resolveAnchor, type SectionStage } from '$lib/stage/poses';
+  import { resolveAnchor } from '$lib/stage/poses';
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
   // into the upper half of the viewport. Drives the FlodStage material
@@ -60,76 +60,21 @@
   //        → CHAPTER II · Konsulentydelser (intimacy + embedded testimonial, elderly, teaching, for-work)
   //        → bio → contact
   //
-  // Each section declares named poses from `$lib/stage/poses` for the three
+  // Page content + per-section stage config live in `src/content/da/home.json`.
+  // Each section declares named poses from $lib/stage/poses for the three
   // WebGL elements (mercury orb, gold metaballs, faceted gem). Poses resolve
   // to NDC coordinates at runtime. Section ids become `data-stage-anchor`
   // attributes on the corresponding section roots; FlodStage queries by that
   // attribute rather than brittle positional CSS selectors.
-  //
-  // Phase 2: this array moves to `src/content/da/pages/home.md` frontmatter
-  // and Sveltia drives the pose selection via a custom pose-select widget.
-  const sections: SectionStage[] = [
-    { id: 'hero',              stage: { main: 'heroFarRight',   gold: 'topLeftSm',        gem: 'heroBRhuge',     intensity: 1.10 } },
-    { id: 'name-section',      stage: { main: 'topRightSm',     gold: 'disperseLowR',     gem: 'topLeftSm',      intensity: 1.00 } },
-    // Chapter I opener — mercury re-enters, minimal drips
-    { id: 'chapter-terapi',    stage: { main: 'heroRightBig',   gold: 'cornerTLtiny',     gem: 'cornerBRsm',     intensity: 1.05 } },
-    { id: 'manifest',          stage: { main: 'cornerBLtiny',   gold: 'cornerTLtiny',     gem: 'midRightBig',    intensity: 1.00 } },
-    { id: 'ritual',            stage: { main: 'upperRightBig',  gold: 'bottomLeftMed',    gem: 'cornerBRsm',     intensity: 1.05 } },
-    // THERAPY SERVICE — gold hero (disperse), mercury small, gem cropped
-    { id: 'service-terapi',    stage: { main: 'topRightSm',     gold: 'disperseLowC',     gem: 'cornerBRsm',     intensity: 1.05 } },
-    // FOR DIG — gem hero right-center
-    { id: 'for-personal',      stage: { main: 'topLeftSm',      gold: 'bottomLeftMed',    gem: 'heroRightBig',   intensity: 1.05 } },
-    // Chapter II opener — mercury hero, balances against gold drip
-    { id: 'chapter-konsulent', stage: { main: 'heroLeftBig',    gold: 'cornerBRsm',       gem: 'cornerTRsm',     intensity: 1.05 } },
-    // INTIMACY SERVICE — mercury holds presence (quote lives inside)
-    { id: 'service-intimacy',  stage: { main: 'heroRightBig',   gold: 'bottomLeftMed',    gem: 'topRightSm',     intensity: 1.20 } },
-    // ELDERLY — gem shifts to the right, gold pulls small
-    { id: 'service-elderly',   stage: { main: 'topLeftSm',      gold: 'cornerBLsm',       gem: 'heroRightBig',   intensity: 1.00 } },
-    // TEACHING — gold grows, balances with gem corner
-    { id: 'service-teaching',  stage: { main: 'topRightSm',     gold: 'disperseLowC',     gem: 'cornerBRsm',     intensity: 1.00 } },
-    { id: 'for-work',          stage: { main: 'bottomLeftSm',   gold: 'topLeftSm',        gem: 'heroRightBig',   intensity: 1.00 } },
-    { id: 'bio',               stage: { main: 'bottomLeftSm',   gold: 'disperseRightMid', gem: 'topLeftSm',      intensity: 1.00 } },
-    { id: 'contact',           stage: { main: 'centerMax',      gold: 'disperseLowL',     gem: 'upperRightMed',  intensity: 1.35 } }
-  ];
-
+  const { pillQuote, manifest, ritual, forPersonal, forWork, sections } = home;
   const stageAnchors = sections.map(resolveAnchor);
-
-  const manifest = [
-    { word: 'grænser', text: 'Grænser er ikke en test. Du behøver ikke bestå noget, her.' },
-    { word: 'lytter', text: 'Kroppen taler først. Jeg lytter med — også hvor ordene ikke er.' },
-    { word: 'alle', text: 'Poly, queer, usikker, nysgerrig — der er plads til alle udgaver af dig.' },
-    { word: 'præstation', text: 'Intimitet er ikke en præstation. Det er opmærksomhed.' },
-    { word: 'tempo', text: 'Dit tempo. Din rækkefølge. Din krop.' }
-  ];
-
-  const ritual = [
-    { n: '01', title: 'At lande', body: 'Vi sidder. Du får lov til at være i rummet før du skal forklare noget.' },
-    { n: '02', title: 'At sige højt', body: 'Du fortæller hvad der er. Jeg spørger ind, men fylder ikke.' },
-    { n: '03', title: 'At mærke', body: 'Nogle gange bliver vi ved ordene. Andre gange bevæger vi, åndedrættet, kroppen. Altid kun det du siger ja til.' },
-    { n: '04', title: 'At gå videre', body: 'Vi runder. Du tager hjem med en lille forandring — sjældent færdig, altid i gang.' }
-  ];
-
-  // "Kom forbi hvis du —" split into personal (therapy chapter) and work (consultancy chapter)
-  const forPersonal = [
-    'har svært ved at mærke din lyst',
-    'skal lære at sige nej før du kan sige ja',
-    'er kommet ud som queer og vil udforske hvad det betyder i kroppen',
-    'er i et åbent eller polyamorøst forhold og har brug for en tredje stemme',
-    'har haft en grænse overskredet — nyligt eller for længe siden'
-  ];
-
-  const forWork = [
-    'er instruktør eller producent og har brug for en intimitetskoordinator',
-    'arbejder i plejesektoren og skal tale med beboere om seksualitet',
-    'er ung og vil have undervisning der ikke kun handler om biologi'
-  ];
 
   // Access individual services by slug so the page can compose each
   // in its own section with a layout that fits its content.
-  const therapyService = site.services.find((s) => s.slug === 'terapi');
-  const intimacyService = site.services.find((s) => s.slug === 'intimacy-coordination');
-  const elderlyService = site.services.find((s) => s.slug === 'aeldrepleje');
-  const teachingService = site.services.find((s) => s.slug === 'undervisning');
+  const therapyService = serviceBySlug('terapi');
+  const intimacyService = serviceBySlug('intimacy-coordination');
+  const elderlyService = serviceBySlug('aeldrepleje');
+  const teachingService = serviceBySlug('undervisning');
 </script>
 
 <svelte:head>
@@ -310,7 +255,7 @@
       </ul>
       <!-- The pull-quote LIVES here, inline with intimacy coordination -->
       <blockquote class="inline-quote reveal">
-        <p>{site.pillQuote}</p>
+        <p>{pillQuote}</p>
       </blockquote>
       {#if intimacyService.testimonial}
         <footer class="s-testimonial reveal">
@@ -379,11 +324,11 @@
         />
         <figcaption>
           <span class="bio-name">Signe Skovbye</span>
-          <span class="bio-pronouns">{site.bio.pronouns}</span>
+          <span class="bio-pronouns">{bio.pronouns}</span>
         </figcaption>
       </figure>
       <div class="bio-body">
-        {#each site.bio.body as p, i}
+        {#each bio.body as p, i}
           <p class="reveal" style="--d: {i * 80}ms">{p}</p>
         {/each}
       </div>
@@ -402,26 +347,26 @@
     <div class="contact-grid">
       <div class="reveal">
         <p class="label">Email</p>
-        <a href="mailto:{site.contact.email}">{site.contact.email}</a>
+        <a href="mailto:{contact.email}">{contact.email}</a>
       </div>
       <div class="reveal">
         <p class="label">Telefon</p>
-        <a href="tel:+4531604215">{site.contact.phone}</a>
+        <a href="tel:+4531604215">{contact.phone}</a>
       </div>
       <div class="reveal">
         <p class="label">By</p>
-        <p>{site.contact.address}</p>
+        <p>{contact.address}</p>
       </div>
       <div class="reveal">
         <p class="label">Åbent</p>
-        <p>{site.contact.hours}</p>
+        <p>{contact.hours}</p>
       </div>
     </div>
   </section>
 
   <footer class="foot">
     <p>
-      © {new Date().getFullYear()} Skovbye Sexologi · CVR {site.contact.cvr}
+      © {new Date().getFullYear()} Skovbye Sexologi · CVR {contact.cvr}
     </p>
   </footer>
 </div>
