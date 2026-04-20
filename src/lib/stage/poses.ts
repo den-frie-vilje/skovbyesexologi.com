@@ -10,6 +10,14 @@
  *
  * When adding a pose: pick a name that describes *position*, not narrative
  * role. Reusable across any future section.
+ *
+ * ⚠  After any edit to this file, regenerate the SVG thumbnails used by
+ *     the Sveltia pose picker:
+ *
+ *         pkgx pnpm icons
+ *
+ *     Commit the regenerated SVGs under `static/admin/pose-icons/` in the
+ *     same change so code and CMS stay in sync.
  */
 
 export type Pose = {

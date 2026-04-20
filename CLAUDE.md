@@ -32,6 +32,7 @@ Next up:
   pkgx pnpm dev      # vite on :5173, host 0.0.0.0
   pkgx pnpm build    # static → build/
   pkgx pnpm check    # svelte-check + tsc
+  pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
   ```
 - **Svelte 5 runes only** (`$props()`, `$state()`, `$derived()`) — no `export let`, no `$:`
 - **Tailwind v4** — design tokens in `@theme` block in `src/app.css`
