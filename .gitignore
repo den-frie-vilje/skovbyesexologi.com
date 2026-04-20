@@ -1,0 +1,12 @@
+node_modules/
+.svelte-kit/
+build/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+# Local source reference photos — not for the public repo.
+# The portrait actually served by the site lives at static/img/signe.jpg.
+portrait/
