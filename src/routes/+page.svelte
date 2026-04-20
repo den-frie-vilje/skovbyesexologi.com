@@ -3,6 +3,7 @@
   import { browser } from '$app/environment';
   import { site } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
+  import { resolveAnchor, type SectionStage } from '$lib/stage/poses';
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
   // into the upper half of the viewport. Drives the FlodStage material
@@ -58,113 +59,40 @@
   //   hero → who → CHAPTER I · Terapi (manifest, ritual, therapy service, for-personal)
   //        → CHAPTER II · Konsulentydelser (intimacy + embedded testimonial, elderly, teaching, for-work)
   //        → bio → contact
-  const stageAnchors = [
-    {
-      selector: '.flod .hero',
-      main:  { x: 1.15,  y: -0.1,  scale: 1.05 },
-      drip1: { x: -0.78, y: 0.55,  scale: 0.4 },
-      drip2: { x: 0.9,   y: -0.9,  scale: 1.5 },
-      intensity: 1.1
-    },
-    {
-      selector: '.flod .name-section',
-      main:  { x: 0.9,   y: 0.7,  scale: 0.4 },
-      drip1: { x: 0.35,  y: -0.75, scale: 0.78 },
-      drip2: { x: -0.88, y: 0.7,  scale: 0.4 },
-      intensity: 1.0
-    },
-    {
-      // Chapter I opener — mercury re-enters, minimal drips
-      selector: '.flod .chapter-terapi',
-      main:  { x: 0.4,   y: 0.0,  scale: 1.2 },
-      drip1: { x: -0.9,  y: 0.8,  scale: 0.25 },
-      drip2: { x: 0.92,  y: -0.85, scale: 0.3 },
-      intensity: 1.05
-    },
-    {
-      selector: '.flod .manifest',
-      main:  { x: -0.95, y: -0.9, scale: 0.28 },
-      drip1: { x: -0.92, y: 0.88, scale: 0.22 },
-      drip2: { x: 0.92,  y: -0.05, scale: 0.95 },
-      intensity: 1.0
-    },
-    {
-      selector: '.flod .ritual',
-      main:  { x: 0.6,   y: 0.35, scale: 1.05 },
-      drip1: { x: -0.78, y: -0.55, scale: 0.48 },
-      drip2: { x: 0.92,  y: -0.82, scale: 0.45 },
-      intensity: 1.05
-    },
-    {
-      // THERAPY SERVICE — gold hero (disperse), mercury small, gem cropped
-      selector: '.flod .service-terapi',
-      main:  { x: 0.9,   y: 0.5,  scale: 0.42 },
-      drip1: { x: -0.15, y: -0.45, scale: 0.85 },
-      drip2: { x: 0.95,  y: -0.88, scale: 0.4 },
-      intensity: 1.05
-    },
-    {
-      // FOR DIG — gem hero right-center
-      selector: '.flod .for-personal',
-      main:  { x: -0.88, y: 0.6,  scale: 0.4 },
-      drip1: { x: -0.72, y: -0.7, scale: 0.5 },
-      drip2: { x: 0.65,  y: 0.15, scale: 1.15 },
-      intensity: 1.05
-    },
-    {
-      // Chapter II opener — mercury hero, balances against gold drip
-      selector: '.flod .chapter-konsulent',
-      main:  { x: -0.45, y: 0.05, scale: 1.2 },
-      drip1: { x: 0.85,  y: -0.6, scale: 0.3 },
-      drip2: { x: 0.95,  y: 0.75, scale: 0.3 },
-      intensity: 1.05
-    },
-    {
-      // INTIMACY SERVICE — mercury holds presence (quote lives inside)
-      selector: '.flod .service-intimacy',
-      main:  { x: 0.55,  y: -0.1, scale: 1.15 },
-      drip1: { x: -0.8,  y: -0.5, scale: 0.45 },
-      drip2: { x: 0.92,  y: 0.6,  scale: 0.4 },
-      intensity: 1.2
-    },
-    {
-      // ELDERLY — gem shifts to the right, gold pulls small
-      selector: '.flod .service-elderly',
-      main:  { x: -0.7,  y: 0.45, scale: 0.48 },
-      drip1: { x: -0.85, y: -0.6, scale: 0.35 },
-      drip2: { x: 0.75,  y: 0.0,  scale: 1.05 },
-      intensity: 1.0
-    },
-    {
-      // TEACHING — gold grows, balances with gem corner
-      selector: '.flod .service-teaching',
-      main:  { x: 0.92,  y: 0.55, scale: 0.4 },
-      drip1: { x: -0.35, y: -0.4, scale: 0.82 },
-      drip2: { x: 0.92,  y: -0.82, scale: 0.42 },
-      intensity: 1.0
-    },
-    {
-      selector: '.flod .for-work',
-      main:  { x: -0.88, y: -0.65, scale: 0.42 },
-      drip1: { x: -0.78, y: 0.55, scale: 0.42 },
-      drip2: { x: 0.68,  y: 0.2,  scale: 1.1 },
-      intensity: 1.0
-    },
-    {
-      selector: '.flod .bio',
-      main:  { x: -0.88, y: -0.6, scale: 0.42 },
-      drip1: { x: 0.85,  y: 0.1,  scale: 0.8 },
-      drip2: { x: -0.85, y: 0.7,  scale: 0.4 },
-      intensity: 1.0
-    },
-    {
-      selector: '.flod .contact',
-      main:  { x: 0.48,  y: 0.0,  scale: 1.4 },
-      drip1: { x: -0.65, y: -0.5, scale: 0.8 },
-      drip2: { x: 0.92,  y: 0.65, scale: 0.7 },
-      intensity: 1.35
-    }
+  //
+  // Each section declares named poses from `$lib/stage/poses` for the three
+  // WebGL elements (mercury orb, gold metaballs, faceted gem). Poses resolve
+  // to NDC coordinates at runtime. Section ids become `data-stage-anchor`
+  // attributes on the corresponding section roots; FlodStage queries by that
+  // attribute rather than brittle positional CSS selectors.
+  //
+  // Phase 2: this array moves to `src/content/da/pages/home.md` frontmatter
+  // and Sveltia drives the pose selection via a custom pose-select widget.
+  const sections: SectionStage[] = [
+    { id: 'hero',              stage: { main: 'heroFarRight',   gold: 'topLeftSm',        gem: 'heroBRhuge',     intensity: 1.10 } },
+    { id: 'name-section',      stage: { main: 'topRightSm',     gold: 'disperseLowR',     gem: 'topLeftSm',      intensity: 1.00 } },
+    // Chapter I opener — mercury re-enters, minimal drips
+    { id: 'chapter-terapi',    stage: { main: 'heroRightBig',   gold: 'cornerTLtiny',     gem: 'cornerBRsm',     intensity: 1.05 } },
+    { id: 'manifest',          stage: { main: 'cornerBLtiny',   gold: 'cornerTLtiny',     gem: 'midRightBig',    intensity: 1.00 } },
+    { id: 'ritual',            stage: { main: 'upperRightBig',  gold: 'bottomLeftMed',    gem: 'cornerBRsm',     intensity: 1.05 } },
+    // THERAPY SERVICE — gold hero (disperse), mercury small, gem cropped
+    { id: 'service-terapi',    stage: { main: 'topRightSm',     gold: 'disperseLowC',     gem: 'cornerBRsm',     intensity: 1.05 } },
+    // FOR DIG — gem hero right-center
+    { id: 'for-personal',      stage: { main: 'topLeftSm',      gold: 'bottomLeftMed',    gem: 'heroRightBig',   intensity: 1.05 } },
+    // Chapter II opener — mercury hero, balances against gold drip
+    { id: 'chapter-konsulent', stage: { main: 'heroLeftBig',    gold: 'cornerBRsm',       gem: 'cornerTRsm',     intensity: 1.05 } },
+    // INTIMACY SERVICE — mercury holds presence (quote lives inside)
+    { id: 'service-intimacy',  stage: { main: 'heroRightBig',   gold: 'bottomLeftMed',    gem: 'topRightSm',     intensity: 1.20 } },
+    // ELDERLY — gem shifts to the right, gold pulls small
+    { id: 'service-elderly',   stage: { main: 'topLeftSm',      gold: 'cornerBLsm',       gem: 'heroRightBig',   intensity: 1.00 } },
+    // TEACHING — gold grows, balances with gem corner
+    { id: 'service-teaching',  stage: { main: 'topRightSm',     gold: 'disperseLowC',     gem: 'cornerBRsm',     intensity: 1.00 } },
+    { id: 'for-work',          stage: { main: 'bottomLeftSm',   gold: 'topLeftSm',        gem: 'heroRightBig',   intensity: 1.00 } },
+    { id: 'bio',               stage: { main: 'bottomLeftSm',   gold: 'disperseRightMid', gem: 'topLeftSm',      intensity: 1.00 } },
+    { id: 'contact',           stage: { main: 'centerMax',      gold: 'disperseLowL',     gem: 'upperRightMed',  intensity: 1.35 } }
   ];
+
+  const stageAnchors = sections.map(resolveAnchor);
 
   const manifest = [
     { word: 'grænser', text: 'Grænser er ikke en test. Du behøver ikke bestå noget, her.' },
@@ -228,7 +156,7 @@
     <span class="mark-meta">København</span>
   </nav>
 
-  <header class="hero">
+  <header class="hero" data-stage-anchor="hero">
     <p class="name-card reveal-slide">
       Skovbye Sexologi<br />
       <span>København</span>
@@ -251,7 +179,7 @@
     </div>
   </header>
 
-  <section class="name-section">
+  <section class="name-section" data-stage-anchor="name-section">
     <div class="name-grid">
       <div class="reveal-slide">
         <p class="eyebrow">Hvem</p>
@@ -275,7 +203,7 @@
   </section>
 
   <!-- ============== CHAPTER I · TERAPI ============== -->
-  <section class="chapter chapter-terapi">
+  <section class="chapter chapter-terapi" data-stage-anchor="chapter-terapi">
     <div class="chapter-inner reveal">
       <p class="chapter-mark">I</p>
       <h2 class="chapter-title">Terapi</h2>
@@ -286,7 +214,7 @@
     </div>
   </section>
 
-  <section class="manifest">
+  <section class="manifest" data-stage-anchor="manifest">
     <p class="section-label reveal">Manifest</p>
     <ul>
       {#each manifest as m, i}
@@ -302,7 +230,7 @@
     </ul>
   </section>
 
-  <section class="ritual">
+  <section class="ritual" data-stage-anchor="ritual">
     <div class="ritual-head reveal">
       <p class="section-label">Sådan mødes vi</p>
       <h2>En session har fire bevægelser.</h2>
@@ -321,7 +249,7 @@
   </section>
 
   {#if therapyService}
-    <section class="service service-terapi" id={therapyService.slug}>
+    <section class="service service-terapi" id={therapyService.slug} data-stage-anchor="service-terapi">
       <div class="service-head reveal">
         <span class="s-num">{therapyService.number}</span>
         <span class="s-kicker">{therapyService.kicker}</span>
@@ -342,7 +270,7 @@
     </section>
   {/if}
 
-  <section class="for-personal">
+  <section class="for-personal" data-stage-anchor="for-personal">
     <p class="section-label reveal">Kom forbi hvis du —</p>
     <ul>
       {#each forPersonal as reason, i}
@@ -355,7 +283,7 @@
   </section>
 
   <!-- ============== CHAPTER II · KONSULENTYDELSER ============== -->
-  <section class="chapter chapter-konsulent">
+  <section class="chapter chapter-konsulent" data-stage-anchor="chapter-konsulent">
     <div class="chapter-inner reveal">
       <p class="chapter-mark">II</p>
       <h2 class="chapter-title">Konsulentydelser</h2>
@@ -368,7 +296,7 @@
   </section>
 
   {#if intimacyService}
-    <section class="service service-intimacy" id={intimacyService.slug}>
+    <section class="service service-intimacy" id={intimacyService.slug} data-stage-anchor="service-intimacy">
       <div class="service-head reveal">
         <span class="s-num">{intimacyService.number}</span>
         <span class="s-kicker">{intimacyService.kicker}</span>
@@ -394,7 +322,7 @@
   {/if}
 
   {#if elderlyService}
-    <section class="service service-elderly" id={elderlyService.slug}>
+    <section class="service service-elderly" id={elderlyService.slug} data-stage-anchor="service-elderly">
       <div class="service-head reveal">
         <span class="s-num">{elderlyService.number}</span>
         <span class="s-kicker">{elderlyService.kicker}</span>
@@ -410,7 +338,7 @@
   {/if}
 
   {#if teachingService}
-    <section class="service service-teaching" id={teachingService.slug}>
+    <section class="service service-teaching" id={teachingService.slug} data-stage-anchor="service-teaching">
       <div class="service-head reveal">
         <span class="s-num">{teachingService.number}</span>
         <span class="s-kicker">{teachingService.kicker}</span>
@@ -425,7 +353,7 @@
     </section>
   {/if}
 
-  <section class="for-work">
+  <section class="for-work" data-stage-anchor="for-work">
     <p class="section-label reveal">Skriv til mig hvis I —</p>
     <ul>
       {#each forWork as reason, i}
@@ -437,7 +365,7 @@
     </ul>
   </section>
 
-  <section class="bio">
+  <section class="bio" data-stage-anchor="bio">
     <p class="section-label reveal">Om</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
@@ -462,7 +390,7 @@
     </div>
   </section>
 
-  <section id="kontakt" class="contact">
+  <section id="kontakt" class="contact" data-stage-anchor="contact">
     <p class="section-label reveal">Kontakt</p>
     <h2 class="reveal">
       Skriv<span class="dot">.</span>
