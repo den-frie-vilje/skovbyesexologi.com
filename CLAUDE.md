@@ -94,5 +94,6 @@ repo). Use them when writing Svelte:
 
 ## Tooling Note
 
-`pkgx.yml` currently pins `nodejs.org: ^22` but `package.json` requires
-`node: ~24`. If you hit resolution errors, reconcile to Node 24.
+Node 25 is the floor. Both `pkgx.yml` (`nodejs.org: ~25`) and
+`package.json` (`engines.node: ~25`) agree. Node 25 strips TypeScript
+types natively, which lets us run `scripts/*.ts` directly without tsx.

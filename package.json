@@ -10,7 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "engines": {
-    "node": "~24",
+    "node": "~25",
     "pnpm": "~10"
   },
   "devDependencies": {

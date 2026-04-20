@@ -53,8 +53,9 @@ pkgx pnpm build       # static build → build/
 pkgx pnpm check       # svelte-check + tsc
 ```
 
-`pkgx.yml` declares the toolchain. Node is currently pinned to `^22`
-there but `package.json` requires `~24` — reconcile if you hit errors.
+`pkgx.yml` declares the toolchain: `nodejs.org: ~25`, `pnpm.io: ~10`.
+`package.json` `engines` agrees. Node 25 is required — we lean on its
+native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 
 ## Architecture
 
