@@ -37,7 +37,10 @@ export const mainPoses = {
   topRightSm:     { x: 0.9,   y: 0.55,  scale: 0.4  },
   topLeftSm:      { x: -0.82, y: 0.5,   scale: 0.42 },
   bottomLeftSm:   { x: -0.88, y: -0.62, scale: 0.42 },
-  cornerBLtiny:   { x: -0.95, y: -0.9,  scale: 0.28 }
+  cornerBLtiny:   { x: -0.95, y: -0.9,  scale: 0.28 },
+  // Slightly off-center, oversized so the element covers the viewport — for
+  // sections that want the element as a scroll-triggered background fill.
+  fullBleed:      { x: 0.15,  y: -0.1,  scale: 3.5  }
 } as const satisfies Record<string, Pose>;
 
 /** Gold metaball cluster — MarchingCubes, warm in Terapi / cool chrome in Konsulent. */
@@ -51,7 +54,11 @@ export const goldPoses = {
   bottomLeftMed:    { x: -0.78, y: -0.55, scale: 0.47 },
   cornerTLtiny:     { x: -0.91, y: 0.84,  scale: 0.24 },
   cornerBRsm:       { x: 0.85,  y: -0.6,  scale: 0.3  },
-  cornerBLsm:       { x: -0.85, y: -0.6,  scale: 0.35 }
+  cornerBLsm:       { x: -0.85, y: -0.6,  scale: 0.35 },
+  // Slightly off-center, oversized — background-fill variant. Gold's
+  // orbit-radius ramp caps at 2.5 above scale 0.4, so at 3.5 the balls
+  // sit at their fully dispersed positions within a very large MC grid.
+  fullBleed:        { x: 0.15,  y: -0.1,  scale: 3.5  }
 } as const satisfies Record<string, Pose>;
 
 /** Faceted gem — low-poly icosahedron, amethyst in Terapi / chrome in Konsulent. Opaque. */
@@ -64,7 +71,11 @@ export const gemPoses = {
   cornerTRsm:    { x: 0.95,  y: 0.75,  scale: 0.3  },
   topRightSm:    { x: 0.92,  y: 0.6,   scale: 0.4  },
   topLeftSm:     { x: -0.86, y: 0.7,   scale: 0.4  },
-  upperRightMed: { x: 0.92,  y: 0.65,  scale: 0.7  }
+  upperRightMed: { x: 0.92,  y: 0.65,  scale: 0.7  },
+  // Slightly off-center, oversized — background-fill variant. The
+  // faceted icosahedron at scale 3.5 reads as a chunky geometric
+  // backdrop rather than a discrete gem.
+  fullBleed:     { x: 0.15,  y: -0.1,  scale: 3.5  }
 } as const satisfies Record<string, Pose>;
 
 export type MainPose = keyof typeof mainPoses;
