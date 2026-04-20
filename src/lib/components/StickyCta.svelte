@@ -49,15 +49,14 @@
 <style>
   .sticky-cta {
     /* Horizontal gutter: matches pronouns-text-to-left-edge on wide
-       screens (max(1.25rem, (100vw - 1320px)/2 + 1.25rem)). Vertical
-       gutter: the margin between the button and the bottom of the
-       viewport, and between the button and the section divider at
-       container release. */
+       screens (max(1.25rem, (100vw - 1320px)/2 + 1.25rem)). */
     --cta-h: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
-    --cta-v: 1.5rem;
+    /* Vertical gutter: inherited from an ancestor (.flod defines it).
+       Also acts as the padding-bottom on .chapter-wrap, so the CTA's
+       sticky release happens at the same distance from the chapter
+       divider as it has from the viewport bottom while pinned. */
     /* Fixed button height so sticky-top math and the flow-canceling
-       negative margin-bottom agree exactly. 3.3rem ≈ padding 0.75em × 2
-       + font-size 1.15rem × line-height 1.4 + 2px border. */
+       negative margin-bottom agree exactly. */
     --cta-h-box: 3.3rem;
 
     position: sticky;
@@ -77,13 +76,17 @@
     width: fit-content;
     margin-left: auto;
     margin-right: var(--cta-h);
-    /* Cancel the button's vertical footprint in flow so it doesn't
-       push the first section down. The hero starts at y=0 as before;
-       the button just sticky-pins into the viewport from there. */
-    margin-bottom: calc(-1 * var(--cta-h-box));
 
-    /* Fixed height — must match --cta-h-box above so the negative
-       margin-bottom cancels exactly. */
+    /* Fixed height so sticky-top math + the containment check agree.
+       We deliberately do NOT use `margin-bottom: -height` here — a
+       negative margin would collapse the button's margin-box to zero,
+       and sticky's containment rule uses the margin-box, not the
+       border-box. With a zero margin-box, the CTA would never be
+       pushed up by its wrapper's ending, and the padding-bottom
+       trick on .chapter-wrap couldn't move the release point.
+       Instead, the wrap's FIRST SECTION gets a matching negative
+       margin-top (see +page.svelte) to cancel the button's vertical
+       footprint in flow without affecting the CTA's own geometry. */
     height: var(--cta-h-box);
     padding: 0 1.9em;
 
@@ -91,11 +94,12 @@
     font-size: 1.15rem;
     letter-spacing: 0.02em;
     text-decoration: none;
-    background: var(--graphite);
+    /* Default fill: deep fern green (shared with .foot footer bg). */
+    background: var(--violet);
     color: var(--bone);
-    border: 1px solid var(--graphite);
+    border: 1px solid var(--violet);
     border-radius: 2px;
-    box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--graphite) 60%, transparent);
+    box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--violet) 60%, transparent);
 
     transition:
       background 0.2s ease,
@@ -103,19 +107,22 @@
       border-color 0.2s ease;
   }
 
-  .sticky-cta:hover {
+  /* Hover + active: neon tangerine accent, dark text. */
+  .sticky-cta:hover,
+  .sticky-cta:active {
     background: var(--tangerine);
-    color: var(--graphite);
+    color: var(--violet);
     border-color: var(--tangerine);
   }
 
   .sticky-cta.secondary {
     background: transparent;
-    color: var(--graphite);
+    color: var(--violet);
   }
-  .sticky-cta.secondary:hover {
+  .sticky-cta.secondary:hover,
+  .sticky-cta.secondary:active {
     background: var(--tangerine);
-    color: var(--graphite);
+    color: var(--violet);
     border-color: var(--tangerine);
   }
 </style>

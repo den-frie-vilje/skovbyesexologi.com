@@ -13,23 +13,32 @@
   // divider within `.flod`, so the warm paper bg behaves as if it's
   // scrolling up behind the 3D stage from the chapter-II line.
   //
-  // Sticky CTAs (Book en tid / Kom i kontakt) no longer need any JS
-  // state — each is the first child of its chapter-wrap div and uses
-  // `position: sticky; bottom: X` to stay pinned to viewport bottom
-  // until its container's end scrolls it up naturally.
+  // Sticky CTAs (Book en tid / Kom i kontakt) are CSS-driven —
+  // `position: sticky` inside their chapter-wrap divs. chapter-wrap-
+  // konsulent now extends through the bio section so Kom i kontakt
+  // stays pinned through the whole about-section and only releases
+  // at the boundary with the contact block. (The exact-alignment
+  // with the "Skriv." heading the user mentioned would require
+  // restructuring contact in the DOM — deferred to a separate pass.)
   let chapterMode = $state(0);
 
   onMount(() => {
     if (!browser) return;
     const flodEl = document.querySelector('.flod') as HTMLElement | null;
-    const chapterEl = document.querySelector('.chapter-konsulent');
-    if (!flodEl || !chapterEl) return;
+    // The chapter-II divider (bg gradient hard-stop + chapter-mode threshold)
+    // is measured at the TOP of chapter-wrap-konsulent, not chapter-konsulent
+    // itself. The wrap adds padding-top: var(--cta-v) so Kom i kontakt's
+    // natural position sits below the divider with a matching gap — keeping
+    // the divider at the wrap's border-box top keeps the bg transition
+    // visually aligned with the Chapter-II boundary the user sees.
+    const konsulentWrapEl = document.querySelector('.chapter-wrap-konsulent');
+    if (!flodEl || !konsulentWrapEl) return;
     let raf = 0;
     const measure = () => {
       const flodRect = flodEl.getBoundingClientRect();
-      const chapterRect = chapterEl.getBoundingClientRect();
-      // Position of chapter-II top relative to .flod's top (for bg gradient)
-      const y = chapterRect.top - flodRect.top;
+      const wrapRect = konsulentWrapEl.getBoundingClientRect();
+      // Position of chapter-II divider top relative to .flod's top (for bg gradient)
+      const y = wrapRect.top - flodRect.top;
       flodEl.style.setProperty('--konsulent-y', `${y}px`);
       // Smooth chapter progression (continuous, not binary). 0 when the
       // divider is well below the fold, 1 when it has scrolled past the
@@ -38,7 +47,7 @@
       const vh = window.innerHeight;
       const startY = vh * 0.75; // begin crossfade at 75% of viewport
       const endY = vh * 0.15; // full konsulent when divider is at 15%
-      const raw = (startY - chapterRect.top) / Math.max(1, startY - endY);
+      const raw = (startY - wrapRect.top) / Math.max(1, startY - endY);
       chapterMode = Math.max(0, Math.min(1, raw));
     };
     const onScroll = () => {
@@ -248,6 +257,14 @@
   </div><!-- /.chapter-wrap-therapi -->
 
   <!-- ============== CHAPTER II · KONSULENTYDELSER ============== -->
+  <!--
+    chapter-wrap-konsulent extends through the bio section so
+    `Kom i kontakt` stays sticky all the way to the contact block.
+    The StickyCta is the wrap's first child so it's sticky-bound by
+    the wrap itself (sticky's containing block = nearest block-level
+    parent, not nearest positioned ancestor — placing it inside
+    chapter-konsulent would pin it to that small section instead).
+  -->
   <div class="chapter-wrap chapter-wrap-konsulent">
     {#if intimacyService?.cta}
       <StickyCta cta={intimacyService.cta} />
@@ -353,8 +370,6 @@
     </ul>
   </section>
 
-  </div><!-- /.chapter-wrap-konsulent -->
-
   <section class="bio" data-stage-anchor="bio">
     <p class="section-label reveal">Om</p>
     <div class="bio-grid">
@@ -379,6 +394,8 @@
       </div>
     </div>
   </section>
+
+  </div><!-- /.chapter-wrap-konsulent — bio is inside so Kom i kontakt stays pinned through the about-section -->
 
   <section id="kontakt" class="contact" data-stage-anchor="contact">
     <p class="section-label reveal">Kontakt</p>
@@ -424,13 +441,21 @@
     --graphite: oklch(0.17 0.012 240);
     --graphite-soft: color-mix(in oklch, var(--graphite) 70%, transparent);
     --tangerine: oklch(0.94 0.26 120);
-    /* Accent text (numbers, list markers, hover, chapter numerals).
-       Swapped from violet to a dark moss green that echoes the sage
-       contact footer and complements the cool bone page bg. */
-    --violet: oklch(0.36 0.14 150);
+    /* Accent text (numbers, list markers, chapter numerals) AND the
+       default CTA button fill — aligned with the deep fern of the
+       .foot footer (below) so the same dark green anchors typography,
+       CTAs, and the footer strip as one palette tier. */
+    --violet: oklch(0.2 0.06 152);
     --rose-deep: oklch(0.48 0.14 20);
     --mercury: oklch(0.78 0.015 220);
     --rule: color-mix(in oklch, var(--graphite) 18%, transparent);
+    /* Canonical CTA gutter — inherited by StickyCta (via custom-property
+       inheritance) AND used as chapter-wrap padding-bottom so the CTA's
+       sticky release happens with this same gap before the chapter divider. */
+    --cta-v: 1.5rem;
+    /* CTA button height — shared so the first-section negative margin-top
+       (below) can cancel the CTA's flow footprint exactly. */
+    --cta-h-box: 3.3rem;
     min-height: 100vh;
     /* Cool bone above the chapter-II divider, warm paper below. The
        `--konsulent-y` custom property is set from JS to the exact pixel
@@ -923,6 +948,85 @@
   */
   .chapter-wrap {
     position: relative;
+    /*
+      Inner padding-bottom equal to the CTA's viewport-bottom gutter.
+      Sticky-positioned children are clamped by the containing block's
+      content box — so this padding shortens the region in which the
+      CTA can stay pinned. Result: when the wrap's bottom approaches
+      the chapter divider, the CTA releases with a gap of --cta-v
+      between its bottom edge and the divider, matching the gap it
+      has to the viewport bottom while pinned.
+    */
+    padding-bottom: var(--cta-v);
+  }
+  /*
+    chapter-wrap-konsulent has a chapter divider ABOVE it (the chapter-I
+    / chapter-II transition). Padding-top: var(--cta-v) pushes the
+    Kom i kontakt CTA's natural position down by the same gap the
+    Book en tid CTA has to its own bottom divider — so both CTAs have
+    symmetric breathing room at their chapter boundaries.
+  */
+  .chapter-wrap-konsulent {
+    padding-top: var(--cta-v);
+  }
+
+  /*
+    Book en tid initial position + sink-on-scroll.
+
+    At page load we want the button to sit in the hero between the
+    lead-in paragraph and the MÆRK ↓ scroll indicator — not yet at
+    its eventual bottom-right sticky position. As the user scrolls
+    the first ~50vh, the button smoothly descends to its pinned
+    sticky target. After that it behaves like a regular sticky-top
+    element (pinned until chapter-wrap-therapi's bottom pushes it
+    up at the chapter divider).
+
+    Implementation: scroll-driven CSS animation animating the `top`
+    value. Sticky re-evaluates on each frame based on the current
+    `top`, so the element smoothly glides from 78vh to the sticky
+    target as scroll progresses. Modern browsers only — older
+    browsers fall back to the static sticky-top value declared on
+    the element, so the button just starts at its pinned position.
+  */
+  @keyframes cta-sink {
+    from {
+      top: 78vh;
+    }
+    to {
+      top: calc(100dvh - var(--cta-h-box) - var(--cta-v));
+    }
+  }
+  @supports (animation-timeline: scroll()) {
+    .chapter-wrap-therapi :global(.sticky-cta) {
+      animation: cta-sink linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 50vh;
+    }
+  }
+  /*
+    The StickyCta is the first child of each wrap and takes up
+    --cta-h-box of vertical space in flow. Pull the SECOND child
+    (the first real section) up by exactly that amount so the
+    visual layout starts at the top of the wrap, unaffected by
+    the button's presence. Doing this on the next sibling rather
+    than via a negative margin-bottom on the CTA itself preserves
+    the CTA's margin-box height, which is what sticky containment
+    uses to decide when to release.
+  */
+  .chapter-wrap > :nth-child(2) {
+    margin-top: calc(-1 * var(--cta-h-box));
+  }
+  /*
+    chapter-wrap-konsulent also has padding-top: var(--cta-v) so the
+    Kom i kontakt CTA's natural position sits below the divider with
+    a gap. That extra top padding would otherwise push the
+    chapter-konsulent section (and its black border-top) down by the
+    same amount — which visually separates the divider from the bg
+    color change. Pull chapter-konsulent up by the extra gap too so
+    the divider line lands exactly at the bg transition.
+  */
+  .chapter-wrap-konsulent > :nth-child(2) {
+    margin-top: calc(-1 * (var(--cta-h-box) + var(--cta-v)));
   }
 
   /* ============== STUDIO CREDITS ============== */
@@ -1168,8 +1272,10 @@
   }
 
   .foot {
-    /* Deep fern — continues the sage from .contact into a darker floor */
-    background: oklch(0.2 0.06 152);
+    /* Deep fern — continues the sage from .contact into a darker floor.
+       Linked to var(--violet) so typography / CTA / footer share a single
+       color declaration. */
+    background: var(--violet);
     color: color-mix(in oklch, var(--bone) 45%, transparent);
     padding: 1rem 1.25rem 2.5rem;
     font-family: var(--font-mono);
