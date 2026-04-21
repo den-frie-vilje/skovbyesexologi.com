@@ -57,6 +57,29 @@
 
   onMount(() => {
     if (!browser) return;
+    /*
+      Reduced-motion opt-out. The stage is continuous motion — orb
+      rotation, pointer-driven tilt, marching-cubes wobble, chapter
+      cross-fade — none of which are tied to decorative animation
+      timelines that CSS `@media (prefers-reduced-motion)` can
+      suppress. When the OS preference is `reduce`, skip the entire
+      WebGL pipeline (no three.js import, no shader compile, no
+      canvas at all). `.flod`'s gradient background already provides
+      a readable static fallback; the OG still PNGs are a richer
+      alternative if we ever want to swap them in here.
+
+      The width/height override path (OG image capture at build time)
+      must ALWAYS render regardless of the host's motion preference —
+      the capture environment's media query is irrelevant to what
+      the final site user sees. Gate reduced-motion skip on the
+      default (no-override) path only.
+    */
+    const fixedSizeAtMount =
+      typeof widthOverride === 'number' && typeof heightOverride === 'number';
+    const prefersReducedMotion =
+      !fixedSizeAtMount &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
     let disposed = false;
 
     (async () => {

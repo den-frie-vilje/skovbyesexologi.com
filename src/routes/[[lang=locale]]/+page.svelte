@@ -192,10 +192,17 @@
 <div class="flod" class:in-konsulent={chapterMode === 1}>
   <FlodStage anchors={stageAnchors} {chapterMode} />
 
-  <nav class="top">
+  <!--
+    Site banner. No site nav (editorial single-page), so this is
+    `<header>` rather than `<nav>` — `<nav>` without links was
+    semantically empty and confused assistive tech.
+  -->
+  <header class="top">
     <span class="mark">{hero.name}</span>
     <span class="mark-meta">{hero.city}</span>
-  </nav>
+  </header>
+
+  <main>
 
   <!--
     Chapter I wrapper. The therapy CTA sits as the first child so its
@@ -209,7 +216,13 @@
       <StickyCta cta={therapyService.cta} />
     {/if}
 
-  <header class="hero" data-stage-anchor="hero">
+  <!--
+    Hero is a section, not a <header> — the page-level banner is
+    `.top` above, and using <header> here would give the hero its
+    own implicit banner role inside <main>, competing with `.top`
+    for assistive-tech attention.
+  -->
+  <section class="hero" data-stage-anchor="hero">
     <p class="name-card reveal-slide">
       {hero.name}<br />
       <span>{hero.city}</span>
@@ -227,7 +240,7 @@
       <span>{hero.scrollLabel}</span>
       <span class="arrow">↓</span>
     </div>
-  </header>
+  </section>
 
   <section class="name-section" data-stage-anchor="name-section">
     <div class="name-grid">
@@ -486,6 +499,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <footer class="foot">
     <p>{footerCopyright}</p>
@@ -1275,7 +1289,10 @@
     z-index: 2;
   }
   .contact .section-label {
-    color: color-mix(in oklch, var(--bone) 70%, transparent);
+    /* Was 70% bone on sage-green bg — 3.63:1, fails WCAG AA for the
+       11pt label. 90% lifts it above the 4.5:1 threshold for small
+       text without losing the quiet, de-emphasised look. */
+    color: color-mix(in oklch, var(--bone) 90%, transparent);
   }
   .contact h2 {
     font-family: var(--font-serif);
@@ -1289,13 +1306,22 @@
   .contact h2 .dot {
     color: var(--tangerine);
   }
-  .contact-lede {
-    font-family: var(--font-serif);
-    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-    line-height: 1.4;
+  /*
+    `.contact p` below sets mono font + `margin: 0` on every
+    paragraph inside the contact block. The lede inherits both
+    (intentional — the mono aesthetic ties the prose to the
+    labels below) and only needs two overrides: a reading-width
+    constraint and the wide bottom margin so "svære at sige højt"
+    doesn't butt up against the "Email" label.
+
+    A prior version declared font-family: var(--font-serif) here,
+    but `.contact p`'s higher specificity meant the serif rule
+    never actually rendered — removed to avoid implying a visual
+    that wasn't happening.
+  */
+  .contact .contact-lede {
     max-width: 40ch;
-    margin: 0 0 3.5rem;
-    color: color-mix(in oklch, var(--bone) 88%, transparent);
+    margin: 0 0 4rem;
   }
   .contact-grid {
     display: grid;
@@ -1314,6 +1340,15 @@
   }
   .contact a {
     border-bottom: 1px solid currentColor;
+    /* Touch-target minimum — the email and phone links are the
+       only interactive elements in the contact block, and at the
+       default line-box height they're ~21px tall on mobile, well
+       under the 44px guideline. Inline-flex + min-height keeps the
+       visual underline aligned with the text while enlarging the
+       hit area. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
   .contact a:hover {
     color: var(--tangerine);
@@ -1323,7 +1358,11 @@
     font-size: 0.66rem !important;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: color-mix(in oklch, var(--bone) 55%, transparent) !important;
+    /* Was 55% bone on sage-green bg — 2.85:1, fails WCAG AA badly
+       for the 7.9pt (small) label. 85% gets small-text above 4.5:1
+       while still reading as muted next to the full-strength
+       contact values below. */
+    color: color-mix(in oklch, var(--bone) 85%, transparent) !important;
     margin: 0 0 0.35rem !important;
     border: none !important;
   }
@@ -1334,7 +1373,10 @@
        typography accent can be a lighter, more-obviously-green sage
        without darkening the .foot strip. */
     background: oklch(0.2 0.06 152);
-    color: color-mix(in oklch, var(--bone) 45%, transparent);
+    /* Was 45% bone — 4.06:1 on the deep-fern bg, below WCAG AA's
+       4.5:1 threshold for this 7.9pt copyright line. 65% lifts it
+       above the bar while still reading as de-emphasised. */
+    color: color-mix(in oklch, var(--bone) 65%, transparent);
     padding: 1rem 1.25rem 2.5rem;
     font-family: var(--font-mono);
     font-size: 0.66rem;

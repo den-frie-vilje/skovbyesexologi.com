@@ -21,11 +21,17 @@
 }
 
 html {
-  scroll-behavior: smooth;
   /* Kills the iOS Safari rubber-band that briefly exposes the viewport
      beyond the page and flashes white on scroll. */
   overscroll-behavior-y: none;
   background: var(--color-cream);
+}
+/* Smooth scroll is a motion effect — users who opt out of motion
+   via OS accessibility preferences should get instant jumps. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -39,6 +45,24 @@ body {
 ::selection {
   background: var(--color-chartreuse);
   color: var(--color-ink);
+}
+
+/* Focus ring — keyboard users only. Chartreuse matches the existing
+   hover/highlight accent; the 3px outline + 3px offset ensures a
+   visible ring on both the cream bg AND the sage contact section
+   (where an ink-coloured outline would disappear). Explicitly clear
+   the inner outline so the ring sits fully outside the element. */
+:focus-visible {
+  outline: 3px solid var(--color-chartreuse);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* Links inside long-form copy inherit the default dotted underline
+   focus in some browsers — suppress so our ring is the only
+   indicator. */
+a:focus-visible,
+button:focus-visible {
+  outline-color: var(--color-chartreuse);
 }
 
 /* Reveal/fade-in appearance animations dropped — text now renders
