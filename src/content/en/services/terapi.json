@@ -1,0 +1,26 @@
+{
+  "slug": "terapi",
+  "number": "01",
+  "title": "Psychomotor sexological therapy",
+  "kicker": "solo · couples · poly",
+  "blurb": "We work with both conversation and body. Psychomotor therapy unites cognition and sensation — a natural path to sexual wellbeing.",
+  "bullets": ["Talk therapy", "Embodied exercises", "Sexological counselling"],
+  "supportsLabel": "Supporting your",
+  "supports": [
+    "Desire",
+    "Needs",
+    "Boundaries",
+    "Relationships",
+    "Self-awareness",
+    "Body awareness",
+    "Resources",
+    "Love",
+    "Safety",
+    "Sex life"
+  ],
+  "cta": {
+    "label": "Book a session",
+    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
+    "kind": "primary"
+  }
+}

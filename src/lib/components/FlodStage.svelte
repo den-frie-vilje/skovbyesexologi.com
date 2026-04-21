@@ -30,6 +30,16 @@
     background?: string;
     /** 0 = therapy palette, 1 = konsulent palette. Smoothly interpolated. */
     chapterMode?: number;
+    /**
+     * When set, the renderer and camera use these pixel dimensions
+     * instead of `window.innerWidth / innerHeight`, and the resize
+     * listener is skipped. Used by the OG image layout to render the
+     * stage into a sub-region (e.g. 780×630 text column) while the
+     * surrounding Playwright viewport stays at 1200×630. Leave both
+     * undefined for the default full-viewport behavior.
+     */
+    width?: number;
+    height?: number;
   }
 
   let {
@@ -37,7 +47,9 @@
     tint = '#e3c3cb',
     accent = '#d7ff3a',
     background = '#f3ede2',
-    chapterMode = 0
+    chapterMode = 0,
+    width: widthOverride,
+    height: heightOverride
   }: Props = $props();
 
   let host: HTMLDivElement;
@@ -52,8 +64,10 @@
       const { MarchingCubes } = await import('three/addons/objects/MarchingCubes.js');
       if (disposed) return;
 
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const fixedSize =
+        typeof widthOverride === 'number' && typeof heightOverride === 'number';
+      const width = fixedSize ? widthOverride! : window.innerWidth;
+      const height = fixedSize ? heightOverride! : window.innerHeight;
 
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -113,9 +127,12 @@
       // onBeforeCompile because the `#include` directives haven't been
       // resolved yet at that point.
       const chunkPatchFlag = '_flodEnvCrossfadePatched';
-      const chunkHolder = THREE.ShaderChunk as unknown as Record<string, string> & {
-        [k: string]: unknown;
-      };
+      // Wide cast — THREE.ShaderChunk's official type is a map of
+      // string chunks, but we stash a non-chunk boolean under our
+      // private key to track whether the patch already ran. Treat
+      // the holder as `unknown`-valued so the boolean write below
+      // type-checks.
+      const chunkHolder = THREE.ShaderChunk as unknown as Record<string, unknown>;
       if (!chunkHolder[chunkPatchFlag]) {
         const original = THREE.ShaderChunk.envmap_physical_pars_fragment;
         THREE.ShaderChunk.envmap_physical_pars_fragment = original
@@ -502,17 +519,29 @@ uniform float uEnvMix;`
         };
       };
 
-      // Track last width+height so we can ignore height-only resizes on
-      // mobile (iOS Safari fires resize every time the URL bar shows/hides,
-      // which would squeeze the 3D viewport mid-scroll). Orientation changes
-      // still trigger because width changes too.
+      // Height-only resize policy:
+      //   Mobile (touch-primary): ignore. iOS Safari fires a resize event
+      //     every time the URL bar shows/hides during scroll, which would
+      //     squeeze the 3D viewport mid-scroll. Orientation changes still
+      //     trigger because width changes too.
+      //   Desktop: respect. Users genuinely resize window height, toggle
+      //     DevTools, maximize vertically, etc., and the canvas must
+      //     follow or the camera aspect drifts and elements stretch.
+      // Detect touch-primary via pointer/hover media — more reliable than
+      // viewport-width heuristics (tablets in landscape read as desktop
+      // width but still have the URL-bar issue).
+      const isTouchPrimary = window.matchMedia(
+        '(hover: none) and (pointer: coarse)'
+      ).matches;
       let lastResizeW = width;
       let lastResizeH = height;
       const onResize = () => {
         const w = window.innerWidth;
         const h = window.innerHeight;
         const widthChanged = Math.abs(w - lastResizeW) > 1;
-        if (!widthChanged) {
+        const heightChanged = Math.abs(h - lastResizeH) > 1;
+        const shouldResize = widthChanged || (!isTouchPrimary && heightChanged);
+        if (!shouldResize) {
           // Keep caches in sync — section positions may have shifted even
           // without a canvas resize.
           refreshCaches();
@@ -525,7 +554,13 @@ uniform float uEnvMix;`
         camera.updateProjectionMatrix();
         refreshCaches();
       };
-      window.addEventListener('resize', onResize, { passive: true });
+      // When width/height are pinned by props, the stage is for a
+      // capture-time layout (OG image) — no user resizing happens, so
+      // skip the listener. Avoids refreshCaches() running against the
+      // surrounding 1200×630 viewport and thrashing visibility math.
+      if (!fixedSize) {
+        window.addEventListener('resize', onResize, { passive: true });
+      }
 
       let pointerX = 0;
       let pointerY = 0;

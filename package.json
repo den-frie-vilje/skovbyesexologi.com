@@ -7,10 +7,12 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "icons": "node scripts/gen-pose-icons.ts",
+    "og": "node scripts/gen-og-images.ts"
   },
   "engines": {
-    "node": "~24",
+    "node": "~25",
     "pnpm": "~10"
   },
   "devDependencies": {
@@ -20,6 +22,7 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@types/three": "^0.184.0",
+    "playwright": "^1.59.1",
     "svelte": "^5.19.0",
     "svelte-check": "^4.1.4",
     "tailwindcss": "^4.0.0",

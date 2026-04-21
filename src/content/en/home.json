@@ -1,0 +1,93 @@
+{
+  "nav": [
+    { "label": "Therapy", "href": "#terapi" },
+    { "label": "Intimacy", "href": "#intimacy-coordination" },
+    { "label": "Elder care", "href": "#aeldrepleje" },
+    { "label": "Education", "href": "#undervisning" },
+    { "label": "Contact", "href": "#kontakt" }
+  ],
+  "hero": {
+    "name": "Skovbye Sexology",
+    "city": "Copenhagen",
+    "statementStart": "You come as you are,",
+    "statementEnd": "not as you ",
+    "statementEm": "should",
+    "attribution": "Signe Skovbye — clinical sexologist, intimacy coordinator, psychomotor therapist.",
+    "scrollLabel": "feel"
+  },
+  "nameSection": {
+    "eyebrow": "Who",
+    "firstName": "Signe",
+    "lastName": "Skovbye",
+    "pronouns": "she / her · they / them",
+    "roleLine": "Clinical sexologist · intimacy coordinator · psychomotor therapist.",
+    "roleSub": "Trained psychomotor therapist (KP) and clinical sexologist (DACS). Works with solo, couples, poly, youth, elders — and with directors and performers handling intimacy on set."
+  },
+  "chapter1": {
+    "mark": "I",
+    "title": "Therapy",
+    "lede": "For you, for you both. Solo, couples, poly. Embodied, conversational, shame-free. Your pace, your order, your body."
+  },
+  "manifest": {
+    "label": "Manifesto",
+    "items": [
+      { "word": "boundaries", "text": "Boundaries are not a test. You don't have to pass anything here." },
+      { "word": "listening", "text": "The body speaks first. I listen too — even where the words aren't." },
+      { "word": "everyone", "text": "Poly, queer, unsure, curious — there's room for every version of you." },
+      { "word": "performance", "text": "Intimacy is not a performance. It's attention." },
+      { "word": "pace", "text": "Your pace. Your order. Your body." }
+    ]
+  },
+  "ritual": {
+    "label": "How we meet",
+    "subtitle": "A session has four movements.",
+    "steps": [
+      { "n": "01", "title": "Arriving", "body": "We sit. You get to be in the room before you need to explain anything." },
+      { "n": "02", "title": "Speaking aloud", "body": "You share what's there. I ask questions but don't fill the space." },
+      { "n": "03", "title": "Sensing", "body": "Sometimes we stay with words. Other times we move — breath, body — always only what you say yes to." },
+      { "n": "04", "title": "Moving on", "body": "We close. You go home with a small shift — rarely finished, always underway." }
+    ]
+  },
+  "forPersonal": {
+    "label": "Come by if you —",
+    "items": [
+      "struggle to feel your desire",
+      "need to learn to say no before you can say yes",
+      "have come out as queer and want to explore what that means in your body",
+      "are in an open or polyamorous relationship and need a third voice",
+      "have had a boundary crossed — recently or long ago"
+    ]
+  },
+  "chapter2": {
+    "mark": "II",
+    "title": "Consultancy services",
+    "lede": "For institutions, film productions, care services, and youth education. Teaching, intimacy coordination, counselling — always grounded in the same therapeutic foundation."
+  },
+  "pillQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimate relationships on screen.",
+  "forWork": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a director or producer in need of an intimacy coordinator",
+      "work in care services and need to talk to residents about sexuality",
+      "are young and want education that's not only about biology"
+    ]
+  },
+  "stage": {
+    "sections": [
+      { "id": "hero",              "stage": { "main": "heroFarRight",   "gold": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },
+      { "id": "name-section",      "stage": { "main": "topRightSm",     "gold": "disperseLowR",     "gem": "topLeftSm",      "intensity": 1.00 } },
+      { "id": "chapter-terapi",    "stage": { "main": "heroRightBig",   "gold": "cornerTLtiny",     "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "manifest",          "stage": { "main": "cornerBLtiny",   "gold": "cornerTLtiny",     "gem": "midRightBig",    "intensity": 1.00 } },
+      { "id": "ritual",            "stage": { "main": "upperRightBig",  "gold": "bottomLeftMed",    "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "service-terapi",    "stage": { "main": "topRightSm",     "gold": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "for-personal",      "stage": { "main": "topLeftSm",      "gold": "bottomLeftMed",    "gem": "heroRightBig",   "intensity": 1.05 } },
+      { "id": "chapter-konsulent", "stage": { "main": "heroLeftBig",    "gold": "cornerBRsm",       "gem": "cornerTRsm",     "intensity": 1.05 } },
+      { "id": "service-intimacy",  "stage": { "main": "heroRightBig",   "gold": "bottomLeftMed",    "gem": "topRightSm",     "intensity": 1.20 } },
+      { "id": "service-elderly",   "stage": { "main": "topLeftSm",      "gold": "cornerBLsm",       "gem": "heroRightBig",   "intensity": 1.00 } },
+      { "id": "service-teaching",  "stage": { "main": "topRightSm",     "gold": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.00 } },
+      { "id": "for-work",          "stage": { "main": "bottomLeftSm",   "gold": "topLeftSm",        "gem": "heroRightBig",   "intensity": 1.00 } },
+      { "id": "bio",               "stage": { "main": "bottomLeftSm",   "gold": "disperseRightMid", "gem": "topLeftSm",      "intensity": 1.00 } },
+      { "id": "contact",           "stage": { "main": "centerMax",      "gold": "disperseLowL",     "gem": "upperRightMed",  "intensity": 1.35 } }
+    ]
+  }
+}

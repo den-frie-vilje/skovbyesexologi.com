@@ -53,8 +53,9 @@ pkgx pnpm build       # static build → build/
 pkgx pnpm check       # svelte-check + tsc
 ```
 
-`pkgx.yml` declares the toolchain. Node is currently pinned to `^22`
-there but `package.json` requires `~24` — reconcile if you hit errors.
+`pkgx.yml` declares the toolchain: `nodejs.org: ~25`, `pnpm.io: ~10`.
+`package.json` `engines` agrees. Node 25 is required — we lean on its
+native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 
 ## Architecture
 
@@ -148,19 +149,34 @@ Three active elements:
    `flatShading: true`, faceted. Dark amethyst + pink sheen in Terapi;
    faceted chrome in Konsulentydelser. **Opaque — never transmission > 0.**
 
-### Scroll anchoring
+### Scroll anchoring — two-layer model
 
-`stageAnchors: SectionAnchor[]` in `routes/+page.svelte`. Each entry:
+**Layer 1: named pose palette** — `src/lib/stage/poses.ts` exports three
+records (`mainPoses`, `goldPoses`, `gemPoses`) mapping pose names to
+`{ x, y, scale }` NDC coordinates. Raw numbers live here and here only.
+Poses are named by *position* (`heroRight`, `cornerBR`, `topLeftSm`), not
+narrative role, so they stay reusable across new sections.
+
+**Layer 2: section registry** — `src/content/da/home.json` lists each
+homepage section with an `id` and a `stage: { main, gold, gem, intensity }`
+of pose names. Editors (Sveltia) choose from the palette; never type raw
+NDC. The `offstage` pose uses `scale: 0.01`, guaranteeing the perf skip.
+
+**Resolution** — `resolveAnchor(section)` in `poses.ts` turns a
+`SectionStage` into the runtime shape FlodStage consumes:
 
 ```ts
 {
-  selector: '.flod .some-section',
-  main:  { x, y, scale, pin? },   // NDC coords, scale
-  drip1: { x, y, scale, pin? },   // gold cluster
-  drip2: { x, y, scale, pin? },   // gem
-  intensity: 1.0                   // drives tone mapping exposure
+  selector: '[data-stage-anchor="<id>"]',
+  main:  Pose,   // from mainPoses[section.stage.main]
+  drip1: Pose,   // from goldPoses[section.stage.gold]
+  drip2: Pose,   // from gemPoses[section.stage.gem]
+  intensity: number
 }
 ```
+
+Section roots in `+page.svelte` carry `data-stage-anchor="<id>"` so the
+stage queries by stable identity, not positional CSS selectors.
 
 Each frame the stage:
 1. Reads each section's visibility ratio (bounding rect overlap with viewport)
@@ -168,6 +184,25 @@ Each frame the stage:
 3. Double-lerps (`k1 = 0.012, k2 = 0.015`) toward the blended target for
    critically-damped easing
 4. Per-element work is skipped when `scale ≤ 0.02` (offscreen-small)
+
+### Pose icons
+
+Each pose has an SVG thumbnail committed under
+`static/admin/pose-icons/<element>/<name>.svg`, plus an `_overview.html`
+gallery for visual review. The Sveltia pose-picker widget (Phase 2 item)
+will render these in a click-grid.
+
+Icons are generated from `poses.ts` by `scripts/gen-pose-icons.ts`.
+**Regenerate after every palette edit**:
+
+```sh
+pkgx pnpm icons
+```
+
+Commit the regenerated SVGs in the same change as the palette edit —
+code and CMS assets stay in sync only if the regeneration is disciplined.
+The script is run on-demand (not as a prebuild hook) so palette
+experimentation during development doesn't thrash committed assets.
 
 ### Environment maps — the critical pattern
 

@@ -1,0 +1,26 @@
+{
+  "slug": "terapi",
+  "number": "01",
+  "title": "Psykomotorisk sexologisk terapi",
+  "kicker": "solo · par · poly",
+  "blurb": "Vi arbejder både med samtale og krop. Psykomotorik forener kognition og sansning — en naturlig vej til seksuel trivsel.",
+  "bullets": ["Samtaleterapi", "Kropslige øvelser", "Sexologisk rådgivning"],
+  "supportsLabel": "Understøtter din eller jeres",
+  "supports": [
+    "Lyst",
+    "Behov",
+    "Grænser",
+    "Relationer",
+    "Selvindsigt",
+    "Kropsbevidsthed",
+    "Ressourcer",
+    "Kærlighed",
+    "Tryghed",
+    "Sexliv"
+  ],
+  "cta": {
+    "label": "Book en tid",
+    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
+    "kind": "primary"
+  }
+}

@@ -32,7 +32,14 @@ Next up:
   pkgx pnpm dev      # vite on :5173, host 0.0.0.0
   pkgx pnpm build    # static → build/
   pkgx pnpm check    # svelte-check + tsc
+  pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
   ```
+- **Admin UI**: Sveltia CMS at `/admin`. Dev backend is `test-repo`
+  (in-browser, no persistence) — switch `backend:` in
+  `static/admin/config.yml` to `github` / `gitlab` before production.
+  The stage pose `options:` arrays under `home.sections.stage` must
+  stay in sync with `src/lib/stage/poses.ts` (manual upkeep until a
+  custom `pose-select` widget lands).
 - **Svelte 5 runes only** (`$props()`, `$state()`, `$derived()`) — no `export let`, no `$:`
 - **Tailwind v4** — design tokens in `@theme` block in `src/app.css`
 - **Static build** via `@sveltejs/adapter-static`; every route prerendered
@@ -94,5 +101,6 @@ repo). Use them when writing Svelte:
 
 ## Tooling Note
 
-`pkgx.yml` currently pins `nodejs.org: ^22` but `package.json` requires
-`node: ~24`. If you hit resolution errors, reconcile to Node 24.
+Node 25 is the floor. Both `pkgx.yml` (`nodejs.org: ~25`) and
+`package.json` (`engines.node: ~25`) agree. Node 25 strips TypeScript
+types natively, which lets us run `scripts/*.ts` directly without tsx.
