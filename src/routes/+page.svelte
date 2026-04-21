@@ -1,10 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { bio, contact, home, serviceBySlug } from '$lib/content';
+  import { bio, contact, home, serviceBySlug, services, site } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
+  import { buildSiteJsonLd, SITE_URL } from '$lib/seo/structured-data';
+
+  const jsonLd = JSON.stringify(buildSiteJsonLd({ site, bio, contact, services }));
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
   // into the upper half of the viewport. Drives the FlodStage material
@@ -98,6 +101,11 @@
     name="description"
     content="Signe Skovbye — klinisk sexolog, intimitetskoordinator og psykomotorisk terapeut i København. Terapi for solo, par og poly · intimitetskoordinering for film, tv og teater · seksuel sundhed i ældresektoren · seksualundervisning."
   />
+  <meta name="author" content="Signe Skovbye" />
+  <meta name="theme-color" content="#f3ede2" />
+
+  <!-- Open Graph — Facebook, LinkedIn, generic link previews. -->
+  <meta property="og:site_name" content="Skovbye Sexologi" />
   <meta property="og:title" content="Skovbye Sexologi" />
   <meta
     property="og:description"
@@ -105,7 +113,36 @@
   />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="da_DK" />
-  <link rel="canonical" href="https://skovbyesexologi.com/" />
+  <meta property="og:url" content="{SITE_URL}/" />
+  <meta property="og:image" content="{SITE_URL}/img/signe.jpg" />
+  <meta property="og:image:alt" content="Portræt af Signe Skovbye" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="1400" />
+
+  <!-- Twitter / X — uses its own meta namespace. -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Skovbye Sexologi" />
+  <meta
+    name="twitter:description"
+    content="Klinisk sexolog, intimitetskoordinator og psykomotorisk terapeut i København."
+  />
+  <meta name="twitter:image" content="{SITE_URL}/img/signe.jpg" />
+
+  <link rel="canonical" href="{SITE_URL}/" />
+  <!--
+    Self-referential hreflang — Google still likes it on monolingual
+    sites, and it sets the scaffolding for when the EN routes land.
+  -->
+  <link rel="alternate" hreflang="da" href="{SITE_URL}/" />
+  <link rel="alternate" hreflang="x-default" href="{SITE_URL}/" />
+
+  <!--
+    Schema.org structured data — a single @graph with the business,
+    Signe as Person, and each service as a Service node. Helps Google
+    render a rich business card in search results.
+    https://schema.org / https://search.google.com/test/rich-results
+  -->
+  {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
 <div class="flod" class:in-konsulent={chapterMode === 1}>
