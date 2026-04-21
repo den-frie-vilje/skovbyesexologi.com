@@ -94,16 +94,19 @@ export const contact = contactRaw as Contact;
 export const bio = bioRaw as Bio;
 export const home = homeRaw as HomePage;
 
-// Services are globbed so adding a new `NN-slug.json` file auto-registers.
-// The filename prefix (`01-`, `02-`, ...) determines display order.
+// Services are globbed so adding a new `<slug>.json` file auto-registers.
+// The service's own `number` field (e.g. "01", "02", …) drives display
+// order rather than the filename — this lets Sveltia create services
+// with plain slug-based filenames (no NN- prefix) without disturbing
+// the sort.
 const serviceModules = import.meta.glob<{ default: Service }>(
   '../../content/da/services/*.json',
   { eager: true }
 );
 
-export const services: Service[] = Object.entries(serviceModules)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([, mod]) => mod.default);
+export const services: Service[] = Object.values(serviceModules)
+  .map((mod) => mod.default)
+  .sort((a, b) => a.number.localeCompare(b.number));
 
 export function serviceBySlug(slug: string): Service | undefined {
   return services.find((s) => s.slug === slug);

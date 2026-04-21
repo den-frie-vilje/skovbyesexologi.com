@@ -1,0 +1,297 @@
+# Sveltia CMS configuration for Skovbye Sexologi.
+#
+# Docs: https://github.com/sveltia/sveltia-cms
+#
+# ============================================================
+# BACKEND
+# ============================================================
+# `test-repo` is an in-browser, non-persistent mode for trying the
+# editor UI locally. Login is a no-op; saves are kept only in memory.
+# Great for exploring the editor; not useful for real edits.
+#
+# To enable real edits, replace with a git backend:
+#
+#   backend:
+#     name: github
+#     repo: den-frie-vilje/skovbyesexologi.com
+#     branch: main
+#     # site_domain: skovbyesexologi.com
+#     # base_url: https://api.netlify.com   # if using Netlify Identity / git-gateway
+#
+# For self-hosting on the existing GitLab instance:
+#
+#   backend:
+#     name: gitlab
+#     repo: den-frie-vilje/skovbyesexologi.com
+#     auth_type: pkce
+#     app_id: <gitlab oauth app id>
+#
+# ============================================================
+# MEDIA
+# ============================================================
+# Images live under static/img/ and are referenced as /img/<file>
+# in rendered HTML. Sveltia uploads land in the media_folder.
+#
+# ============================================================
+# POSE PALETTE
+# ============================================================
+# The `options:` arrays for the three stage-pose select fields under
+# home.sections[*].stage MUST stay in sync with the palette in
+# `src/lib/stage/poses.ts`. When editing poses.ts, also:
+#   1. Regenerate SVG thumbnails: `pkgx pnpm icons`
+#   2. Update the main/gold/gem options lists below
+#
+# A future `pose-select` custom widget will render the SVG thumbnails
+# in a click-grid and auto-sync with poses.ts — at which point this
+# manual upkeep goes away. Until then: discipline.
+# ============================================================
+
+backend:
+  name: test-repo
+
+media_folder: static/img
+public_folder: /img
+
+collections:
+  # ---- Site metadata (single file) ----
+  - name: site
+    label: Site metadata
+    label_singular: Site
+    editor: { preview: false }
+    files:
+      - name: site
+        label: Site metadata
+        file: src/content/da/site.json
+        format: json
+        fields:
+          - { name: name, label: Site name, widget: string }
+          - name: lang
+            label: Language code
+            widget: string
+            default: da
+            hint: ISO 639-1 code.
+          - { name: tagline, label: Tagline, widget: string }
+          - { name: leadIn, label: Lead-in paragraph, widget: text }
+
+  # ---- Contact info (single file) ----
+  - name: contact
+    label: Contact info
+    label_singular: Contact
+    editor: { preview: false }
+    files:
+      - name: contact
+        label: Contact info
+        file: src/content/da/contact.json
+        format: json
+        fields:
+          - { name: email, widget: string }
+          - { name: phone, widget: string }
+          - { name: address, widget: string }
+          - { name: cvr, label: CVR number, widget: string }
+          - { name: hours, label: Opening hours, widget: string }
+          - { name: responseTime, label: Response time note, widget: text }
+
+  # ---- Bio (single file) ----
+  - name: bio
+    label: Biography
+    label_singular: Bio
+    editor: { preview: false }
+    files:
+      - name: bio
+        label: Bio
+        file: src/content/da/bio.json
+        format: json
+        fields:
+          - { name: heading, widget: string }
+          - { name: pronouns, widget: string }
+          - name: body
+            label: Body paragraphs
+            widget: list
+            field: { name: paragraph, widget: text }
+
+  # ---- Home page (single file — includes stage choreography) ----
+  - name: home
+    label: Home page
+    label_singular: Home
+    editor: { preview: false }
+    files:
+      - name: home
+        label: Home
+        file: src/content/da/home.json
+        format: json
+        fields:
+          - { name: pillQuote, label: Pill quote, widget: text }
+          - name: manifest
+            label: Manifest (Chapter I intro cards)
+            widget: list
+            fields:
+              - { name: word, label: Keyword, widget: string }
+              - { name: text, widget: text }
+          - name: ritual
+            label: Ritual steps (Chapter I)
+            widget: list
+            fields:
+              - { name: n, label: Number, widget: string }
+              - { name: title, widget: string }
+              - { name: body, widget: text }
+          - name: forPersonal
+            label: "Kom forbi hvis du — personal"
+            widget: list
+            field: { name: line, widget: string }
+          - name: forWork
+            label: "Kom forbi hvis du — work"
+            widget: list
+            field: { name: line, widget: string }
+          - name: nav
+            label: Top-nav links
+            widget: list
+            fields:
+              - { name: label, widget: string }
+              - name: href
+                widget: string
+                hint: Use #anchor for in-page links.
+
+          # ---- Stage choreography ----
+          - name: sections
+            label: Stage sections
+            widget: list
+            allow_add: false
+            collapsed: false
+            hint: >-
+              Each entry configures the WebGL stage when its section
+              scrolls into view. IDs must match data-stage-anchor="<id>"
+              attributes in src/routes/+page.svelte — do not add,
+              remove, or rename sections without a developer.
+            fields:
+              - name: id
+                widget: string
+                hint: >-
+                  Must match a data-stage-anchor attribute in the template.
+                  Editing this breaks the stage for this section.
+              - name: stage
+                widget: object
+                fields:
+                  - name: main
+                    label: Mercury orb
+                    widget: select
+                    default: offstage
+                    options:
+                      - offstage
+                      - heroFarRight
+                      - heroRightBig
+                      - heroLeftBig
+                      - upperRightBig
+                      - centerMax
+                      - topRightSm
+                      - topLeftSm
+                      - bottomLeftSm
+                      - cornerBLtiny
+                      - fullBleed
+                  - name: gold
+                    label: Gold metaballs
+                    widget: select
+                    default: offstage
+                    options:
+                      - offstage
+                      - disperseLowC
+                      - disperseLowR
+                      - disperseLowL
+                      - disperseRightMid
+                      - topLeftSm
+                      - bottomLeftMed
+                      - cornerTLtiny
+                      - cornerBRsm
+                      - cornerBLsm
+                      - fullBleed
+                  - name: gem
+                    label: Faceted gem
+                    widget: select
+                    default: offstage
+                    options:
+                      - offstage
+                      - heroBRhuge
+                      - heroRightBig
+                      - midRightBig
+                      - cornerBRsm
+                      - cornerTRsm
+                      - topRightSm
+                      - topLeftSm
+                      - upperRightMed
+                      - fullBleed
+                  - name: intensity
+                    widget: number
+                    value_type: float
+                    min: 0.5
+                    max: 2.0
+                    step: 0.05
+                    default: 1.0
+
+  # ---- Services (folder; one file per service) ----
+  - name: services
+    label: Services
+    label_singular: Service
+    folder: src/content/da/services
+    format: json
+    extension: json
+    create: true
+    delete: true
+    slug: '{{fields.slug}}'
+    identifier_field: title
+    editor: { preview: false }
+    fields:
+      - name: slug
+        widget: string
+        hint: >-
+          URL slug. Also used as the section id (#anchor) on the home page.
+      - name: number
+        widget: string
+        hint: Two-digit display number (e.g. "01"). Drives service ordering.
+      - { name: title, widget: string }
+      - name: kicker
+        widget: string
+        hint: 'Short audience line, e.g. "film · tv · teater".'
+      - { name: blurb, widget: text }
+      - name: bullets
+        label: Feature bullets
+        widget: list
+        field: { name: bullet, widget: string }
+      - name: supports
+        label: Supporting keywords (optional)
+        widget: list
+        required: false
+        field: { name: keyword, widget: string }
+      - name: testimonial
+        label: Testimonial (optional)
+        widget: object
+        required: false
+        fields:
+          - { name: quote, widget: text }
+          - { name: source, widget: string }
+      - name: cta
+        label: Call-to-action button (optional)
+        widget: object
+        required: false
+        fields:
+          - { name: label, widget: string, hint: Button text }
+          - name: href
+            widget: string
+            hint: "mailto:…, tel:…, or https://… booking URL"
+          - name: kind
+            widget: select
+            default: primary
+            options: [primary, secondary]
+      - name: studios
+        label: Studio credits (optional)
+        widget: list
+        required: false
+        hint: Black cut-out silhouette SVGs on transparent backgrounds.
+        fields:
+          - { name: name, widget: string }
+          - name: logo
+            widget: image
+            media_folder: /static/img/studios
+            public_folder: /img/studios
+          - name: url
+            widget: string
+            required: false
+            hint: Optional link-out URL.
