@@ -1,13 +1,41 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { bio, contact, home, serviceBySlug, services, site } from '$lib/content';
+  import { contentFor, renderFooterCopyright, type Locale } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
   import { buildSiteJsonLd, SITE_URL } from '$lib/seo/structured-data';
+  import type { PageProps } from './$types';
 
-  const jsonLd = JSON.stringify(buildSiteJsonLd({ site, bio, contact, services }));
+  let { data }: PageProps = $props();
+
+  // All page-level derived state reacts to `data.locale` so client-side
+  // navigation between `/` and `/en` updates head + content in lockstep.
+  const locale: Locale = $derived(data.locale);
+  const bundle = $derived(contentFor(locale));
+  const site = $derived(bundle.site);
+  const contact = $derived(bundle.contact);
+  const bio = $derived(bundle.bio);
+  const home = $derived(bundle.home);
+  const services = $derived(bundle.services);
+  const findService = (slug: string) => services.find((s) => s.slug === slug);
+
+  const jsonLd = $derived(JSON.stringify(buildSiteJsonLd({ site, bio, contact, services })));
+
+  // Canonical + hreflang helpers. DA is prefix-less; EN lives at /en.
+  const canonicalUrl = $derived(`${SITE_URL}${locale === 'en' ? '/en' : '/'}`);
+  const daUrl = `${SITE_URL}/`;
+  const enUrl = `${SITE_URL}/en`;
+  const ogLocale = $derived(locale === 'en' ? 'en_US' : 'da_DK');
+  const ogLocaleAlternate = $derived(locale === 'en' ? 'da_DK' : 'en_US');
+
+  // Title + description derived from the active locale's content.
+  const metaTitle = $derived(`${site.name} · ${site.tagline}`);
+  const metaDescription = $derived(
+    `${site.leadIn} — ${services.map((s) => s.title).join(' · ')}`
+  );
+  const ogDescription = $derived(site.tagline);
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
   // into the upper half of the viewport. Drives the FlodStage material
@@ -84,62 +112,73 @@
   // to NDC coordinates at runtime. Section ids become `data-stage-anchor`
   // attributes on the corresponding section roots; FlodStage queries by that
   // attribute rather than brittle positional CSS selectors.
-  const { pillQuote, manifest, ritual, forPersonal, forWork, sections } = home;
-  const stageAnchors = sections.map(resolveAnchor);
+  // Per-section home content — each grouped under its section name in
+  // home.json, so the destructuring here mirrors the site structure
+  // rather than a flat string bag.
+  const nav = $derived(home.nav);
+  const hero = $derived(home.hero);
+  const nameSection = $derived(home.nameSection);
+  const chapter1 = $derived(home.chapter1);
+  const manifest = $derived(home.manifest);
+  const ritual = $derived(home.ritual);
+  const forPersonal = $derived(home.forPersonal);
+  const chapter2 = $derived(home.chapter2);
+  const pillQuote = $derived(home.pillQuote);
+  const forWork = $derived(home.forWork);
+  const stageAnchors = $derived(home.stage.sections.map(resolveAnchor));
 
-  // Access individual services by slug so the page can compose each
-  // in its own section with a layout that fits its content.
-  const therapyService = serviceBySlug('terapi');
-  const intimacyService = serviceBySlug('intimacy-coordination');
-  const elderlyService = serviceBySlug('aeldrepleje');
-  const teachingService = serviceBySlug('undervisning');
+  // Individual services by slug so each section can compose its own
+  // bespoke layout (services are intentionally NOT rendered by one
+  // shared component — see AGENTS.md).
+  const therapyService = $derived(findService('terapi'));
+  const intimacyService = $derived(findService('intimacy-coordination'));
+  const elderlyService = $derived(findService('aeldrepleje'));
+  const teachingService = $derived(findService('undervisning'));
+
+  // Footer copyright template rendered with live year + site data.
+  const footerCopyright = $derived(renderFooterCopyright(site, contact));
 </script>
 
 <svelte:head>
-  <title>Skovbye Sexologi — klinisk sexolog, intimitetskoordinator, psykomotorisk terapeut</title>
-  <meta
-    name="description"
-    content="Signe Skovbye — klinisk sexolog, intimitetskoordinator og psykomotorisk terapeut i København. Terapi for solo, par og poly · intimitetskoordinering for film, tv og teater · seksuel sundhed i ældresektoren · seksualundervisning."
-  />
-  <meta name="author" content="Signe Skovbye" />
+  <title>{metaTitle}</title>
+  <meta name="description" content={metaDescription} />
+  <meta name="author" content={site.name} />
   <meta name="theme-color" content="#f3ede2" />
 
   <!-- Open Graph — Facebook, LinkedIn, generic link previews. -->
-  <meta property="og:site_name" content="Skovbye Sexologi" />
-  <meta property="og:title" content="Skovbye Sexologi" />
-  <meta
-    property="og:description"
-    content="Klinisk sexolog, intimitetskoordinator og psykomotorisk terapeut i København."
-  />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:title" content={site.name} />
+  <meta property="og:description" content={ogDescription} />
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content="da_DK" />
-  <meta property="og:url" content="{SITE_URL}/" />
+  <meta property="og:locale" content={ogLocale} />
+  <meta property="og:locale:alternate" content={ogLocaleAlternate} />
+  <meta property="og:url" content={canonicalUrl} />
   <meta property="og:image" content="{SITE_URL}/img/signe.jpg" />
-  <meta property="og:image:alt" content="Portræt af Signe Skovbye" />
+  <meta property="og:image:alt" content="Signe Skovbye" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="1400" />
 
   <!-- Twitter / X — uses its own meta namespace. -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Skovbye Sexologi" />
-  <meta
-    name="twitter:description"
-    content="Klinisk sexolog, intimitetskoordinator og psykomotorisk terapeut i København."
-  />
+  <meta name="twitter:title" content={site.name} />
+  <meta name="twitter:description" content={ogDescription} />
   <meta name="twitter:image" content="{SITE_URL}/img/signe.jpg" />
 
-  <link rel="canonical" href="{SITE_URL}/" />
+  <link rel="canonical" href={canonicalUrl} />
   <!--
-    Self-referential hreflang — Google still likes it on monolingual
-    sites, and it sets the scaffolding for when the EN routes land.
+    hreflang alternates — each locale's page references itself + the
+    other locale + x-default (DA). Best-practice SEO signal that tells
+    Google which version to serve to which user.
   -->
-  <link rel="alternate" hreflang="da" href="{SITE_URL}/" />
-  <link rel="alternate" hreflang="x-default" href="{SITE_URL}/" />
+  <link rel="alternate" hreflang="da" href={daUrl} />
+  <link rel="alternate" hreflang="en" href={enUrl} />
+  <link rel="alternate" hreflang="x-default" href={daUrl} />
 
   <!--
     Schema.org structured data — a single @graph with the business,
-    Signe as Person, and each service as a Service node. Helps Google
-    render a rich business card in search results.
+    Signe as Person, and each service as a Service node. Built from
+    the active locale's content so the graph reads in the right
+    language for the page it's on.
     https://schema.org / https://search.google.com/test/rich-results
   -->
   {@html `<script type="application/ld+json">${jsonLd}</script>`}
@@ -149,8 +188,8 @@
   <FlodStage anchors={stageAnchors} {chapterMode} />
 
   <nav class="top">
-    <span class="mark">Skovbye Sexologi</span>
-    <span class="mark-meta">København</span>
+    <span class="mark">{hero.name}</span>
+    <span class="mark-meta">{hero.city}</span>
   </nav>
 
   <!--
@@ -167,23 +206,20 @@
 
   <header class="hero" data-stage-anchor="hero">
     <p class="name-card reveal-slide">
-      Skovbye Sexologi<br />
-      <span>København</span>
+      {hero.name}<br />
+      <span>{hero.city}</span>
     </p>
     <h1 class="statement">
-      <span class="line reveal-soft"
-        ><span class="ink">Du kommer som du er,</span></span
-      >
+      <span class="line reveal-soft"><span class="ink">{hero.statementStart}</span></span>
       <span class="line reveal-soft em">
-        <span class="ink">ikke som du </span><em>burde</em
-        ><span class="ink dot">.</span>
+        <span class="ink">{hero.statementEnd}</span><em>{hero.statementEm}</em><span class="ink dot">.</span>
       </span>
     </h1>
     <p class="attribution reveal">
-      Signe Skovbye — klinisk sexolog, intimitetskoordinator, psykomotorisk terapeut.
+      {hero.attribution}
     </p>
     <div class="hero-scroll">
-      <span>mærk</span>
+      <span>{hero.scrollLabel}</span>
       <span class="arrow">↓</span>
     </div>
   </header>
@@ -191,22 +227,15 @@
   <section class="name-section" data-stage-anchor="name-section">
     <div class="name-grid">
       <div class="reveal-slide">
-        <p class="eyebrow">Hvem</p>
+        <p class="eyebrow">{nameSection.eyebrow}</p>
         <h2>
-          Signe <em>Skovbye</em>
+          {nameSection.firstName} <em>{nameSection.lastName}</em>
         </h2>
-        <p class="pronouns">hun / hende · de / dem</p>
+        <p class="pronouns">{nameSection.pronouns}</p>
       </div>
       <div class="reveal">
-        <p class="role-line">
-          Klinisk sexolog <span class="dotsep">·</span> intimitetskoordinator
-          <span class="dotsep">·</span> psykomotorisk terapeut.
-        </p>
-        <p class="role-sub">
-          Uddannet psykomotorisk terapeut (KP) og klinisk sexolog (DACS). Arbejder
-          med solo, par, poly, unge, ældre — og med instruktører og performere der
-          skal håndtere intimitet på settet.
-        </p>
+        <p class="role-line">{nameSection.roleLine}</p>
+        <p class="role-sub">{nameSection.roleSub}</p>
       </div>
     </div>
   </section>
@@ -214,19 +243,16 @@
   <!-- ============== CHAPTER I · TERAPI ============== -->
   <section class="chapter chapter-terapi" data-stage-anchor="chapter-terapi">
     <div class="chapter-inner reveal">
-      <p class="chapter-mark">I</p>
-      <h2 class="chapter-title">Terapi</h2>
-      <p class="chapter-lede">
-        For dig, for jer. Solo, par, poly. Kropsligt, samtaleligt,
-        skamfrit. Dit tempo, din rækkefølge, din krop.
-      </p>
+      <p class="chapter-mark">{chapter1.mark}</p>
+      <h2 class="chapter-title">{chapter1.title}</h2>
+      <p class="chapter-lede">{chapter1.lede}</p>
     </div>
   </section>
 
   <section class="manifest" data-stage-anchor="manifest">
-    <p class="section-label reveal">Manifest</p>
+    <p class="section-label reveal">{manifest.label}</p>
     <ul>
-      {#each manifest as m, i}
+      {#each manifest.items as m, i}
         <li class="reveal">
           <span class="m-num">{String(i + 1).padStart(2, '0')}</span>
           <p>
@@ -241,11 +267,11 @@
 
   <section class="ritual" data-stage-anchor="ritual">
     <div class="ritual-head reveal">
-      <p class="section-label">Sådan mødes vi</p>
-      <h2>En session har fire bevægelser.</h2>
+      <p class="section-label">{ritual.label}</p>
+      <h2>{ritual.subtitle}</h2>
     </div>
     <ol class="ritual-list">
-      {#each ritual as step}
+      {#each ritual.steps as step}
         <li class="reveal">
           <span class="r-n">{step.n}</span>
           <div>
@@ -270,9 +296,9 @@
           <li>{bullet}</li>
         {/each}
       </ul>
-      {#if therapyService.supports}
+      {#if therapyService.supports && therapyService.supportsLabel}
         <div class="s-supports-block reveal">
-          <p class="s-supports-label">Understøtter din eller jeres</p>
+          <p class="s-supports-label">{therapyService.supportsLabel}</p>
           <p class="s-supports">{therapyService.supports.join(' · ')}</p>
         </div>
       {/if}
@@ -280,9 +306,9 @@
   {/if}
 
   <section class="for-personal" data-stage-anchor="for-personal">
-    <p class="section-label reveal">Kom forbi hvis du —</p>
+    <p class="section-label reveal">{forPersonal.label}</p>
     <ul>
-      {#each forPersonal as reason, i}
+      {#each forPersonal.items as reason, i}
         <li class="reveal" style="--d: {i * 60}ms">
           <span class="fy-num">{String(i + 1).padStart(2, '0')}</span>
           <span>{reason}</span>
@@ -309,13 +335,9 @@
 
   <section class="chapter chapter-konsulent" data-stage-anchor="chapter-konsulent">
     <div class="chapter-inner reveal">
-      <p class="chapter-mark">II</p>
-      <h2 class="chapter-title">Konsulentydelser</h2>
-      <p class="chapter-lede">
-        For institutioner, filmproduktioner, plejesektoren og
-        ungdomsuddannelser. Undervisning, intimitetskoordinering,
-        rådgivning — altid baseret i samme terapeutiske fundament.
-      </p>
+      <p class="chapter-mark">{chapter2.mark}</p>
+      <h2 class="chapter-title">{chapter2.title}</h2>
+      <p class="chapter-lede">{chapter2.lede}</p>
     </div>
   </section>
 
@@ -342,9 +364,9 @@
           <cite>— {intimacyService.testimonial.source}</cite>
         </footer>
       {/if}
-      {#if intimacyService.studios?.length}
+      {#if intimacyService.studios?.length && intimacyService.studiosLabel}
         <div class="studios reveal">
-          <p class="studios-lede">Tidligere samarbejder</p>
+          <p class="studios-lede">{intimacyService.studiosLabel}</p>
           <ul class="studios-list">
             {#each intimacyService.studios as studio}
               <li>
@@ -396,9 +418,9 @@
   {/if}
 
   <section class="for-work" data-stage-anchor="for-work">
-    <p class="section-label reveal">Skriv til mig hvis I —</p>
+    <p class="section-label reveal">{forWork.label}</p>
     <ul>
-      {#each forWork as reason, i}
+      {#each forWork.items as reason, i}
         <li class="reveal" style="--d: {i * 60}ms">
           <span class="fy-num">{String(i + 1).padStart(2, '0')}</span>
           <span>{reason}</span>
@@ -408,19 +430,19 @@
   </section>
 
   <section class="bio" data-stage-anchor="bio">
-    <p class="section-label reveal">Om</p>
+    <p class="section-label reveal">{bio.label}</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
         <img
           src="/img/signe.jpg"
-          alt="Portræt af Signe Skovbye"
+          alt={bio.portraitAlt}
           width="1200"
           height="1400"
           loading="lazy"
           decoding="async"
         />
         <figcaption>
-          <span class="bio-name">Signe Skovbye</span>
+          <span class="bio-name">{nameSection.firstName} {nameSection.lastName}</span>
           <span class="bio-pronouns">{bio.pronouns}</span>
         </figcaption>
       </figure>
@@ -435,38 +457,33 @@
   </div><!-- /.chapter-wrap-konsulent — bio is inside so Kom i kontakt stays pinned through the about-section -->
 
   <section id="kontakt" class="contact" data-stage-anchor="contact">
-    <p class="section-label reveal">Kontakt</p>
+    <p class="section-label reveal">{contact.label}</p>
     <h2 class="reveal">
-      Skriv<span class="dot">.</span>
+      {contact.heading}<span class="dot">.</span>
     </h2>
-    <p class="contact-lede reveal">
-      Jeg svarer så snart jeg kan — oftest inden for 24–48 timer. Der er plads
-      til alle spørgsmål, også dem der er svære at sige højt.
-    </p>
+    <p class="contact-lede reveal">{contact.lede}</p>
     <div class="contact-grid">
       <div class="reveal">
-        <p class="label">Email</p>
+        <p class="label">{contact.fieldLabels.email}</p>
         <a href="mailto:{contact.email}">{contact.email}</a>
       </div>
       <div class="reveal">
-        <p class="label">Telefon</p>
+        <p class="label">{contact.fieldLabels.phone}</p>
         <a href="tel:+4531604215">{contact.phone}</a>
       </div>
       <div class="reveal">
-        <p class="label">By</p>
+        <p class="label">{contact.fieldLabels.address}</p>
         <p>{contact.address}</p>
       </div>
       <div class="reveal">
-        <p class="label">Åbent</p>
+        <p class="label">{contact.fieldLabels.hours}</p>
         <p>{contact.hours}</p>
       </div>
     </div>
   </section>
 
   <footer class="foot">
-    <p>
-      © {new Date().getFullYear()} Skovbye Sexologi · CVR {contact.cvr}
-    </p>
+    <p>{footerCopyright}</p>
   </footer>
 </div>
 
@@ -478,11 +495,12 @@
     --graphite: oklch(0.17 0.012 240);
     --graphite-soft: color-mix(in oklch, var(--graphite) 70%, transparent);
     --tangerine: oklch(0.94 0.26 120);
-    /* Accent text (numbers, list markers, chapter numerals) AND the
-       default CTA button fill — aligned with the deep fern of the
-       .foot footer (below) so the same dark green anchors typography,
-       CTAs, and the footer strip as one palette tier. */
-    --violet: oklch(0.2 0.06 152);
+    /* Accent green — chapter numerals, list numbers, default CTA fill.
+       Matched to the sage green of the .contact "Skriv." section (the
+       large footer block the user sees). Visible as green against the
+       bone bg while still reading as dark. The .foot strip keeps its
+       own deeper shade as a visual floor beneath contact. */
+    --violet: oklch(0.48 0.09 152);
     --rose-deep: oklch(0.48 0.14 20);
     --mercury: oklch(0.78 0.015 220);
     --rule: color-mix(in oklch, var(--graphite) 18%, transparent);
@@ -683,9 +701,6 @@
     font-weight: 400;
     margin: 0 0 1.25rem;
     max-width: 32ch;
-  }
-  .dotsep {
-    color: var(--violet);
   }
   .role-sub {
     font-size: 1rem;
@@ -1309,10 +1324,11 @@
   }
 
   .foot {
-    /* Deep fern — continues the sage from .contact into a darker floor.
-       Linked to var(--violet) so typography / CTA / footer share a single
-       color declaration. */
-    background: var(--violet);
+    /* Deep fern — a darker floor below the .contact sage. Kept as its
+       own explicit value rather than deriving from var(--violet) so the
+       typography accent can be a lighter, more-obviously-green sage
+       without darkening the .foot strip. */
+    background: oklch(0.2 0.06 152);
     color: color-mix(in oklch, var(--bone) 45%, transparent);
     padding: 1rem 1.25rem 2.5rem;
     font-family: var(--font-mono);

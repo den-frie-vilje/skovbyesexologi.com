@@ -1,0 +1,17 @@
+{
+  "label": "Contact",
+  "heading": "Write",
+  "lede": "I respond as soon as I can — usually within 24–48 hours. There's room for any question, including the hard-to-say-aloud ones.",
+  "email": "signeskovbye@gmail.com",
+  "phone": "(+45) 31 60 42 15",
+  "address": "Copenhagen",
+  "cvr": "43253360",
+  "hours": "Mon–Fri 10–17 · Closed weekends",
+  "responseTime": "I aim to respond to enquiries within 24–48 hours.",
+  "fieldLabels": {
+    "email": "Email",
+    "phone": "Phone",
+    "address": "City",
+    "hours": "Open"
+  }
+}

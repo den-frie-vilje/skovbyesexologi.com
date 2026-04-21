@@ -1,8 +1,17 @@
 {
+  "label": "Kontakt",
+  "heading": "Skriv",
+  "lede": "Jeg svarer så snart jeg kan — oftest inden for 24–48 timer. Der er plads til alle spørgsmål, også dem der er svære at sige højt.",
   "email": "signeskovbye@gmail.com",
   "phone": "(+45) 31 60 42 15",
   "address": "København",
   "cvr": "43253360",
   "hours": "Man–Fre 10–17 · Weekend lukket",
-  "responseTime": "Jeg bestræber mig på at besvare forespørgsler indenfor 24–48 timer."
+  "responseTime": "Jeg bestræber mig på at besvare forespørgsler indenfor 24–48 timer.",
+  "fieldLabels": {
+    "email": "Email",
+    "phone": "Telefon",
+    "address": "By",
+    "hours": "Åbent"
+  }
 }

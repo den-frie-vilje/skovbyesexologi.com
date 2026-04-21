@@ -1,0 +1,36 @@
+{
+  "slug": "intimacy-coordination",
+  "number": "02",
+  "title": "Intimacy coordination",
+  "kicker": "film · tv · theatre",
+  "blurb": "Scenes involving physical intimacy must be handled with care, professionalism, and respect for everyone involved.",
+  "bullets": [
+    "Preparatory conversations with producers, directors, and performers",
+    "Choreography of intimate scenes",
+    "Guidance on modesty garments",
+    "Upholding a safe set",
+    "Support after the scene"
+  ],
+  "testimonial": {
+    "quote": "I can recommend Signe Skovbye — she is deeply professional and a pleasure to work with.",
+    "source": "Michael Panduro, film director"
+  },
+  "studiosLabel": "Previous collaborations",
+  "studios": [
+    {
+      "name": "Zentropa",
+      "logo": "/img/studios/zentropa.svg",
+      "url": "https://www.zentropa.dk"
+    },
+    {
+      "name": "Nordisk Film",
+      "logo": "/img/studios/nordisk-film.svg",
+      "url": "https://www.nordiskfilm.com"
+    }
+  ],
+  "cta": {
+    "label": "Get in touch",
+    "href": "mailto:signeskovbye@gmail.com?subject=Intimacy%20coordination",
+    "kind": "primary"
+  }
+}
