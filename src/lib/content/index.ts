@@ -1,13 +1,26 @@
 /**
  * Typed content loader with multi-locale support.
  *
- * Content lives under `src/content/{locale}/*.json` and is imported at
- * build time via Vite — zero runtime parsing.
+ * Content layout — Sveltia CMS convention:
+ *
+ *   src/content/
+ *     site.{da,en}.json          ← single-file sections use a
+ *     contact.{da,en}.json          per-locale filename suffix
+ *     bio.{da,en}.json              (Sveltia's i18n `file:` pattern
+ *     home.{da,en}.json              with `{{locale}}` placeholder).
+ *     services/
+ *       {da,en}/*.json           ← folder collection uses
+ *                                    multiple_folders with locale
+ *                                    as a subdirectory of the
+ *                                    collection folder.
+ *
+ * Files are imported at build time via Vite — zero runtime parsing.
  *
  * Consumers: prefer `contentFor(locale)` to get a per-locale bundle.
- * The DA bundle is also re-exported as top-level `site`, `contact`, `bio`,
- * `home`, `services` for convenience and backwards-compat with any call
- * site that doesn't care about locale (e.g. the sitemap route).
+ * The DA bundle is also re-exported as top-level `site`, `contact`,
+ * `bio`, `home`, `services` for convenience and backwards-compat
+ * with any call site that doesn't care about locale (e.g. the
+ * sitemap route).
  *
  * Grouping principle: each section's strings live in the same JSON
  * object as its data. UI labels belong to the section that renders
@@ -17,16 +30,16 @@
 import type { SectionStage, StageConfig } from '$lib/stage/poses';
 
 // ---- DA (default) ----
-import siteDa from '../../content/da/site.json';
-import contactDa from '../../content/da/contact.json';
-import bioDa from '../../content/da/bio.json';
-import homeDa from '../../content/da/home.json';
+import siteDa from '../../content/site.da.json';
+import contactDa from '../../content/contact.da.json';
+import bioDa from '../../content/bio.da.json';
+import homeDa from '../../content/home.da.json';
 
 // ---- EN ----
-import siteEn from '../../content/en/site.json';
-import contactEn from '../../content/en/contact.json';
-import bioEn from '../../content/en/bio.json';
-import homeEn from '../../content/en/home.json';
+import siteEn from '../../content/site.en.json';
+import contactEn from '../../content/contact.en.json';
+import bioEn from '../../content/bio.en.json';
+import homeEn from '../../content/home.en.json';
 
 // ---- types ----
 
@@ -222,11 +235,11 @@ export type LocaleBundle = {
 type RawServiceModule = { default: Omit<Service, 'id'> };
 
 const daServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/da/services/*.json',
+  '../../content/services/da/*.json',
   { eager: true }
 );
 const enServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/en/services/*.json',
+  '../../content/services/en/*.json',
   { eager: true }
 );
 

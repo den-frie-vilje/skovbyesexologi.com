@@ -6,14 +6,14 @@
 # BACKEND — GitHub with self-hosted OAuth proxy
 # ============================================================
 #
-# Sveltia speaks to the GitHub API with an access token. To get one
-# without embedding a client secret in the frontend, we run an
-# OAuth proxy (the Sveltia CMS Authenticator, a small Cloudflare
+# Sveltia speaks to the GitHub API with an access token. To get
+# one without embedding a client secret in the frontend, we run
+# an OAuth proxy (the Sveltia CMS Authenticator, a small Cloudflare
 # Worker) that trades the OAuth `code` for a token server-side.
 # That Worker's URL goes into `base_url` below.
 #
 # ----------------------------------------------------------------
-# ONE-TIME MANUAL SETUP (someone has to do this, not the config)
+# ONE-TIME MANUAL SETUP
 # ----------------------------------------------------------------
 #
 #   1. Register a GitHub OAuth App
@@ -22,47 +22,25 @@
 #        Homepage URL:     https://skovbyesexologi.com
 #        Authorization callback URL:
 #          https://<WORKER-SUBDOMAIN>.workers.dev/callback
-#        (Replace WORKER-SUBDOMAIN after step 2 and update
-#         the OAuth App's settings accordingly.)
 #      Copy the generated Client ID + Client Secret.
 #
 #   2. Deploy the Sveltia CMS Authenticator to Cloudflare Workers
 #      https://github.com/sveltia/sveltia-cms-auth
-#        • Click the "Deploy to Cloudflare" button, OR
-#          clone + `wrangler deploy` locally.
-#        • In the Worker's Settings → Variables, add:
+#        • Click "Deploy to Cloudflare", or clone + `wrangler deploy`.
+#        • Worker Settings → Variables:
 #            GITHUB_CLIENT_ID      = <from step 1>
-#            GITHUB_CLIENT_SECRET  = <from step 1, mark as Secret>
+#            GITHUB_CLIENT_SECRET  = <from step 1, Secret>
 #            ALLOWED_DOMAINS       = skovbyesexologi.com, localhost
-#        • Copy the Worker URL (looks like
-#          `https://skovbye-cms-auth.<name>.workers.dev`) and
-#          (a) paste it into the GitHub OAuth App's
-#              "Authorization callback URL" (appending `/callback`),
-#          (b) paste it into `base_url:` below.
+#        • Copy the Worker URL and paste it into the OAuth App's
+#          Authorization callback URL (append `/callback`) AND
+#          into `base_url:` below.
 #
-#   3. Flip `backend:` to the real block below, commit, deploy.
-#      From this point on, `/admin` serves real edits that land
-#      as commits on `main`.
+#   3. Comment out the test-repo block below, uncomment the
+#      github block, commit, deploy.
 #
-# ----------------------------------------------------------------
-# LOCAL DEVELOPMENT
-# ----------------------------------------------------------------
-#
-# For offline / throwaway editing, swap `backend:` to the
-# commented `test-repo` block below. It's a fully-in-browser
-# mock — no GitHub calls, no persistence beyond the browser tab.
-# Useful for validating config-schema changes without burning
-# commits on main.
-#
-# ----------------------------------------------------------------
-# GITLAB ALTERNATIVE (reference, not active)
-# ----------------------------------------------------------------
-#
-#   backend:
-#     name: gitlab
-#     repo: den-frie-vilje/skovbyesexologi.com
-#     auth_type: pkce
-#     app_id: <gitlab oauth app id>
+# Keeping `test-repo` as the shipping default means `/admin` stays
+# openable without a working Worker — test-repo saves never leave
+# the browser tab.
 #
 # ============================================================
 # MEDIA
@@ -71,49 +49,40 @@
 # in rendered HTML. Sveltia uploads land in the media_folder.
 #
 # ============================================================
-# I18N / LOCALES
+# I18N — native Sveltia multiple_folders structure
 # ============================================================
-# Bilingual site: Danish (default) + English. Content lives under
-# `src/content/{da,en}/...` — one folder per locale at the top of
-# the tree. That layout doesn't match Sveltia's native
-# `multiple_folders` i18n (which expects locale as a SUBFOLDER of
-# each collection, e.g. `services/da/…` + `services/en/…`), so the
-# config below takes the simpler, more explicit route: each content
-# type has TWO collections — one for DA, one for EN — with their
-# own `file:` / `folder:` paths. More YAML, fewer moving parts, and
-# no `translationKey` coupling.
+# Content layout matches Sveltia's conventions so the editor can
+# show both DA and EN in ONE collection with a locale switcher,
+# instead of two parallel collections:
 #
-# Paired entries (DA + EN) are kept in sync by filename convention:
-# both `src/content/da/services/terapi.json` and
-# `src/content/en/services/terapi.json` share the stable ID
-# `terapi` derived from the filename. The `slug` field inside each
-# JSON is the per-locale URL segment (`terapi` vs `therapy`). When
-# creating a new service in EN, use the SAME filename as the DA
-# entry so hreflang + language-switcher pairing keeps working.
+#   src/content/
+#     site.{da,en}.json           ← file collection (the
+#     contact.{da,en}.json          {{locale}} placeholder goes in
+#     bio.{da,en}.json              the FILENAME)
+#     home.{da,en}.json
+#     services/
+#       {da,en}/*.json            ← folder collection (the locale
+#                                    is a SUBFOLDER under the
+#                                    collection's `folder:`)
+#
+# Per-field i18n flags:
+#   i18n: true       — translatable (different value per locale)
+#   i18n: duplicate  — identical in both locales (structural data,
+#                      shared assets, schema identifiers). When
+#                      edited in the default locale (DA), the value
+#                      auto-syncs to non-default locales.
+#   i18n: false      — field lives only in the default locale.
+# Collections + groups inherit `i18n: true` down to their fields
+# unless a leaf explicitly overrides.
 #
 # ============================================================
 # POSE PALETTE
 # ============================================================
-# The `options:` arrays for the three stage-pose select fields
-# (mercury orb / gold metaballs / faceted gem) MUST stay in sync
-# with the palette in `src/lib/stage/poses.ts`. When editing
+# The `options:` arrays for the three stage-pose selects MUST
+# stay in sync with `src/lib/stage/poses.ts`. When editing
 # poses.ts, also:
 #   1. Regenerate SVG thumbnails: `pkgx pnpm icons`
-#   2. Update the main/gold/gem options lists below (both DA and
-#      EN collections define their own copies)
-#
-# A future `pose-select` custom widget will render the SVG
-# thumbnails in a click-grid and auto-sync with poses.ts — at
-# which point this manual upkeep goes away. Until then: discipline.
-#
-# ============================================================
-# YAML ANCHORS — shared field fragments
-# ============================================================
-# The pose option lists are identical across DA/EN collections AND
-# across the homepage stage and per-service stage, so they're
-# declared once with YAML anchors (`&name`) and reused with aliases
-# (`*name`). If you extend a pose set in poses.ts, update the
-# anchor once and every referencing block picks it up.
+#   2. Update the anchored option lists below.
 
 pose_options_main: &pose_options_main
   - offstage
@@ -154,24 +123,6 @@ pose_options_gem: &pose_options_gem
   - upperRightMed
   - fullBleed
 
-# ----------------------------------------------------------------
-# ACTIVE BACKEND
-# ----------------------------------------------------------------
-# Currently: `test-repo` (in-browser mock, no persistence).
-#
-# TO GO LIVE WITH GITHUB:
-#   1. Finish the one-time setup above (OAuth App + Worker).
-#   2. Comment out the `test-repo` block below.
-#   3. Uncomment the `github` block and replace
-#      `<WORKER-SUBDOMAIN>` with your Cloudflare Worker's real
-#      hostname.
-#   4. Commit + deploy. From then on, `/admin` requires GitHub
-#      auth and every save lands as a real commit on `main`.
-#
-# Keeping `test-repo` as the shipping default means `/admin` stays
-# openable on the live site without a working Worker — useful
-# during the setup handoff, and harmless because test-repo saves
-# never leave the browser tab.
 backend:
   name: test-repo
 
@@ -181,58 +132,37 @@ backend:
 #   name: github
 #   repo: den-frie-vilje/skovbyesexologi.com
 #   branch: main
-#   # Your deployed Cloudflare Worker's URL (no trailing slash —
-#   # Sveltia appends /auth and /callback internally).
 #   base_url: https://<WORKER-SUBDOMAIN>.workers.dev
-#   # Matches the Worker's ALLOWED_DOMAINS var; limits which
-#   # origin can initiate the auth flow.
 #   site_domain: skovbyesexologi.com
 
 media_folder: static/img
 public_folder: /img
 
-collections:
-  # ================================================================
-  # SITE METADATA (single file per locale)
-  # ================================================================
-  - name: site-da
-    label: 'Site metadata (DA)'
-    label_singular: Site
-    editor: { preview: false }
-    files:
-      - name: site
-        label: Site metadata
-        file: src/content/da/site.json
-        format: json
-        fields:
-          - { name: name, label: Site name, widget: string }
-          - name: lang
-            label: Language code
-            widget: string
-            default: da
-            hint: ISO 639-1 code.
-          - { name: tagline, label: Tagline, widget: string }
-          - { name: leadIn, label: Lead-in paragraph, widget: text }
-          - name: footerCopyright
-            label: Footer copyright
-            widget: string
-            hint: 'Template: tokens {year}, {name}, {cvr} are substituted live.'
+i18n:
+  structure: multiple_folders
+  locales: [da, en]
+  default_locale: da
 
-  - name: site-en
-    label: 'Site metadata (EN)'
+collections:
+  # ---- Site metadata ----
+  - name: site
+    label: Site metadata
     label_singular: Site
     editor: { preview: false }
+    i18n: true
     files:
       - name: site
         label: Site metadata
-        file: src/content/en/site.json
+        file: 'src/content/site.{{locale}}.json'
         format: json
+        i18n: true
         fields:
-          - { name: name, label: Site name, widget: string }
+          - { name: name, label: Site name, widget: string, i18n: duplicate }
           - name: lang
             label: Language code
             widget: string
-            default: en
+            i18n: duplicate
+            hint: ISO 639-1 code — must match the locale suffix on the file.
           - { name: tagline, label: Tagline, widget: string }
           - { name: leadIn, label: Lead-in paragraph, widget: text }
           - name: footerCopyright
@@ -240,26 +170,26 @@ collections:
             widget: string
             hint: 'Template tokens: {year}, {name}, {cvr}.'
 
-  # ================================================================
-  # CONTACT INFO (single file per locale)
-  # ================================================================
-  - name: contact-da
-    label: 'Contact info (DA)'
+  # ---- Contact info ----
+  - name: contact
+    label: Contact info
     label_singular: Contact
     editor: { preview: false }
+    i18n: true
     files:
       - name: contact
         label: Contact info
-        file: src/content/da/contact.json
+        file: 'src/content/contact.{{locale}}.json'
         format: json
+        i18n: true
         fields:
           - { name: label, label: Section label, widget: string }
           - { name: heading, widget: string }
           - { name: lede, widget: text }
-          - { name: email, widget: string }
-          - { name: phone, widget: string }
+          - { name: email, widget: string, i18n: duplicate }
+          - { name: phone, widget: string, i18n: duplicate }
           - { name: address, widget: string }
-          - { name: cvr, label: CVR number, widget: string }
+          - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
           - { name: hours, label: Opening hours, widget: string }
           - { name: responseTime, label: Response time note, widget: text }
           - name: fieldLabels
@@ -271,46 +201,18 @@ collections:
               - { name: address, widget: string }
               - { name: hours, widget: string }
 
-  - name: contact-en
-    label: 'Contact info (EN)'
-    label_singular: Contact
-    editor: { preview: false }
-    files:
-      - name: contact
-        label: Contact info
-        file: src/content/en/contact.json
-        format: json
-        fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: lede, widget: text }
-          - { name: email, widget: string }
-          - { name: phone, widget: string }
-          - { name: address, widget: string }
-          - { name: cvr, label: CVR number, widget: string }
-          - { name: hours, label: Opening hours, widget: string }
-          - { name: responseTime, label: Response time note, widget: text }
-          - name: fieldLabels
-            label: Inline field labels (contact card)
-            widget: object
-            fields:
-              - { name: email, widget: string }
-              - { name: phone, widget: string }
-              - { name: address, widget: string }
-              - { name: hours, widget: string }
-
-  # ================================================================
-  # BIO (single file per locale)
-  # ================================================================
-  - name: bio-da
-    label: 'Biography (DA)'
+  # ---- Bio ----
+  - name: bio
+    label: Biography
     label_singular: Bio
     editor: { preview: false }
+    i18n: true
     files:
       - name: bio
         label: Bio
-        file: src/content/da/bio.json
+        file: 'src/content/bio.{{locale}}.json'
         format: json
+        i18n: true
         fields:
           - { name: label, label: Section label, widget: string }
           - { name: heading, widget: string }
@@ -321,104 +223,72 @@ collections:
             widget: list
             field: { name: paragraph, widget: text }
 
-  - name: bio-en
-    label: 'Biography (EN)'
-    label_singular: Bio
-    editor: { preview: false }
-    files:
-      - name: bio
-        label: Bio
-        file: src/content/en/bio.json
-        format: json
-        fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: pronouns, widget: string }
-          - { name: portraitAlt, label: Portrait alt text, widget: string }
-          - name: body
-            label: Body paragraphs
-            widget: list
-            field: { name: paragraph, widget: text }
-
-  # ================================================================
-  # HOME PAGE (single file per locale; includes stage choreography)
-  # ================================================================
-  # The home file holds both editorial copy (hero, chapters, manifest,
-  # ritual, for-personal, for-work, testimonials) AND the scroll-
-  # anchored stage configuration. The stage block (bottom of the
-  # fields list) is intentionally hard to edit — the anchor IDs must
-  # match `data-stage-anchor` attributes in the homepage template,
-  # and the pose options must match what poses.ts exports. The
-  # options here are kept in sync with poses.ts via manual upkeep
-  # (see the note at the top of this file).
-  - name: home-da
-    label: 'Home page (DA)'
+  # ---- Home page (includes stage choreography) ----
+  - name: home
+    label: Home page
     label_singular: Home
     editor: { preview: false }
+    i18n: true
     files:
       - name: home
         label: Home
-        file: src/content/da/home.json
+        file: 'src/content/home.{{locale}}.json'
         format: json
+        i18n: true
         fields:
           - name: nav
             label: Top-nav links
             widget: list
             fields:
               - { name: label, widget: string }
-              - name: href
-                widget: string
-                hint: Use #anchor for in-page links.
+              - { name: href, widget: string, hint: 'Use #anchor for in-page links.' }
+
           - name: hero
-            label: Hero
             widget: object
             fields:
               - { name: name, label: Brand name (hero), widget: string }
               - { name: city, widget: string }
-              - name: statementStart
-                label: Statement (start)
-                widget: text
-                hint: First line of the three-piece hero statement.
+              - { name: statementStart, label: Statement (start), widget: text, hint: 'First line of the three-piece hero statement.' }
               - { name: statementEnd, label: Statement (end before em), widget: text }
               - { name: statementEm, label: Statement (emphasised tail), widget: string }
-              - name: attribution
-                widget: text
-                hint: Role line shown under the hero statement.
+              - { name: attribution, widget: text, hint: 'Role line under the hero statement.' }
               - { name: scrollLabel, label: Scroll-cue label, widget: string }
+
           - name: nameSection
             label: 'Who: name + role block'
             widget: object
             fields:
               - { name: eyebrow, widget: string }
-              - { name: firstName, widget: string }
-              - { name: lastName, widget: string }
+              - { name: firstName, widget: string, i18n: duplicate }
+              - { name: lastName, widget: string, i18n: duplicate }
               - { name: pronouns, widget: string }
-              - { name: roleLine, label: Role line, widget: text }
-              - { name: roleSub, label: Role sub-paragraph, widget: text }
+              - { name: roleLine, widget: text }
+              - { name: roleSub, widget: text }
+
           - name: chapter1
             label: Chapter I header (Terapi)
             widget: object
             fields:
-              - { name: mark, widget: string, hint: Roman numeral marker. }
+              - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
               - { name: title, widget: string }
               - { name: lede, widget: text }
           - name: chapter2
             label: Chapter II header (Konsulentydelser)
             widget: object
             fields:
-              - { name: mark, widget: string }
+              - { name: mark, widget: string, i18n: duplicate }
               - { name: title, widget: string }
               - { name: lede, widget: text }
+
           - name: manifest
             label: Manifest (Chapter I)
             widget: object
             fields:
               - { name: label, widget: string }
               - name: items
-                label: Items
                 widget: list
                 fields:
-                  - { name: word, label: Keyword, widget: string }
+                  - { name: word, widget: string }
                   - { name: text, widget: text }
           - name: ritual
             label: Ritual (Chapter I)
@@ -427,10 +297,9 @@ collections:
               - { name: label, widget: string }
               - { name: subtitle, widget: string }
               - name: steps
-                label: Steps
                 widget: list
                 fields:
-                  - { name: n, label: Number, widget: string }
+                  - { name: n, widget: string, i18n: duplicate }
                   - { name: title, widget: string }
                   - { name: body, widget: text }
           - name: forPersonal
@@ -439,21 +308,19 @@ collections:
             fields:
               - { name: label, widget: string }
               - name: items
-                label: Lines
                 widget: list
                 field: { name: line, widget: string }
-          - name: pillQuote
-            label: Pull-quote (inside intimacy section)
-            widget: text
+
+          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text }
           - name: forWork
             label: 'Skriv hvis I — work'
             widget: object
             fields:
               - { name: label, widget: string }
               - name: items
-                label: Lines
                 widget: list
                 field: { name: line, widget: string }
+
           - name: testimonials
             label: Featured testimonials (between bio + contact)
             widget: object
@@ -461,18 +328,22 @@ collections:
             fields:
               - { name: label, label: Section label, widget: string }
               - name: items
-                label: Quotes
                 widget: list
                 summary: '{{fields.source}}'
                 fields:
                   - { name: quote, widget: text }
                   - { name: source, widget: string }
+
+          # Stage choreography is part of the page's STRUCTURE,
+          # not its copy — `i18n: duplicate` keeps DA + EN on
+          # identical pose sequences so the WebGL scroll
+          # choreography stays in lock-step across locales.
           - name: stage
             label: Stage choreography
             widget: object
+            i18n: duplicate
             fields:
               - name: sections
-                label: Stage sections
                 widget: list
                 allow_add: false
                 collapsed: false
@@ -483,182 +354,31 @@ collections:
                   template — do not add, remove, or rename sections
                   without a developer.
                 fields:
-                  - name: id
-                    widget: string
-                    hint: >-
-                      Must match a data-stage-anchor attribute. Editing
-                      this breaks the stage for this section.
-                  - name: stage
-                    widget: object
-                    fields:
-                      - name: main
-                        label: Mercury orb
-                        widget: select
-                        default: offstage
-                        options: *pose_options_main
-                      - name: gold
-                        label: Gold metaballs
-                        widget: select
-                        default: offstage
-                        options: *pose_options_gold
-                      - name: gem
-                        label: Faceted gem
-                        widget: select
-                        default: offstage
-                        options: *pose_options_gem
-                      - name: intensity
-                        widget: number
-                        value_type: float
-                        min: 0.5
-                        max: 2.0
-                        step: 0.05
-                        default: 1.0
-
-  - name: home-en
-    label: 'Home page (EN)'
-    label_singular: Home
-    editor: { preview: false }
-    files:
-      - name: home
-        label: Home
-        file: src/content/en/home.json
-        format: json
-        fields:
-          # EN home mirrors the DA schema above — see that collection
-          # for hints + commentary. Any structural change must land
-          # in both.
-          - name: nav
-            label: Top-nav links
-            widget: list
-            fields:
-              - { name: label, widget: string }
-              - { name: href, widget: string }
-          - name: hero
-            widget: object
-            fields:
-              - { name: name, widget: string }
-              - { name: city, widget: string }
-              - { name: statementStart, widget: text }
-              - { name: statementEnd, widget: text }
-              - { name: statementEm, widget: string }
-              - { name: attribution, widget: text }
-              - { name: scrollLabel, widget: string }
-          - name: nameSection
-            widget: object
-            fields:
-              - { name: eyebrow, widget: string }
-              - { name: firstName, widget: string }
-              - { name: lastName, widget: string }
-              - { name: pronouns, widget: string }
-              - { name: roleLine, widget: text }
-              - { name: roleSub, widget: text }
-          - name: chapter1
-            widget: object
-            fields:
-              - { name: mark, widget: string }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
-          - name: chapter2
-            widget: object
-            fields:
-              - { name: mark, widget: string }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
-          - name: manifest
-            widget: object
-            fields:
-              - { name: label, widget: string }
-              - name: items
-                widget: list
-                fields:
-                  - { name: word, widget: string }
-                  - { name: text, widget: text }
-          - name: ritual
-            widget: object
-            fields:
-              - { name: label, widget: string }
-              - { name: subtitle, widget: string }
-              - name: steps
-                widget: list
-                fields:
-                  - { name: n, widget: string }
-                  - { name: title, widget: string }
-                  - { name: body, widget: text }
-          - name: forPersonal
-            widget: object
-            fields:
-              - { name: label, widget: string }
-              - name: items
-                widget: list
-                field: { name: line, widget: string }
-          - { name: pillQuote, widget: text }
-          - name: forWork
-            widget: object
-            fields:
-              - { name: label, widget: string }
-              - name: items
-                widget: list
-                field: { name: line, widget: string }
-          - name: testimonials
-            widget: object
-            required: false
-            fields:
-              - { name: label, widget: string }
-              - name: items
-                widget: list
-                summary: '{{fields.source}}'
-                fields:
-                  - { name: quote, widget: text }
-                  - { name: source, widget: string }
-          - name: stage
-            widget: object
-            fields:
-              - name: sections
-                widget: list
-                allow_add: false
-                collapsed: false
-                fields:
                   - { name: id, widget: string }
                   - name: stage
                     widget: object
                     fields:
-                      - name: main
-                        widget: select
-                        default: offstage
-                        options: *pose_options_main
-                      - name: gold
-                        widget: select
-                        default: offstage
-                        options: *pose_options_gold
-                      - name: gem
-                        widget: select
-                        default: offstage
-                        options: *pose_options_gem
-                      - name: intensity
-                        widget: number
-                        value_type: float
-                        min: 0.5
-                        max: 2.0
-                        step: 0.05
-                        default: 1.0
+                      - { name: main, widget: select, default: offstage, options: *pose_options_main }
+                      - { name: gold, widget: select, default: offstage, options: *pose_options_gold }
+                      - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
+                      - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
 
-  # ================================================================
-  # SERVICES (folder; one file per service, mirrored per locale)
-  # ================================================================
-  # Multi-locale pattern: each service lives as TWO files with the
-  # SAME filename — `src/content/da/services/X.json` and
-  # `src/content/en/services/X.json`. The filename is the stable
-  # cross-locale `id` used for hreflang pairing; the `slug` field
-  # inside each file is the per-locale URL segment.
+  # ---- Services (folder; one file per service × per locale) ----
   #
-  # Changing `slug` does NOT rename the file — it only changes the
-  # URL. When creating a new service, use the SAME filename in DA
-  # + EN so the language switcher and hreflang alternates keep
-  # working.
-  - name: services-da
-    label: 'Services (DA)'
+  # Sveltia's multiple_folders pattern puts the locale as a
+  # subfolder of the collection's `folder:` path. Resulting tree:
+  #   src/content/services/da/terapi.json
+  #   src/content/services/en/terapi.json
+  #
+  # Filenames are shared across locales (stable cross-locale `id`),
+  # so saving a service writes BOTH files with identical basenames.
+  # The `slug` field is translatable — it's the per-locale URL
+  # segment that appears in /ydelser/{slug} (DA) or
+  # /en/services/{slug} (EN).
+  - name: services
+    label: Services
     label_singular: Service
-    folder: src/content/da/services
+    folder: src/content/services
     format: json
     extension: json
     create: true
@@ -666,25 +386,23 @@ collections:
     slug: '{{fields.slug}}'
     identifier_field: title
     editor: { preview: false }
+    i18n: true
     fields:
       - name: slug
         widget: string
-        hint: >-
-          URL segment for this service in DA — appears in
-          /ydelser/{slug} and as the section id (#anchor) on the
-          home page.
+        hint: 'URL segment — different per locale (e.g. terapi / therapy).'
       - name: number
         widget: string
-        hint: Two-digit display number (e.g. "01"). Drives service ordering.
+        i18n: duplicate
+        hint: 'Two-digit display number, e.g. "01". Same across locales.'
       - name: chapter
         widget: select
+        i18n: duplicate
         default: terapi
         options:
           - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
           - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
-        hint: >-
-          Narrative chapter — drives the service detail page's
-          palette and homepage grouping. Keep in sync across DA + EN.
+        hint: 'Drives palette + homepage grouping. Same across DA + EN.'
       - { name: title, widget: string }
       - { name: kicker, widget: string, hint: 'Short audience line, e.g. "film · tv · teater".' }
       - { name: blurb, widget: text }
@@ -711,10 +429,11 @@ collections:
         widget: object
         required: false
         fields:
-          - { name: label, widget: string, hint: Button text }
-          - { name: href, widget: string, hint: 'mailto:…, tel:…, or https://…' }
+          - { name: label, widget: string }
+          - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
           - name: kind
             widget: select
+            i18n: duplicate
             default: primary
             options: [primary, secondary]
       - { name: studiosLabel, label: Studios list label (optional), widget: string, required: false }
@@ -722,6 +441,8 @@ collections:
         label: Studio credits (optional)
         widget: list
         required: false
+        i18n: duplicate
+        hint: 'Black cut-out silhouette SVGs on transparent backgrounds. Shared across locales.'
         fields:
           - { name: name, widget: string }
           - name: logo
@@ -732,81 +453,10 @@ collections:
       - name: stage
         label: Detail-page stage pose
         widget: object
-        hint: >-
-          WebGL stage pose on this service's detail page. Typically
-          one of main/gold/gem uses `fullBleed` as a background
-          wash; the others sit `offstage`.
-        fields:
-          - { name: main, label: Mercury orb, widget: select, default: offstage, options: *pose_options_main }
-          - { name: gold, label: Gold metaballs, widget: select, default: offstage, options: *pose_options_gold }
-          - { name: gem, label: Faceted gem, widget: select, default: offstage, options: *pose_options_gem }
-          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
-
-  - name: services-en
-    label: 'Services (EN)'
-    label_singular: Service
-    folder: src/content/en/services
-    format: json
-    extension: json
-    create: true
-    delete: true
-    slug: '{{fields.slug}}'
-    identifier_field: title
-    editor: { preview: false }
-    fields:
-      - name: slug
-        widget: string
-        hint: URL segment for this service in EN — appears in /en/services/{slug}.
-      - { name: number, widget: string }
-      - name: chapter
-        widget: select
-        default: terapi
-        options:
-          - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
-          - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
-      - { name: title, widget: string }
-      - { name: kicker, widget: string }
-      - { name: blurb, widget: text }
-      - name: bullets
-        widget: list
-        field: { name: bullet, widget: string }
-      - { name: supportsLabel, widget: string, required: false }
-      - name: supports
-        widget: list
-        required: false
-        field: { name: keyword, widget: string }
-      - name: testimonials
-        widget: list
-        required: false
-        summary: '{{fields.source}}'
-        fields:
-          - { name: quote, widget: text }
-          - { name: source, widget: string }
-      - name: cta
-        widget: object
-        required: false
-        fields:
-          - { name: label, widget: string }
-          - { name: href, widget: string }
-          - name: kind
-            widget: select
-            default: primary
-            options: [primary, secondary]
-      - { name: studiosLabel, widget: string, required: false }
-      - name: studios
-        widget: list
-        required: false
-        fields:
-          - { name: name, widget: string }
-          - name: logo
-            widget: image
-            media_folder: /static/img/studios
-            public_folder: /img/studios
-          - { name: url, widget: string, required: false }
-      - name: stage
-        widget: object
+        i18n: duplicate
+        hint: 'Structural — same across locales.'
         fields:
           - { name: main, widget: select, default: offstage, options: *pose_options_main }
           - { name: gold, widget: select, default: offstage, options: *pose_options_gold }
-          - { name: gem, widget: select, default: offstage, options: *pose_options_gem }
+          - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
           - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
