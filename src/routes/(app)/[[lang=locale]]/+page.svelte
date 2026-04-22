@@ -356,7 +356,11 @@
         <span class="s-num">{therapyService.number}</span>
         <span class="s-kicker">{therapyService.kicker}</span>
       </div>
-      <h2 class="service-title reveal">{therapyService.title}</h2>
+      <h2 class="service-title reveal">
+        <a class="service-title-link" href={servicePath(therapyService.slug)}>
+          {therapyService.title}
+        </a>
+      </h2>
       <p class="s-blurb reveal">{therapyService.blurb}</p>
       <ul class="s-bullets reveal">
         {#each therapyService.bullets as bullet}
@@ -428,7 +432,11 @@
         <span class="s-num">{intimacyService.number}</span>
         <span class="s-kicker">{intimacyService.kicker}</span>
       </div>
-      <h2 class="service-title reveal">{intimacyService.title}</h2>
+      <h2 class="service-title reveal">
+        <a class="service-title-link" href={servicePath(intimacyService.slug)}>
+          {intimacyService.title}
+        </a>
+      </h2>
       <p class="s-blurb reveal">{intimacyService.blurb}</p>
       <ul class="s-bullets reveal">
         {#each intimacyService.bullets as bullet}
@@ -480,7 +488,11 @@
         <span class="s-num">{elderlyService.number}</span>
         <span class="s-kicker">{elderlyService.kicker}</span>
       </div>
-      <h2 class="service-title reveal">{elderlyService.title}</h2>
+      <h2 class="service-title reveal">
+        <a class="service-title-link" href={servicePath(elderlyService.slug)}>
+          {elderlyService.title}
+        </a>
+      </h2>
       <p class="s-blurb reveal">{elderlyService.blurb}</p>
       <ul class="s-bullets reveal">
         {#each elderlyService.bullets as bullet}
@@ -503,7 +515,11 @@
         <span class="s-num">{teachingService.number}</span>
         <span class="s-kicker">{teachingService.kicker}</span>
       </div>
-      <h2 class="service-title reveal">{teachingService.title}</h2>
+      <h2 class="service-title reveal">
+        <a class="service-title-link" href={servicePath(teachingService.slug)}>
+          {teachingService.title}
+        </a>
+      </h2>
       <p class="s-blurb reveal">{teachingService.blurb}</p>
       <ul class="s-bullets reveal">
         {#each teachingService.bullets as bullet}
@@ -934,6 +950,34 @@
     font-weight: 400;
     margin: 0 0 1.25rem;
     max-width: 22ch;
+  }
+  /*
+    Title is an anchor to the service detail page. Strip anchor
+    chrome (underline, blue) so the heading still reads as pure
+    editorial typography at rest, and hint the affordance only on
+    hover/focus with a violet wash — matches the rest of the
+    site's interactive colour register (CTA fills, list hover
+    state, back-link arrow). Focus ring comes from the global
+    `:focus-visible` rule in app.css.
+
+    Cursor stays as the browser default link-pointer since a link
+    on the title is non-obvious — the pointer cue matters for
+    discovery. Decoration is kept off even on hover so the title
+    doesn't visually jump when mousing over.
+  */
+  .service-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .service-title-link:hover,
+  .service-title-link:focus-visible {
+    color: var(--violet);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .service-title-link {
+      transition: none;
+    }
   }
   .s-blurb {
     font-family: var(--font-serif);
