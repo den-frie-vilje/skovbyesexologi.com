@@ -26,19 +26,29 @@
   const services = $derived(bundle.services);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
+  /*
+    Always render the production hostname in the OG image — the
+    PNG is baked at generate time and will be served from the
+    production site regardless of how/when it was captured.
+    Pulling from `SITE_URL` / `PUBLIC_SITE_URL` ties the image's
+    label to the build-time env (localhost in dev, staging's
+    hostname on staging), which is noise in a social share card.
+  */
+  const siteHostname = 'skovbyesexologi.com';
 
   /*
     Single stage anchor pinned to `.og-stage-zone` (full-area span
     inside the 780×630 text column wrapper — portrait column is
     excluded so Signe never covers the gem). With no scroll activity
     the FlodStage settles on this target in the first few frames.
-    Poses mostly mirror home.json's "hero" section, with one
-    divergence — the gold is pulled down to the bottom (using the
-    `disperseLowR` pose) because the hero's top-left gold landed
-    right over the "SKOVBYE SEXOLOGI" mark in the OG's narrower
-    780×630 render area and crowded the brand line.
+    Poses — main mirrors home.json's hero section; gold is
+    nudged upper-centre so it sits clear of both the mercury orb
+    (whose visible edge sweeps up to y≈0.9 on the right) and the
+    text column (title upper-left, URL bottom-left). Not an
+    existing named pose — a custom (0.35, 0.8) for this one
+    layout.
       main:  mainPoses.heroFarRight  ( 1.15, -0.1,  1.05)
-      drip1: goldPoses.disperseLowR  ( 0.35, -0.75, 0.78)
+      drip1: (custom upper-centre)   ( 0.35,  0.8,  0.45)
       drip2: gemPoses.heroBRhuge     ( 0.9,  -0.9,  1.5)
       intensity: 1.10
     Values are inlined rather than imported so this route stays
@@ -47,9 +57,9 @@
   const ogAnchors = [
     {
       selector: '.og-stage-zone',
-      main:  { x: 1.15, y: -0.1,  scale: 1.05 },
-      drip1: { x: 0.35, y: -0.75, scale: 0.78 },
-      drip2: { x: 0.9,  y: -0.9,  scale: 1.5 },
+      main:  { x: 1.15, y: -0.1, scale: 1.05 },
+      drip1: { x: 0.35, y: 0.8,  scale: 0.45 },
+      drip2: { x: 0.9,  y: -0.9, scale: 1.5 },
       intensity: 1.1
     }
   ];
@@ -70,7 +80,13 @@
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="og" data-slug={data.slug} data-locale={data.locale}>
+<div
+  class="og"
+  class:og-service={data.kind === 'service'}
+  data-slug={data.slug}
+  data-locale={data.locale}
+  data-chapter={data.chapter}
+>
   <!--
     Real FlodStage, constrained to the 780×630 text column so the
     hero pose's bottom-right gem stays visible (the 420px portrait
@@ -85,7 +101,7 @@
   <div class="og-stage-wrap">
     <FlodStage
       anchors={ogAnchors}
-      chapterMode={0}
+      chapterMode={data.chapter === 'konsulent' ? 1 : 0}
       width={STAGE_W}
       height={STAGE_H}
     />
@@ -95,28 +111,45 @@
   <div class="og-inner">
     <!-- Left: text column -->
     <div class="og-text">
-      <p class="og-mark">
-        <span>{hero.name}</span>
-        <span class="og-dot">·</span>
-        <span>{hero.city}</span>
-      </p>
+      <!--
+        Eyebrow is just the city — the brand name is already
+        implied by the big title below, so repeating it reads as
+        noise at messenger-preview sizes. Doubled in size from
+        the earlier mono eyebrow so the location still lands.
+      -->
+      <p class="og-mark">{hero.city}</p>
 
-      <h1 class="og-name">
-        {nameSection.firstName} <em>{nameSection.lastName}</em>
-      </h1>
+      {#if data.kind === 'home'}
+        <!--
+          Home OG: proprietor name as the hero — "Signe" plain +
+          "Skovbye" italicised with chartreuse underline, then a
+          bullet list of the three practice roles as the "what".
+        -->
+        <h1 class="og-name">
+          {data.title} <em>{data.em}</em>
+        </h1>
 
-      <p class="og-role">{nameSection.roleLine}</p>
+        <ul class="og-roles">
+          {#each nameSection.roleLine.replace(/\.\s*$/, '').split(/\s*·\s*/) as role}
+            <li><span>{role}</span></li>
+          {/each}
+        </ul>
+      {:else}
+        <!--
+          Service OG layout, top → bottom: the service title
+          claims the hero, the kicker lands as a dark-green
+          italic subheading underneath, URL pins to the bottom.
+          No proprietor byline here — the URL + portrait + visual
+          identity already say "Signe", and every extra typographic
+          slot was pushing content toward the URL's reserved space
+          at the densest titles (EN "Psychomotor sexological
+          therapy" wraps three lines).
+        -->
+        <h1 class="og-service-title">{data.title}</h1>
+        <p class="og-kicker">{data.kicker}</p>
+      {/if}
 
-      <ul class="og-services">
-        {#each services as s}
-          <li>
-            <span class="og-num">{s.number}</span>
-            <span class="og-title">{s.title}</span>
-          </li>
-        {/each}
-      </ul>
-
-      <p class="og-url">skovbyesexologi.com</p>
+      <p class="og-url">{siteHostname}</p>
     </div>
 
     <!-- Right: portrait + accent. -->
@@ -151,9 +184,6 @@
   .og {
     width: 1200px;
     height: 630px;
-    background:
-      radial-gradient(ellipse at 85% 50%, oklch(0.94 0.03 72) 0%, transparent 60%),
-      oklch(0.96 0.009 215);
     color: oklch(0.17 0.012 240); /* --graphite */
     font-family: 'Instrument Serif', 'Fraunces', serif;
     display: flex;
@@ -167,7 +197,26 @@
     --og-violet: oklch(0.48 0.09 152);
     --og-tangerine: oklch(0.94 0.26 120);
     --og-graphite: oklch(0.17 0.012 240);
+    --og-bone: oklch(0.96 0.009 215);
+    --og-bone-warm: oklch(0.94 0.03 72);
     --og-graphite-soft: color-mix(in oklch, var(--og-graphite) 70%, transparent);
+  }
+  /*
+    Chapter palette — matches the live site's terapi vs konsulent
+    scheme: terapi is cool bone (with a warm-tint radial hint on
+    the right so the iridescent orb sits in a warm glow), konsulent
+    is warm bone (with a cool-tint radial hint on the right where
+    the chrome elements catch the blue cast). Home OG is terapi.
+  */
+  .og[data-chapter='terapi'] {
+    background:
+      radial-gradient(ellipse at 85% 50%, var(--og-bone-warm) 0%, transparent 60%),
+      var(--og-bone);
+  }
+  .og[data-chapter='konsulent'] {
+    background:
+      radial-gradient(ellipse at 85% 50%, var(--og-bone) 0%, transparent 60%),
+      var(--og-bone-warm);
   }
 
   /*
@@ -232,28 +281,37 @@
   /* ============================================================
      Left column — text
      ============================================================ */
+  /*
+    Left text column — content stacks from the top, URL pinned to
+    the bottom via `position: absolute` so it never gets pushed
+    off the card no matter how much the title wraps. `padding-bottom`
+    reserves room for the URL so the content above doesn't collide
+    with it at the densest layouts.
+  */
   .og-text {
-    padding: 56px 48px 48px 72px;
+    padding: 56px 48px 108px 72px;
     display: flex;
     flex-direction: column;
     gap: 0;
     min-width: 0;
+    position: relative;
   }
 
+  /*
+    Eyebrow — city only, doubled from 15px to 30px so it reads at
+    messenger-preview sizes without drowning the title below.
+  */
   .og-mark {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 15px;
+    font-size: 30px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--og-graphite-soft);
     margin: 0 0 48px;
-    display: flex;
-    gap: 0.9em;
-    align-items: baseline;
   }
-  .og-dot {
-    color: var(--og-violet);
-  }
+  /* Service OGs keep the default eyebrow→title gap. The byline
+     now lives at the bottom of the column (above the URL), so
+     no extra tightening is needed up top. */
 
   /*
     Title — must match the live homepage's name-section h2 exactly.
@@ -271,7 +329,10 @@
     font-weight: 400;
     line-height: 0.92;
     letter-spacing: -0.02em;
-    margin: 0 0 28px;
+    /* More breathing room before the bullet list — the title is
+       visually dense enough that a 28px gap felt like the bullets
+       were pinned to the baseline of the name. */
+    margin: 0 0 52px;
     color: var(--og-graphite);
   }
   .og-name em {
@@ -288,42 +349,99 @@
     padding: 0 0.04em;
   }
 
-  .og-role {
-    font-family: 'Fraunces', 'Instrument Serif', serif;
-    font-size: 24px;
-    line-height: 1.35;
-    color: color-mix(in oklch, var(--og-graphite) 85%, transparent);
-    margin: 0 0 36px;
-    max-width: 28ch;
-  }
-
-  .og-services {
+  /*
+    Role bullet list — one role per row with an em-dash marker in
+    chartreuse echoing the back-link arrow. Prevents the earlier
+    middot run from wrapping mid-phrase and reading as a broken
+    list. `::marker` is enough here since the bullets are flat
+    serif text; no nested alignment needed.
+  */
+  .og-roles {
     list-style: none;
     padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 10px;
+    margin: 0 0 36px;
+    font-family: 'Fraunces', 'Instrument Serif', serif;
+    font-size: 38px;
+    line-height: 1.2;
+    color: color-mix(in oklch, var(--og-graphite) 88%, transparent);
   }
-  .og-services li {
+  .og-roles li {
     display: grid;
-    grid-template-columns: 44px 1fr;
-    align-items: baseline;
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    line-height: 1.25;
-    color: var(--og-graphite);
+    grid-template-columns: 1.2em 1fr;
+    gap: 0.35em;
   }
-  .og-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.12em;
+  .og-roles li::before {
+    content: '—';
     color: var(--og-violet);
   }
+  /*
+    Force a capital first letter on each role — a formatting
+    concern, not a content one. Content stays as sentence-case
+    "intimitetskoordinator" / "psykomotorisk terapeut" so the
+    same strings flow unmodified into the rest of the site.
+    Applied to the wrapping `<span>` so the em-dash marker in
+    `::before` isn't affected.
+  */
+  .og-roles li span::first-letter {
+    text-transform: uppercase;
+  }
 
+  /*
+    Service OG variant: small Signe byline above the service
+    title, then the blurb as prose below. Byline sits at roughly
+    half the home OG's hero size (52px), the service title claims
+    the hero slot at 72px (small enough that long Danish
+    compounds — "Seksuel sundhed i ældresektoren" — wrap to a
+    clean two-liner rather than a three-liner), and the blurb is
+    comfortable reading prose at 26px.
+  */
+  /*
+    Service title is the hero of every service OG (the
+    proprietor byline was dropped — the URL + portrait + overall
+    visual identity carry "Signe" without extra typography).
+    96px gives the title a stronger presence on the card and
+    still accommodates the wrapped EN "Psychomotor sexological
+    therapy" without pushing the URL off the bottom.
+  */
+  .og-service-title {
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-size: 96px;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--og-graphite);
+    margin: 0 0 32px;
+  }
+  /*
+    Kicker — short service tagline beneath the title. Middot-
+    separated audiences ("solo · par · poly" / "film · tv ·
+    teater"). Italic serif in dark green (the `--og-violet`
+    accent) so it reads as a branded subheading rather than
+    body prose.
+  */
+  .og-kicker {
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-style: italic;
+    font-size: 32px;
+    line-height: 1.25;
+    color: var(--og-violet);
+    margin: 0 0 36px;
+    max-width: 22ch;
+  }
+
+  /*
+    URL — anchored to the bottom of the text column so the
+    content above can grow (long titles wrapping, extra lines in
+    the kicker) without pushing the URL off the card. 28px for
+    messenger-preview legibility.
+  */
   .og-url {
-    margin: auto 0 0; /* pushed to the bottom of the column */
+    position: absolute;
+    left: 72px;
+    bottom: 48px;
+    margin: 0;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-size: 28px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--og-graphite-soft);

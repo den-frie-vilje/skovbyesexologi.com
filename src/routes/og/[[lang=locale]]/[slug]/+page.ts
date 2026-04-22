@@ -3,18 +3,38 @@
  * sized 1200×630 in the template. The `scripts/gen-og-images.ts`
  * Playwright script navigates to each URL and screenshots to PNG.
  *
- * Currently only the homepage OG variant exists (`slug = 'home'`).
- * Per-service OG variants slot in as additional entries when those
- * detail pages arrive (Phase 2 #5).
+ * Two flavours of OG image:
+ *   • `home` — the site's top-level unfurl. Title is the proprietor's
+ *     name with the family name highlighted (the "Skovbye" chartreuse
+ *     underline, echoing the live hero's em).
+ *   • one per service id (terapi, intimacy-coordination, aeldrepleje,
+ *     undervisning) — the title is the service's title, no em. Each
+ *     service detail page references its matching PNG as `og:image`.
+ *
+ * Service slugs used in OG URLs are the *stable service id*
+ * (filename), not the localised URL slug — so the OG URL stays the
+ * same across locales even when the service slug differs in DA vs EN.
  */
 
-import { DEFAULT_LOCALE, type Locale } from '$lib/content';
+import {
+  contentFor,
+  DEFAULT_LOCALE,
+  type Locale,
+  type ServiceChapter
+} from '$lib/content';
+import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const prerender = true;
 
-/** The set of OG slugs we render. Extend when adding new variants. */
-const OG_SLUGS = ['home'] as const;
+/** The stable ids of services we render an OG image for. Matches the
+ *  filenames under `src/content/{locale}/services/`. */
+const SERVICE_IDS = ['terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
+type ServiceId = (typeof SERVICE_IDS)[number];
+
+/** `home` + each service id — this is the list adapter-static
+ *  prerenders via the `entries()` hook below. */
+const OG_SLUGS = ['home', ...SERVICE_IDS] as const;
 type OgSlug = (typeof OG_SLUGS)[number];
 
 export const entries = () => {
@@ -25,8 +45,56 @@ export const entries = () => {
   );
 };
 
+type OgData =
+  | {
+      kind: 'home';
+      /** Proprietor's first name — plain serif. */
+      title: string;
+      /** Family name — italic + chartreuse highlight, echoing the
+       *  live hero's em. */
+      em: string;
+      /** Palette chapter — home leans terapi (cool bone + iridescent). */
+      chapter: ServiceChapter;
+    }
+  | {
+      kind: 'service';
+      /** Service title, rendered as the main h1. */
+      title: string;
+      /** Short audience tagline (`service.kicker`) shown below the
+       *  title. Reads as the service's "who's this for" line —
+       *  e.g. "solo · par · poly" for terapi, "film · tv · teater"
+       *  for intimacy-coordination. */
+      kicker: string;
+      /** Service chapter — drives the OG's palette to match the
+       *  site's terapi (cool + iridescent) vs konsulent (warm +
+       *  chrome) scheme. */
+      chapter: ServiceChapter;
+    };
+
+function dataForSlug(slug: OgSlug, locale: Locale): OgData {
+  const bundle = contentFor(locale);
+  const name = bundle.home.nameSection;
+  if (slug === 'home') {
+    return {
+      kind: 'home',
+      title: name.firstName,
+      em: name.lastName,
+      chapter: 'terapi'
+    };
+  }
+  const service = bundle.services.find((s) => s.id === slug);
+  if (!service) throw error(404, `Unknown service id: ${slug}`);
+  return {
+    kind: 'service',
+    title: service.title,
+    kicker: service.kicker,
+    chapter: service.chapter
+  };
+}
+
 export const load: PageLoad = ({ params }) => {
   const locale: Locale = params.lang === 'en' ? 'en' : DEFAULT_LOCALE;
   const slug = params.slug as OgSlug;
-  return { locale, slug };
+  if (!OG_SLUGS.includes(slug)) throw error(404, `Unknown OG slug: ${slug}`);
+  return { locale, slug, ...dataForSlug(slug, locale) };
 };

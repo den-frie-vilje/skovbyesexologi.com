@@ -41,11 +41,17 @@ type Variant = {
   name: string;
 };
 
-/** Add new variants here — matches entries in the OG route's +page.ts. */
-const variants: Variant[] = [
-  { path: '/og/home', name: 'home.da' },
-  { path: '/og/en/home', name: 'home.en' }
-];
+/*
+  Add new variants here — matches entries in the OG route's
+  +page.ts. OG slugs use the stable service `id` (content
+  filename), NOT the locale-specific URL slug, so each OG URL
+  stays the same across locales.
+*/
+const OG_SLUGS = ['home', 'terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
+const variants: Variant[] = OG_SLUGS.flatMap((slug) => [
+  { path: `/og/${slug}`, name: `${slug}.da` },
+  { path: `/og/en/${slug}`, name: `${slug}.en` }
+]);
 
 async function waitFor(url: string, timeoutMs = 60_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -91,6 +97,15 @@ async function main() {
       headless: false,
       args: ['--no-sandbox']
     });
+    /*
+      `deviceScaleFactor: 2` doubles the render resolution to
+      2400×1260 for retina-ready OG cards — much crisper type
+      and stage rendering than 1x. The accompanying JPEG quality
+      setting below (q=75) keeps the file size under WhatsApp's
+      300 KB ceiling at this resolution. Earlier iterations: 2x
+      PNG → 1.8 MB (rejected); 1x JPEG q85 → ~100 KB but soft
+      type; 2x JPEG q75 → ~250 KB with crisp type.
+    */
     const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 2 });
 
     const outDir = resolve(repoRoot, 'static', 'img', 'og');
@@ -98,7 +113,7 @@ async function main() {
 
     for (const v of variants) {
       const url = `http://127.0.0.1:${port}${v.path}`;
-      const file = resolve(outDir, `${v.name}.png`);
+      const file = resolve(outDir, `${v.name}.jpg`);
       process.stdout.write(`  ${v.path.padEnd(24)} → ${file.replace(repoRoot + '/', '')}`);
 
       const page = await context.newPage();
@@ -118,11 +133,17 @@ async function main() {
       // shows the text + portrait over an empty page. 6s leaves
       // comfortable headroom on cold GPU paths.
       await page.waitForTimeout(6000);
-      // Screenshot only the first 1200×630 region — the route renders
-      // exactly that size, so a full-page shot would include viewport
-      // padding on larger screens.
+      /*
+        JPEG output at q=75 — paired with the 2× deviceScaleFactor
+        above, this lands each file in the 200–280 KB range,
+        under WhatsApp's 300 KB unfurl-preview ceiling while
+        keeping 2400×1260 pixels of detail. OG images are opaque
+        so PNG's lossless advantage isn't needed.
+      */
       await page.screenshot({
         path: file,
+        type: 'jpeg',
+        quality: 75,
         clip: { x: 0, y: 0, ...VIEWPORT }
       });
       await page.close();
