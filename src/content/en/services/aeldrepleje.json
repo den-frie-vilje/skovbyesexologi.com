@@ -10,6 +10,20 @@
     "Talks and conversations with residents",
     "Case studies and concrete tools"
   ],
+  "testimonials": [
+    {
+      "quote": "[mock] We didn't dare raise the subject with residents before. After Signe's session we have a shared way of talking about it.",
+      "source": "[mock] Head of care, nursing home"
+    },
+    {
+      "quote": "[mock] Staff had questions they'd been sitting on for years. Now we have answers to share.",
+      "source": "[mock] Care assistant"
+    },
+    {
+      "quote": "[mock] My father has dementia and still has needs. Signe's tools helped me as a family member frame it as care, not taboo.",
+      "source": "[mock] Relative"
+    }
+  ],
   "chapter": "konsulent",
   "stage": { "main": "offstage", "gold": "offstage", "gem": "fullBleed", "intensity": 1.00 }
 }

@@ -3,8 +3,8 @@
   based on item count:
 
     • 1 item   → centred featured pull-quote
-    • 2–3      → responsive grid of equal-width cards
-    • 4+       → horizontal snap-scroll carousel with seamless
+    • 2        → responsive grid of two equal-width cards
+    • 3+       → horizontal snap-scroll carousel with seamless
                   infinite wrap, typographic arrows, a centred
                   dot indicator, and autoplay that pauses on hover
                   or recent user interaction
@@ -56,7 +56,7 @@
   }: Props = $props();
 
   const layout = $derived(
-    items.length === 1 ? 'single' : items.length <= 3 ? 'grid' : 'scroll'
+    items.length === 1 ? 'single' : items.length === 2 ? 'grid' : 'scroll'
   );
 
   /** The three-copy DOM list — only used in scroll layout. The

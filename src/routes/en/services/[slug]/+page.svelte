@@ -14,6 +14,7 @@
   const bundle = $derived(contentFor(data.locale));
   const site = $derived(bundle.site);
   const contact = $derived(bundle.contact);
+  const home = $derived(bundle.home);
   const service = $derived(data.service);
 
   const canonicalUrl = $derived(`${SITE_URL}/en/services/${service.slug}`);
@@ -66,4 +67,7 @@
   {footerCopyright}
   backLabel="Home"
   backHref="/en"
+  manifest={service.chapter === 'terapi' ? home.manifest : undefined}
+  ritual={service.chapter === 'terapi' ? home.ritual : undefined}
+  forPersonal={service.chapter === 'terapi' ? home.forPersonal : undefined}
 />

@@ -84,4 +84,7 @@
   {footerCopyright}
   backLabel="Forsiden"
   backHref="/"
+  manifest={service.chapter === 'terapi' ? home.manifest : undefined}
+  ritual={service.chapter === 'terapi' ? home.ritual : undefined}
+  forPersonal={service.chapter === 'terapi' ? home.forPersonal : undefined}
 />

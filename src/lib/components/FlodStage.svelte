@@ -123,7 +123,16 @@
       scene.background = null;
 
       const fov = 38;
-      const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 100);
+      /*
+        Near plane pulled in to 0.01 (was 0.1). Background-fill
+        poses (`fullBleed` with scale 3.5) can push a sphere's
+        surface forward to z ≈ 3.5, and with the camera at z = 3.2
+        the surface crosses the previous near plane and gets
+        sliced. The scene only has three opaque-ish elements and
+        a flat environment, so the depth-buffer precision loss
+        from the smaller near is well within tolerance.
+      */
+      const camera = new THREE.PerspectiveCamera(fov, width / height, 0.01, 100);
       camera.position.set(0, 0, 3.2);
 
       const pmrem = new THREE.PMREMGenerator(renderer);
@@ -688,6 +697,19 @@ uniform float uEnvMix;`
         mainMesh.position.y = world.y;
         const s = Math.max(0.001, liveMain.scale);
         mainMesh.scale.setScalar(s);
+        /*
+          Background-fill clipping guard: when the orb is scaled
+          past ~1.5 its surface starts approaching the camera
+          plane (camera at z=3.2; sphere radius = 1 * scale; plus
+          the `MeshPhysicalMaterial` displacement can push the
+          surface an extra ~0.3 forward). Pin the front surface
+          at z = 1.5 (1.7 away from the camera) whenever the scale
+          would otherwise carry it closer. Only kicks in for the
+          `fullBleed` / oversized use case; hero-scale orbs (~1)
+          keep their default z=0 placement.
+        */
+        const SURFACE_LIMIT_Z = 1.5;
+        mainMesh.position.z = s > SURFACE_LIMIT_Z ? SURFACE_LIMIT_Z - s : 0;
         mainMesh.visible = liveMain.scale > 0.02;
 
         rotX += (pointerY * 0.18 - rotX) * 0.04;
@@ -705,10 +727,22 @@ uniform float uEnvMix;`
 
         d.mesh.position.x = world.x + side;
         d.mesh.position.y = world.y + bob;
-        d.mesh.position.z = forwardZ + Math.sin(time * 0.4 + d.orbitPhase) * 0.08;
+        /*
+          Same camera-clipping guard as `positionMain`: when the
+          gem is scaled past ~1.5 (fullBleed / cover-background)
+          its surface crosses the camera plane. Pin the front
+          surface at `baseZ + 1.5` so the gem stays in front of
+          the camera regardless of how oversized it gets.
+        */
+        const baseZ = forwardZ + Math.sin(time * 0.4 + d.orbitPhase) * 0.08;
+        const scaleNow = Math.max(0.001, live.scale);
+        const GEM_SURFACE_LIMIT = 1.5;
+        d.mesh.position.z =
+          scaleNow > GEM_SURFACE_LIMIT
+            ? baseZ - (scaleNow - GEM_SURFACE_LIMIT)
+            : baseZ;
 
-        const s = Math.max(0.001, live.scale);
-        d.mesh.scale.setScalar(s);
+        d.mesh.scale.setScalar(scaleNow);
         // Slow tumble around all three axes for a jewel catching light
         d.mesh.rotation.x = time * 0.22 + d.orbitPhase;
         d.mesh.rotation.y = time * 0.31 + d.stretchPhase;

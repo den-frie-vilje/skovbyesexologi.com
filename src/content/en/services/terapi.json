@@ -23,6 +23,20 @@
     "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
     "kind": "primary"
   },
+  "testimonials": [
+    {
+      "quote": "[mock] I had never spoken to anyone about my sex life. Signe made the first space where it didn't feel awkward.",
+      "source": "[mock] Solo client, 34"
+    },
+    {
+      "quote": "[mock] We came in as a couple thinking we needed tools. What we got was feeling that we were okay.",
+      "source": "[mock] Couple, Copenhagen"
+    },
+    {
+      "quote": "[mock] The psychomotor work surprised me — I only realised afterwards how much my body had been holding.",
+      "source": "[mock] Therapy client"
+    }
+  ],
   "chapter": "terapi",
   "stage": { "main": "fullBleed", "gold": "offstage", "gem": "offstage", "intensity": 1.05 }
 }

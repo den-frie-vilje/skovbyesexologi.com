@@ -5,6 +5,20 @@
   "kicker": "youth · groups · workshops",
   "blurb": "Biology, psychology, and culture — woven together. A language for boundaries, desires, and needs, without shame.",
   "bullets": ["Arousal", "Consent", "Touch", "Sex", "Conversation", "Porn"],
+  "testimonials": [
+    {
+      "quote": "[mock] My class asked more in that workshop than in a whole semester of biology.",
+      "source": "[mock] Teacher, upper secondary"
+    },
+    {
+      "quote": "[mock] The format wasn't awkward — students stayed with it the whole way. First time I've seen that.",
+      "source": "[mock] School nurse"
+    },
+    {
+      "quote": "[mock] After the workshop we had a new frame for talking about boundaries and consent. Signe gave us the language.",
+      "source": "[mock] Student, 10th grade"
+    }
+  ],
   "chapter": "konsulent",
   "stage": { "main": "fullBleed", "gold": "offstage", "gem": "offstage", "intensity": 1.00 }
 }

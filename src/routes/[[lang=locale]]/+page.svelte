@@ -388,13 +388,13 @@
       <blockquote class="inline-quote reveal">
         <p>{pillQuote}</p>
       </blockquote>
-      {#if intimacyService.testimonials && intimacyService.testimonials.length > 0}
-        {@const t = intimacyService.testimonials[0]}
-        <footer class="s-testimonial reveal">
-          <p>"{t.quote}"</p>
-          <cite>— {t.source}</cite>
-        </footer>
-      {/if}
+      <!--
+        No inline testimonials here — the `<Testimonials>`
+        section at the bottom of the page ("Stemmer") already
+        curates voices across services, so repeating the
+        intimacy-specific list mid-scroll doubled the content.
+      -->
+
       {#if intimacyService.studios?.length && intimacyService.studiosLabel}
         <div class="studios reveal">
           <p class="studios-lede">{intimacyService.studiosLabel}</p>
@@ -967,27 +967,10 @@
     margin: 0;
     color: var(--graphite);
   }
-  .s-testimonial {
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px dashed var(--rule);
-    max-width: 55ch;
-  }
-  .s-testimonial p {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.1rem;
-    line-height: 1.4;
-    margin: 0 0 0.4rem;
-  }
-  .s-testimonial cite {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--graphite-soft);
-    font-style: normal;
-  }
+  /* `.s-testimonial` was the inline pullquote under the intimacy
+     service card — removed in favour of the bottom `Stemmer`
+     section (which uses the <Testimonials> component). CSS
+     cleaned up with the markup. */
 
   /* ============== CHAPTER WRAPPERS ============== */
   /*

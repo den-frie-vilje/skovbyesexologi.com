@@ -10,6 +10,20 @@
     "Oplæg og samtaler for beboere",
     "Kasuistik og konkrete redskaber"
   ],
+  "testimonials": [
+    {
+      "quote": "[mock] Vi turde ikke tage emnet op med beboerne før. Efter Signes oplæg har vi en fælles måde at snakke om det på.",
+      "source": "[mock] Plejeleder, plejehjem"
+    },
+    {
+      "quote": "[mock] Personalet havde spørgsmål de havde holdt for sig selv i årevis. Nu har vi svar at dele.",
+      "source": "[mock] SOSU-assistent"
+    },
+    {
+      "quote": "[mock] Min far er dement og har stadig behov. Signes redskaber hjalp mig som pårørende med at forstå det som omsorg, ikke tabu.",
+      "source": "[mock] Pårørende"
+    }
+  ],
   "chapter": "konsulent",
   "stage": { "main": "offstage", "gold": "offstage", "gem": "fullBleed", "intensity": 1.00 }
 }

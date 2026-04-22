@@ -18,7 +18,14 @@
   code path on the homepage is effectively the default here.
 -->
 <script lang="ts">
-  import type { Locale, LocaleBundle, Service } from '$lib/content';
+  import type {
+    HomeList,
+    HomeManifest,
+    HomeRitual,
+    Locale,
+    LocaleBundle,
+    Service
+  } from '$lib/content';
   import { primaryNav } from '$lib/content';
   import { mainPoses, goldPoses, gemPoses } from '$lib/stage/poses';
   import SiteHeader from './SiteHeader.svelte';
@@ -27,6 +34,9 @@
   import Testimonials from './Testimonials.svelte';
   import FlodStage from './FlodStage.svelte';
   import StickyCta from './StickyCta.svelte';
+  import ManifestSection from './ManifestSection.svelte';
+  import RitualSection from './RitualSection.svelte';
+  import NumberedList from './NumberedList.svelte';
 
   interface Props {
     locale: Locale;
@@ -44,9 +54,30 @@
     /** Destination of the back link — the homepage of the current
      *  locale, i.e. `/` for DA or `/en` for EN. */
     backHref: string;
+    /**
+     * Optional chapter-context blocks carried over from the
+     * homepage. For services in the terapi chapter we typically
+     * pass `home.manifest`, `home.ritual`, and `home.forPersonal`
+     * so the detail page echoes the therapy philosophy / session
+     * rhythm / "this is for you if…" list rather than ending
+     * abruptly after the bullets. Omit individually to hide.
+     */
+    manifest?: HomeManifest;
+    ritual?: HomeRitual;
+    forPersonal?: HomeList;
   }
 
-  let { locale, service, bundle, footerCopyright, backLabel, backHref }: Props = $props();
+  let {
+    locale,
+    service,
+    bundle,
+    footerCopyright,
+    backLabel,
+    backHref,
+    manifest,
+    ritual,
+    forPersonal
+  }: Props = $props();
 
   const hero = $derived(bundle.home.hero);
   const contact = $derived(bundle.contact);
@@ -146,14 +177,51 @@
       {/if}
 
       <!-- ============== SUPPORTS (therapy) ============== -->
+      <!--
+        Prose rendering — middot-joined italic line — mirrors how
+        the homepage renders the same field in its service card.
+        Earlier the detail page used pill chips, which introduced
+        a typographic element the rest of the site doesn't use;
+        the prose form keeps detail pages quieter than the
+        homepage while staying inside the design vocabulary.
+      -->
       {#if service.supports && service.supportsLabel}
         <section class="s-block s-supports-block">
           <p class="s-label">{service.supportsLabel}</p>
-          <ul class="s-supports">
-            {#each service.supports as word}
-              <li>{word}</li>
-            {/each}
-          </ul>
+          <p class="s-supports">{service.supports.join(' · ')}</p>
+        </section>
+      {/if}
+
+      <!--
+        Optional chapter-context blocks from the homepage —
+        passed in explicitly by the route when the service's
+        `chapter` makes them relevant (today: terapi carries
+        manifest + ritual + forPersonal over). Keeps each detail
+        page from ending abruptly after bullets and gives the
+        philosophical / process / audience framing that the
+        homepage has the space to unfold.
+      -->
+
+      <!--
+        Chapter-context blocks rendered via reusable components.
+        Each renders the same design the homepage uses for the
+        corresponding content (manifest / ritual / for-personal),
+        so a user arriving on a detail page encounters familiar
+        type + rhythm rather than new typographic elements.
+      -->
+      {#if manifest}
+        <section class="s-block">
+          <ManifestSection {manifest} />
+        </section>
+      {/if}
+      {#if ritual}
+        <section class="s-block">
+          <RitualSection {ritual} />
+        </section>
+      {/if}
+      {#if forPersonal}
+        <section class="s-block">
+          <NumberedList list={forPersonal} />
         </section>
       {/if}
 
@@ -361,23 +429,22 @@
     line-height: 1.45;
   }
 
-  /* ============== SUPPORTS (chip cloud) ============== */
+  /* ============== SUPPORTS (italic prose line) ============== */
   .s-supports {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-  .s-supports li {
     font-family: var(--font-serif);
-    font-size: clamp(1rem, 1.4vw, 1.15rem);
-    padding: 0.45rem 0.9rem;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    color: var(--graphite);
+    font-style: italic;
+    font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 52ch;
+    color: color-mix(in oklch, var(--graphite) 88%, transparent);
   }
+
+  /* Manifest / ritual / for-personal blocks render via the
+     shared `<ManifestSection>`, `<RitualSection>`, and
+     `<NumberedList>` components — styles live in those files
+     so the detail page stays aligned with the homepage design
+     without duplicated CSS. */
 
   /* Testimonials block rendered via $lib/components/Testimonials.svelte —
      styles live there so the same component can be used on the
