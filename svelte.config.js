@@ -10,7 +10,7 @@ const config = {
       strict: true
     }),
     prerender: {
-      entries: ['*']
+      entries: ['*', '/da/']
     }
   }
 };

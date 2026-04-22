@@ -83,6 +83,25 @@
   const contact = $derived(bundle.contact);
 
   /*
+    Resolve the sticky CTA with a chapter-level fallback:
+      • Prefer the service's own `cta` if defined.
+      • Otherwise, fall back to the chapter's "lead" service:
+        terapi chapter → the terapi service's "Book en tid",
+        konsulent chapter → the intimacy-coordination service's
+        "Kom i kontakt". This mirrors the homepage, where one
+        CTA covers the whole konsulent chapter (intimacy, elder
+        care, teaching) rather than one per service section.
+    The effect: every service detail page has a sticky CTA even
+    when its own content JSON doesn't define one.
+  */
+  const effectiveCta = $derived(
+    service.cta ??
+      (service.chapter === 'konsulent'
+        ? bundle.services.find((s) => s.id === 'intimacy-coordination')?.cta
+        : bundle.services.find((s) => s.id === 'terapi')?.cta)
+  );
+
+  /*
     Per-service stage configuration: resolve the content's named
     poses into concrete NDC coords, and map the narrative chapter
     into FlodStage's `chapterMode` (0 = terapi / iridescent,
@@ -133,18 +152,17 @@
   />
 
   <main>
-    <article class="service-page" class:has-cta={!!service.cta}>
+    <article class="service-page" class:has-cta={!!effectiveCta}>
       <!--
         Sticky CTA — pinned near the viewport bottom-right while
         the user is scrolling through this article, released when
         the article's bottom approaches (i.e. right before the
-        contact section). Same component as the homepage's
-        chapter-wrap CTAs; `position: sticky` behaves here because
-        the article has enough height + a `padding-bottom: var(--cta-v)`
-        to give the release point room.
+        contact section). Uses `effectiveCta` (with chapter-level
+        fallback) so every service gets a CTA, matching the
+        homepage where one CTA covers the whole konsulent chapter.
       -->
-      {#if service.cta}
-        <StickyCta cta={service.cta} />
+      {#if effectiveCta}
+        <StickyCta cta={effectiveCta} />
       {/if}
 
       <!-- ============== HEADER ============== -->

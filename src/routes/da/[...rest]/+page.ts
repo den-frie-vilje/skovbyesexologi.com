@@ -1,5 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import type { EntryGenerator } from './$types';
+import { contentFor, serviceById, serviceBySlug } from '$lib/content';
 
 /**
  * /da/<rest> → redirect to /<rest> (strip the 'da/' prefix).
@@ -15,11 +17,13 @@ import type { PageLoad } from './$types';
  */
 export const prerender = true;
 
-export const entries = () => [
-  // Add { rest: 'terapi' }, { rest: 'intimacy-coordination' }, etc.
-  // when those detail pages land.
-  { rest: '' }
-];
+
+export const entries: EntryGenerator = () => {
+  // Enumerate every DA service's URL slug so adapter-static writes
+  // a /da/ydelser/<slug>/index.html for each at build time. Drifts
+  // automatically as content/services/ files are added or renamed.
+  return contentFor('da').services.map((s) => ({ rest: `ydelser/${s.slug}` }));
+};
 
 export const load: PageLoad = ({ params }) => {
   const stripped = params.rest ? `/${params.rest}` : '/';
