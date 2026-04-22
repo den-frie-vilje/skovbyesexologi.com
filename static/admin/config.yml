@@ -3,22 +3,60 @@
 # Docs: https://github.com/sveltia/sveltia-cms
 #
 # ============================================================
-# BACKEND
+# BACKEND — GitHub with self-hosted OAuth proxy
 # ============================================================
-# `test-repo` is an in-browser, non-persistent mode for trying the
-# editor UI locally. Login is a no-op; saves are kept only in memory.
-# Great for exploring the editor; not useful for real edits.
 #
-# To enable real edits, replace with a git backend:
+# Sveltia speaks to the GitHub API with an access token. To get one
+# without embedding a client secret in the frontend, we run an
+# OAuth proxy (the Sveltia CMS Authenticator, a small Cloudflare
+# Worker) that trades the OAuth `code` for a token server-side.
+# That Worker's URL goes into `base_url` below.
 #
-#   backend:
-#     name: github
-#     repo: den-frie-vilje/skovbyesexologi.com
-#     branch: main
-#     # site_domain: skovbyesexologi.com
-#     # base_url: https://api.netlify.com   # if using Netlify Identity / git-gateway
+# ----------------------------------------------------------------
+# ONE-TIME MANUAL SETUP (someone has to do this, not the config)
+# ----------------------------------------------------------------
 #
-# For self-hosting on the existing GitLab instance:
+#   1. Register a GitHub OAuth App
+#      https://github.com/settings/applications/new
+#        Application name: Skovbye Sexologi CMS
+#        Homepage URL:     https://skovbyesexologi.com
+#        Authorization callback URL:
+#          https://<WORKER-SUBDOMAIN>.workers.dev/callback
+#        (Replace WORKER-SUBDOMAIN after step 2 and update
+#         the OAuth App's settings accordingly.)
+#      Copy the generated Client ID + Client Secret.
+#
+#   2. Deploy the Sveltia CMS Authenticator to Cloudflare Workers
+#      https://github.com/sveltia/sveltia-cms-auth
+#        • Click the "Deploy to Cloudflare" button, OR
+#          clone + `wrangler deploy` locally.
+#        • In the Worker's Settings → Variables, add:
+#            GITHUB_CLIENT_ID      = <from step 1>
+#            GITHUB_CLIENT_SECRET  = <from step 1, mark as Secret>
+#            ALLOWED_DOMAINS       = skovbyesexologi.com, localhost
+#        • Copy the Worker URL (looks like
+#          `https://skovbye-cms-auth.<name>.workers.dev`) and
+#          (a) paste it into the GitHub OAuth App's
+#              "Authorization callback URL" (appending `/callback`),
+#          (b) paste it into `base_url:` below.
+#
+#   3. Flip `backend:` to the real block below, commit, deploy.
+#      From this point on, `/admin` serves real edits that land
+#      as commits on `main`.
+#
+# ----------------------------------------------------------------
+# LOCAL DEVELOPMENT
+# ----------------------------------------------------------------
+#
+# For offline / throwaway editing, swap `backend:` to the
+# commented `test-repo` block below. It's a fully-in-browser
+# mock — no GitHub calls, no persistence beyond the browser tab.
+# Useful for validating config-schema changes without burning
+# commits on main.
+#
+# ----------------------------------------------------------------
+# GITLAB ALTERNATIVE (reference, not active)
+# ----------------------------------------------------------------
 #
 #   backend:
 #     name: gitlab
@@ -116,8 +154,39 @@ pose_options_gem: &pose_options_gem
   - upperRightMed
   - fullBleed
 
+# ----------------------------------------------------------------
+# ACTIVE BACKEND
+# ----------------------------------------------------------------
+# Currently: `test-repo` (in-browser mock, no persistence).
+#
+# TO GO LIVE WITH GITHUB:
+#   1. Finish the one-time setup above (OAuth App + Worker).
+#   2. Comment out the `test-repo` block below.
+#   3. Uncomment the `github` block and replace
+#      `<WORKER-SUBDOMAIN>` with your Cloudflare Worker's real
+#      hostname.
+#   4. Commit + deploy. From then on, `/admin` requires GitHub
+#      auth and every save lands as a real commit on `main`.
+#
+# Keeping `test-repo` as the shipping default means `/admin` stays
+# openable on the live site without a working Worker — useful
+# during the setup handoff, and harmless because test-repo saves
+# never leave the browser tab.
 backend:
   name: test-repo
+
+# Production backend — uncomment to activate.
+#
+# backend:
+#   name: github
+#   repo: den-frie-vilje/skovbyesexologi.com
+#   branch: main
+#   # Your deployed Cloudflare Worker's URL (no trailing slash —
+#   # Sveltia appends /auth and /callback internally).
+#   base_url: https://<WORKER-SUBDOMAIN>.workers.dev
+#   # Matches the Worker's ALLOWED_DOMAINS var; limits which
+#   # origin can initiate the auth flow.
+#   site_domain: skovbyesexologi.com
 
 media_folder: static/img
 public_folder: /img
