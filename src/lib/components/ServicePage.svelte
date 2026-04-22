@@ -19,6 +19,7 @@
 -->
 <script lang="ts">
   import type { Locale, LocaleBundle, Service } from '$lib/content';
+  import { primaryNav } from '$lib/content';
   import { mainPoses, goldPoses, gemPoses } from '$lib/stage/poses';
   import SiteHeader from './SiteHeader.svelte';
   import SiteFooter from './SiteFooter.svelte';
@@ -90,7 +91,15 @@
   -->
   <span class="service-stage-zone" aria-hidden="true"></span>
 
-  <SiteHeader name={hero.name} city={hero.city} />
+  <SiteHeader
+    name={hero.name}
+    city={hero.city}
+    homeHref={backHref}
+    navLinks={primaryNav(locale)}
+    burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
+    burgerCloseLabel={locale === 'en' ? 'Close menu' : 'Luk menu'}
+    burgerMenuLabel={locale === 'en' ? 'Primary navigation' : 'Hovednavigation'}
+  />
 
   <main>
     <article class="service-page">
@@ -212,9 +221,12 @@
     --tangerine: oklch(0.94 0.26 120);
     --violet: oklch(0.48 0.09 152);
     --rule: color-mix(in oklch, var(--graphite) 18%, transparent);
-    /* Sticky-CTA gutter — shared with the homepage so CTAs on
-       both page types release at the same distance from their
-       containing block's end. */
+    /* Sticky-CTA gutters — inherit `--cta-h` from StickyCta's
+       own default (the 1320px homepage frame) so the CTA sits at
+       the same distance from the viewport's right edge on every
+       page type. The article's narrower 1100px max-width is a
+       content constraint, not a chrome constraint. `--cta-v` is
+       the inner gutter that controls the sticky release point. */
     --cta-v: 1.5rem;
     --cta-h-box: 3.3rem;
     min-height: 100vh;

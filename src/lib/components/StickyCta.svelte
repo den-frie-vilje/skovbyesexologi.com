@@ -66,13 +66,15 @@
 
 <style>
   .sticky-cta {
-    /* Horizontal gutter: matches pronouns-text-to-left-edge on wide
-       screens (max(1.25rem, (100vw - 1320px)/2 + 1.25rem)). */
-    --cta-h: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
-    /* Vertical gutter: inherited from an ancestor (.flod defines it).
-       Also acts as the padding-bottom on .chapter-wrap, so the CTA's
-       sticky release happens at the same distance from the chapter
-       divider as it has from the viewport bottom while pinned. */
+    /*
+      Horizontal + vertical gutters are inherited from an
+      ancestor (typically `.flod`), which lets each page type set
+      its own content max-width via `--cta-h` — homepage uses the
+      1320px frame, service detail pages use the 1100px article
+      column. The fallback here matches the homepage frame so
+      older callers without an explicit `--cta-h` still work.
+    */
+    --cta-h-default: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
     /* Fixed button height so sticky-top math and the flow-canceling
        negative margin-bottom agree exactly. */
     --cta-h-box: 3.3rem;
@@ -98,7 +100,7 @@
     justify-content: center;
     width: fit-content;
     margin-left: auto;
-    margin-right: var(--cta-h);
+    margin-right: var(--cta-h, var(--cta-h-default));
 
     /* Fixed height so sticky-top math + the containment check agree.
        We deliberately do NOT use `margin-bottom: -height` here — a

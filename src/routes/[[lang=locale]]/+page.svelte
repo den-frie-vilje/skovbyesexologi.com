@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { contentFor, renderFooterCopyright, type Locale } from '$lib/content';
+  import { contentFor, primaryNav, renderFooterCopyright, type Locale } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import SiteHeader from '$lib/components/SiteHeader.svelte';
@@ -204,7 +204,15 @@
 <div class="flod" class:in-konsulent={chapterMode === 1}>
   <FlodStage anchors={stageAnchors} {chapterMode} />
 
-  <SiteHeader name={hero.name} city={hero.city} />
+  <SiteHeader
+    name={hero.name}
+    city={hero.city}
+    homeHref={locale === 'en' ? '/en' : '/'}
+    navLinks={primaryNav(locale)}
+    burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
+    burgerCloseLabel={locale === 'en' ? 'Close menu' : 'Luk menu'}
+    burgerMenuLabel={locale === 'en' ? 'Primary navigation' : 'Hovednavigation'}
+  />
 
   <main>
 
@@ -522,6 +530,10 @@
        inheritance) AND used as chapter-wrap padding-bottom so the CTA's
        sticky release happens with this same gap before the chapter divider. */
     --cta-v: 1.5rem;
+    /* Horizontal gutter — aligns the sticky CTA's right edge with
+       the homepage's 1320px content frame. Service pages set their
+       own `--cta-h` with a narrower frame (1100px). */
+    --cta-h: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
     /* CTA button height — shared so the first-section negative margin-top
        (below) can cancel the CTA's flow footprint exactly. */
     --cta-h-box: 3.3rem;

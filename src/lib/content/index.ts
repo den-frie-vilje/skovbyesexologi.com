@@ -133,7 +133,15 @@ export type Service = {
   stage: StageConfig;
 };
 
-export type NavLink = { label: string; href: string };
+export type NavLink = {
+  label: string;
+  href: string;
+  /** Optional ordinal shown as a mono prefix (`01`, `02`, …) —
+   *  used by the burger-menu list to echo the numbered service
+   *  sections on the homepage. Omit for non-numbered items
+   *  (e.g. the trailing Contact link). */
+  num?: string;
+};
 
 export type HomeHero = {
   name: string;
@@ -269,6 +277,36 @@ export function serviceBySlug(locale: Locale | string | undefined, slug: string)
  *  language-switch links. */
 export function serviceById(locale: Locale | string | undefined, id: string): Service | undefined {
   return contentFor(locale).services.find((s) => s.id === id);
+}
+
+/**
+ * Primary navigation links for the burger menu. One entry per
+ * service (pointing at the locale-appropriate detail page) plus a
+ * final Contact anchor (fragment — resolves to `#kontakt` on
+ * whichever page the user is on). Labels come from each service's
+ * `title`; slugs come from `slug`; the URL prefix switches by
+ * locale.
+ */
+export function primaryNav(
+  locale: Locale | string | undefined
+): NavLink[] {
+  const key = (locale && (LOCALES as readonly string[]).includes(locale)
+    ? locale
+    : DEFAULT_LOCALE) as Locale;
+  const bundle = bundles[key];
+  const servicePrefix = key === 'en' ? '/en/services' : '/ydelser';
+  return [
+    ...bundle.services.map((s) => ({
+      label: s.title,
+      href: `${servicePrefix}/${s.slug}`,
+      // Echo each service's homepage section number so the burger
+      // list numbering matches the scroll-page numbering.
+      num: s.number
+    })),
+    // Contact is not a numbered section — omit `num` so the burger
+    // renders the entry without a mono prefix.
+    { label: bundle.contact.label, href: '#kontakt' }
+  ];
 }
 
 /** Render the site's footer-copyright template with live values. */
