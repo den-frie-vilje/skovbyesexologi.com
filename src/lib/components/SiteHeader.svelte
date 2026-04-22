@@ -13,7 +13,7 @@
 -->
 <script lang="ts">
   import BurgerNav from './BurgerNav.svelte';
-  import type { NavLink } from '$lib/content';
+  import type { Locale, NavLink } from '$lib/content';
 
   interface Props {
     /** Brand-owner name, e.g. "Signe Skovbye". */
@@ -27,6 +27,14 @@
     /** Primary-nav entries for the burger menu. When empty, the
      *  burger button is hidden. Typically comes from `primaryNav(locale)`. */
     navLinks?: NavLink[];
+    /** Target locale for the language switcher — the OTHER locale
+     *  from the one the page is currently in. When omitted the
+     *  switcher is hidden. */
+    altLocale?: Locale;
+    /** URL for the language switcher — the peer page in the other
+     *  locale (same service for service detail pages, homepage
+     *  otherwise). */
+    altHref?: string;
     /** Localised aria-labels for the burger controls. */
     burgerOpenLabel?: string;
     burgerCloseLabel?: string;
@@ -38,6 +46,8 @@
     city,
     homeHref = '/',
     navLinks = [],
+    altLocale,
+    altHref,
     burgerOpenLabel,
     burgerCloseLabel,
     burgerMenuLabel
@@ -59,6 +69,8 @@
   {#if navLinks.length > 0}
     <BurgerNav
       links={navLinks}
+      {altLocale}
+      {altHref}
       openLabel={burgerOpenLabel}
       closeLabel={burgerCloseLabel}
       menuLabel={burgerMenuLabel}

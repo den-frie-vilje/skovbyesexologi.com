@@ -33,8 +33,17 @@ export const load: PageLoad = ({ params }) => {
   // render without an alternate rather than 500ing the page.
   const peerEn = serviceById('en', service.id);
 
+  /*
+    `altHref` powers the shared layout's language switcher:
+    switching out of DA on a service detail page should land on
+    the EN twin (same service, English slug) rather than just the
+    EN homepage. When no peer exists we fall back to `/en` so the
+    switcher still points somewhere sensible.
+  */
   return {
     locale: 'da' as const,
+    altLocale: 'en' as const,
+    altHref: peerEn ? `/en/services/${peerEn.slug}` : '/en',
     service,
     peer: peerEn
       ? ({ locale: 'en' as const, slug: peerEn.slug } as const)

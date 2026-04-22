@@ -20,8 +20,11 @@ export const load: PageLoad = ({ params }) => {
 
   const peerDa = serviceById('da', service.id);
 
+  // Mirror of the DA load — see that file for commentary on altHref.
   return {
     locale: 'en' as const,
+    altLocale: 'da' as const,
+    altHref: peerDa ? `/ydelser/${peerDa.slug}` : '/',
     service,
     peer: peerDa
       ? ({ locale: 'da' as const, slug: peerDa.slug } as const)

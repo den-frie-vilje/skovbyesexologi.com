@@ -27,10 +27,16 @@
 -->
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
-  import type { NavLink } from '$lib/content';
+  import type { Locale, NavLink } from '$lib/content';
 
   interface Props {
     links: NavLink[];
+    /** The OTHER locale from the page's current locale — what the
+     *  language switcher will take the user to. When omitted the
+     *  switcher row is not rendered. */
+    altLocale?: Locale;
+    /** URL of the peer page in the other locale. */
+    altHref?: string;
     /** Localised aria-labels. Defaults are English. */
     openLabel?: string;
     closeLabel?: string;
@@ -41,6 +47,8 @@
 
   let {
     links,
+    altLocale,
+    altHref,
     openLabel = 'Open menu',
     closeLabel = 'Close menu',
     menuLabel = 'Primary navigation'
@@ -48,6 +56,20 @@
 
   let open = $state(false);
   let burgerBtn: HTMLButtonElement | null = $state(null);
+
+  /*
+    Language switcher copy — shown in the TARGET language (native
+    exonym convention): EN readers see "Dansk" when viewing the EN
+    version; DA readers see "English". Matches what users expect
+    from bilingual sites. Aria-label is in the CURRENT page's
+    language so the screen reader reads it correctly.
+  */
+  const altLabel = $derived(
+    altLocale === 'en' ? 'English' : altLocale === 'da' ? 'Dansk' : ''
+  );
+  const altAriaLabel = $derived(
+    altLocale === 'en' ? 'Switch to English' : 'Skift til dansk'
+  );
 
   function toggleMenu() {
     open = !open;
@@ -103,13 +125,23 @@
     transition:fade={{ duration: 180 }}
   ></div>
 
-  <aside
+  <!--
+    `role="dialog"` + `aria-modal` rather than `<aside>` — an aside
+    is a complementary landmark, and the panel lives inside the
+    `<header>` landmark of `<SiteHeader>`, which axe flags as
+    nested landmarks. A dialog isn't a landmark, so the nesting
+    violation goes away, and semantically it's more accurate: this
+    is a modal overlay, not tangential content.
+  -->
+  <div
     id="burger-panel"
     class="panel"
+    role="dialog"
+    aria-modal="true"
     aria-label={menuLabel}
     transition:fly={{ y: -24, duration: 260, opacity: 0 }}
   >
-    <nav>
+    <nav aria-label={menuLabel}>
       <p class="nav-eyebrow">{menuLabel}</p>
       <ul>
         {#each links as link, i}
@@ -131,8 +163,32 @@
           </li>
         {/each}
       </ul>
+
+      {#if altLocale && altHref}
+        <!--
+          Language switcher lives at the foot of the nav list,
+          separated by a rule. Target-language label ("English" /
+          "Dansk") so users looking for their language recognise
+          it natively. `lang` + `hreflang` on the anchor tell the
+          user agent the link's TARGET is in that language — AT
+          will switch pronunciation for the label.
+        -->
+        <div class="lang-switch">
+          <a
+            href={altHref}
+            lang={altLocale}
+            hreflang={altLocale}
+            aria-label={altAriaLabel}
+            onclick={closeMenu}
+          >
+            <span class="lang-globe" aria-hidden="true">◐</span>
+            <span class="lang-label">{altLabel}</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      {/if}
     </nav>
-  </aside>
+  </div>
 {/if}
 
 <style>
@@ -403,11 +459,75 @@
     color: var(--violet);
   }
 
+  /* ============== LANGUAGE SWITCHER ============== */
+  /*
+    Separate visual register from the primary nav — a thin rule
+    above, smaller mono-ish label, muted colour at rest. Sits at
+    the bottom of the nav block so the primary nav is always the
+    first thing the eye lands on. Hyphenation in DA/EN labels
+    isn't a concern here (single-word "Dansk" / "English").
+
+    The arrow reuses `.arrow` styles from the main nav rows so
+    hover/focus treatment stays consistent with the rest of the
+    list.
+  */
+  .lang-switch {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    /* Pick up the per-row stagger keyframe — lands shortly after
+       the last primary-nav item. `--d` defaults far enough past
+       the 4 service links + contact row that it reads as a
+       deliberate secondary reveal. */
+    animation: link-in 280ms ease both;
+    animation-delay: 220ms;
+    opacity: 0;
+  }
+  .lang-switch a {
+    display: inline-grid;
+    grid-template-columns: auto auto auto;
+    align-items: baseline;
+    gap: 0.6em;
+    color: var(--graphite-soft);
+    text-decoration: none;
+    /* Tap target ≥44px tall at the label's font size. */
+    padding: 0.55em 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .lang-globe {
+    /* ◐ half-circle is a small typographic stand-in for "language"
+       — avoids flag iconography (languages ≠ countries) and plays
+       well with the site's editorial, glyph-forward tone. Sized
+       slightly larger than the label's cap-height so it reads as
+       a proper mark, not a bullet. */
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--violet);
+  }
+  /* .lang-label has no rules of its own — it exists as a grid cell
+     so the globe / label / arrow columns align. The anchor's `lang`
+     attribute handles AT pronunciation. */
+  .lang-switch a:hover,
+  .lang-switch a:focus-visible {
+    color: var(--violet);
+  }
+  .lang-switch a:hover .arrow,
+  .lang-switch a:focus-visible .arrow {
+    transform: translateX(0);
+    opacity: 1;
+    color: var(--violet);
+  }
+
   /* Reduced motion — skip the per-link stagger + arrow slide +
      bar-to-X animation. Panel fade still happens (fade is gentle
      enough) but the toggle snaps instead of morphing. */
   @media (prefers-reduced-motion: reduce) {
-    li {
+    li,
+    .lang-switch {
       animation: none;
       opacity: 1;
     }

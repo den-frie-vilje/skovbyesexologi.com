@@ -53,6 +53,23 @@
   const navLinks = $derived(primaryNav(locale));
 
   /*
+    Bilingual peer URL for the language switcher. Every content
+    page's load() returns `altLocale` + `altHref` pointing at the
+    same page in the other language (homepage → homepage, service
+    → EN/DA twin by stable `service.id`). Fallback: derive from
+    the current locale so the switcher always has a target even
+    if a page ever forgets to publish these.
+  */
+  const altLocale = $derived(
+    ($page.data?.altLocale as Locale | undefined) ??
+      (locale === 'en' ? 'da' : 'en')
+  );
+  const altHref = $derived(
+    ($page.data?.altHref as string | undefined) ??
+      (altLocale === 'en' ? '/en' : '/')
+  );
+
+  /*
     Chapter-II split line — used by the homepage's cool→warm bone
     gradient. The homepage updates `stage.konsulentY` live from
     scroll; service pages leave it null (fall through to the CSS
@@ -81,6 +98,8 @@
     city={hero.city}
     {homeHref}
     {navLinks}
+    {altLocale}
+    {altHref}
     burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
     burgerCloseLabel={locale === 'en' ? 'Close menu' : 'Luk menu'}
     burgerMenuLabel={locale === 'en' ? 'Primary navigation' : 'Hovednavigation'}

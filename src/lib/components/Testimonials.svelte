@@ -209,8 +209,32 @@
       <p class="t-label">{label}</p>
     {/if}
 
+    <!--
+      On the scroll layout the ul overflows horizontally. axe's
+      `scrollable-region-focusable` rule requires scrollable
+      containers to either contain focusable content or be
+      focusable themselves, so keyboard users can arrow-scroll
+      through cards. `tabindex="0"` puts the ul in tab order —
+      the `<ul>`'s implicit `role="list"` is preserved (axe's
+      `aria-allowed-role` rejects an explicit region on a ul),
+      and `aria-label` gives the list an accessible name so the
+      tab-stop announces as "Testimonials list" rather than an
+      unlabelled list.
+
+      Svelte's linter flags positive tabindex on non-interactive
+      elements. We suppress it here because the rule doesn't
+      recognise this specific axe-compliant scrollable-list
+      pattern — the tab-stop is necessary for WCAG 2.1.1
+      Keyboard.
+
+      Single / grid layouts aren't scrollable, so no tab stop is
+      needed and the attributes render as `null` (omitted).
+    -->
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <ul
       class="t-list"
+      tabindex={layout === 'scroll' ? 0 : null}
+      aria-label={layout === 'scroll' ? label : null}
       bind:this={listEl}
       onscrollend={onScrollEnd}
       onpointerdown={markInteraction}
