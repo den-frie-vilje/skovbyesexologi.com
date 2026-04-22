@@ -13,6 +13,7 @@
 -->
 <script lang="ts">
   import BurgerNav from './BurgerNav.svelte';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import type { Locale, NavLink } from '$lib/content';
 
   interface Props {
@@ -27,9 +28,12 @@
     /** Primary-nav entries for the burger menu. When empty, the
      *  burger button is hidden. Typically comes from `primaryNav(locale)`. */
     navLinks?: NavLink[];
+    /** The page's current locale — drives the DA|EN switcher's
+     *  "active" label. */
+    currentLocale?: Locale;
     /** Target locale for the language switcher — the OTHER locale
-     *  from the one the page is currently in. When omitted the
-     *  switcher is hidden. */
+     *  from the one the page is currently in. When omitted with
+     *  `altHref` the switcher is hidden. */
     altLocale?: Locale;
     /** URL for the language switcher — the peer page in the other
      *  locale (same service for service detail pages, homepage
@@ -46,6 +50,7 @@
     city,
     homeHref = '/',
     navLinks = [],
+    currentLocale,
     altLocale,
     altHref,
     burgerOpenLabel,
@@ -66,11 +71,12 @@
 <header class="top">
   <a class="top-link" href={homeHref}>{name}</a>
   <span class="mark-meta">{city}</span>
+  {#if currentLocale && altLocale && altHref}
+    <LocaleSwitcher {currentLocale} {altLocale} {altHref} />
+  {/if}
   {#if navLinks.length > 0}
     <BurgerNav
       links={navLinks}
-      {altLocale}
-      {altHref}
       openLabel={burgerOpenLabel}
       closeLabel={burgerCloseLabel}
       menuLabel={burgerMenuLabel}
@@ -120,12 +126,14 @@
     font-weight: 500;
   }
   /*
-    City label — pushed to the right with `margin-left: auto` so
-    the burger button follows at the far edge. Not clickable
-    (intentionally separate from `.top-link`).
+    City label sits immediately after the brand mark — reads as
+    part of the address line "Skovbye Sexologi, København". Not
+    clickable (intentionally separate from `.top-link`); the city
+    is metadata, not a destination. `margin-right: auto` pushes
+    the locale switcher + burger group to the far right.
   */
   .mark-meta {
-    margin-left: auto;
+    margin-right: auto;
     color: var(--graphite-soft);
   }
 

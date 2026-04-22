@@ -98,6 +98,7 @@
     city={hero.city}
     {homeHref}
     {navLinks}
+    currentLocale={locale}
     {altLocale}
     {altHref}
     burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
