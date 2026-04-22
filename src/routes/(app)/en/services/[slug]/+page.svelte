@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { contentFor } from '$lib/content';
-  import { SITE_URL } from '$lib/seo/structured-data';
+  import { buildServicePageJsonLd, SITE_URL } from '$lib/seo/structured-data';
   import ServicePage from '$lib/components/ServicePage.svelte';
   import type { PageProps } from './$types';
 
@@ -16,6 +16,8 @@
   // service-specific <svelte:head> + body via <ServicePage>.
   const bundle = $derived(contentFor(data.locale));
   const site = $derived(bundle.site);
+  const bio = $derived(bundle.bio);
+  const contact = $derived(bundle.contact);
   const home = $derived(bundle.home);
   const service = $derived(data.service);
 
@@ -28,6 +30,21 @@
   const pageDescription = $derived(service.blurb || site.tagline);
   // Per-service OG (EN variant) — see DA mirror for commentary.
   const ogImageUrl = $derived(`${SITE_URL}/img/og/${service.id}.en.jpg`);
+
+  // EN mirror of DA's JSON-LD — see DA wrapper for commentary.
+  const jsonLd = $derived(
+    JSON.stringify(
+      buildServicePageJsonLd({
+        locale: 'en',
+        site,
+        bio,
+        contact,
+        service,
+        pageUrl: canonicalUrl,
+        homeLabel: 'Home'
+      })
+    )
+  );
 </script>
 
 <svelte:head>
@@ -60,6 +77,9 @@
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDescription} />
   <meta name="twitter:image" content={ogImageUrl} />
+
+  <!-- Structured data — see DA mirror for commentary. -->
+  {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
 <ServicePage

@@ -12,7 +12,7 @@
 -->
 <script lang="ts">
   import { contentFor } from '$lib/content';
-  import { SITE_URL } from '$lib/seo/structured-data';
+  import { buildServicePageJsonLd, SITE_URL } from '$lib/seo/structured-data';
   import ServicePage from '$lib/components/ServicePage.svelte';
   import type { PageProps } from './$types';
 
@@ -27,6 +27,8 @@
   */
   const bundle = $derived(contentFor(data.locale));
   const site = $derived(bundle.site);
+  const bio = $derived(bundle.bio);
+  const contact = $derived(bundle.contact);
   const home = $derived(bundle.home);
   const service = $derived(data.service);
 
@@ -46,6 +48,27 @@
   // stable service `id` (filename) so the URL is the same in
   // both locales even when the service's URL slug differs.
   const ogImageUrl = $derived(`${SITE_URL}/img/og/${service.id}.da.jpg`);
+
+  /*
+    Service-page JSON-LD: business + person + THIS service +
+    BreadcrumbList (Home → Service). Builder handles locale-
+    appropriate URL shapes. The crawled <script> tag is static so
+    `$derived` is fine even though the values rarely change after
+    mount.
+  */
+  const jsonLd = $derived(
+    JSON.stringify(
+      buildServicePageJsonLd({
+        locale: 'da',
+        site,
+        bio,
+        contact,
+        service,
+        pageUrl: canonicalUrl,
+        homeLabel: 'Forsiden'
+      })
+    )
+  );
 </script>
 
 <svelte:head>
@@ -81,6 +104,15 @@
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDescription} />
   <meta name="twitter:image" content={ogImageUrl} />
+
+  <!--
+    Structured data — business + person + this Service +
+    BreadcrumbList. Pre-serialised in the script block above so
+    the output is a static string by the time the head renders.
+    `{@html}` is safe here because `buildServicePageJsonLd` only
+    produces JSON and we're the ones constructing the script tag.
+  -->
+  {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
 <ServicePage

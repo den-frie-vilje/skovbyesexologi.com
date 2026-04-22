@@ -39,10 +39,43 @@
   */
   const findService = (id: string) => services.find((s) => s.id === id);
 
-  const jsonLd = $derived(JSON.stringify(buildSiteJsonLd({ site, bio, contact, services })));
+  /*
+    Per-locale detail-page URL for a service — used by the four
+    service sections below to link into their /ydelser/{slug} (DA)
+    or /en/services/{slug} (EN) twins. Internal links from the
+    homepage to the detail pages are important both for users (the
+    overview sections IS the discovery surface) and for SEO (gives
+    crawlers a direct path from the canonical homepage to each
+    detail page, complementing the sitemap).
+  */
+  const servicePath = (slug: string) =>
+    locale === 'en' ? `/en/services/${slug}` : `/ydelser/${slug}`;
+
+  // "Read more" link text — localised inline rather than adding a
+  // single-label key to the content bundle; the header already uses
+  // this pattern for burger-button labels.
+  const readMoreLabel = $derived(locale === 'en' ? 'Read more' : 'Læs mere');
 
   // Canonical + hreflang helpers. DA is prefix-less; EN lives at /en.
   const canonicalUrl = $derived(`${SITE_URL}${locale === 'en' ? '/en' : '/'}`);
+  /*
+    JSON-LD derives AFTER canonicalUrl so it can use it — the
+    business node's `url` field needs the locale-specific canonical
+    ({SITE_URL}/en on EN pages, not the default-locale fallback the
+    builder previously used when `pageUrl` was omitted).
+  */
+  const jsonLd = $derived(
+    JSON.stringify(
+      buildSiteJsonLd({
+        locale,
+        site,
+        bio,
+        contact,
+        services,
+        pageUrl: canonicalUrl
+      })
+    )
+  );
   const daUrl = `${SITE_URL}/`;
   const enUrl = `${SITE_URL}/en`;
   const ogLocale = $derived(locale === 'en' ? 'en_US' : 'da_DK');
@@ -336,6 +369,20 @@
           <p class="s-supports">{therapyService.supports.join(' · ')}</p>
         </div>
       {/if}
+      <!--
+        Read-more link to the service detail page. Repeated at the
+        end of each of the four service sections so each is a
+        self-contained "overview + doorway" block. Aria-label
+        disambiguates since there are four identically-worded
+        "Read more" links in the page (→ <service title>).
+      -->
+      <a
+        class="service-read-more reveal"
+        href={servicePath(therapyService.slug)}
+        aria-label="{readMoreLabel}: {therapyService.title}"
+      >
+        {readMoreLabel} <span aria-hidden="true">→</span>
+      </a>
     </section>
   {/if}
 
@@ -417,6 +464,13 @@
           </ul>
         </div>
       {/if}
+      <a
+        class="service-read-more reveal"
+        href={servicePath(intimacyService.slug)}
+        aria-label="{readMoreLabel}: {intimacyService.title}"
+      >
+        {readMoreLabel} <span aria-hidden="true">→</span>
+      </a>
     </section>
   {/if}
 
@@ -433,6 +487,13 @@
           <li>{bullet}</li>
         {/each}
       </ul>
+      <a
+        class="service-read-more reveal"
+        href={servicePath(elderlyService.slug)}
+        aria-label="{readMoreLabel}: {elderlyService.title}"
+      >
+        {readMoreLabel} <span aria-hidden="true">→</span>
+      </a>
     </section>
   {/if}
 
@@ -449,6 +510,13 @@
           <li>{bullet}</li>
         {/each}
       </ul>
+      <a
+        class="service-read-more reveal"
+        href={servicePath(teachingService.slug)}
+        aria-label="{readMoreLabel}: {teachingService.title}"
+      >
+        {readMoreLabel} <span aria-hidden="true">→</span>
+      </a>
     </section>
   {/if}
 
@@ -909,6 +977,51 @@
     line-height: 1.5;
     margin: 0;
     color: color-mix(in oklch, var(--graphite) 88%, transparent);
+  }
+
+  /* ============== SERVICE READ-MORE LINK ============== */
+  /*
+    Inline read-more link at the foot of each service section —
+    discrete editorial mark, not a button. Mono-caps register
+    matches the section kicker / eyebrow, so the link reads as
+    "navigation metadata" rather than a heavy CTA and doesn't
+    fight the sticky violet CTA pinned to the wrap. The arrow
+    slides on hover (same gesture as the burger-nav rows + back
+    link on service pages) so the affordance is consistent
+    site-wide.
+  */
+  .service-read-more {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4em;
+    margin-top: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--violet);
+    text-decoration: none;
+    /* Tap-target padding — 0.55em top/bottom with 0.75rem
+       font-size yields >= 44px tall on touch devices. */
+    padding: 0.55em 0;
+    transition: color 0.15s ease;
+  }
+  .service-read-more span {
+    transition: transform 0.25s ease;
+    display: inline-block;
+  }
+  .service-read-more:hover,
+  .service-read-more:focus-visible {
+    color: var(--graphite);
+  }
+  .service-read-more:hover span,
+  .service-read-more:focus-visible span {
+    transform: translateX(0.2em);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .service-read-more span {
+      transition: none;
+    }
   }
 
   /* Intimacy coordination — pull-quote + testimonial live inside the section */
