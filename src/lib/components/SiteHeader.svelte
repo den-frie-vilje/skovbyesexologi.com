@@ -45,22 +45,17 @@
 </script>
 
 <!--
-  The entire brand-mark row is wrapped in a link to the current
-  locale's homepage — invisible clickable target, no visible
-  underline or hover colour change, so the header reads as pure
-  typography but clicks deliver users to the start of the site.
-  Using `aria-label` so screen readers announce "homepage" rather
-  than just reading the two text fragments.
+  Brand mark on the left is a link to the current locale's
+  homepage — invisible styling so the header reads as pure
+  typography but clicks land on `/` (or `/en`). The city sits
+  beside it as plain metadata, intentionally NOT inside the
+  link — the city is a tagline, not a destination; making the
+  whole row clickable was confusing users who expected the city
+  label to behave differently from the brand mark.
 -->
 <header class="top">
-  <a
-    class="top-link"
-    href={homeHref}
-    aria-label={`${name} — ${city}`}
-  >
-    <span class="mark">{name}</span>
-    <span class="mark-meta">{city}</span>
-  </a>
+  <a class="top-link" href={homeHref}>{name}</a>
+  <span class="mark-meta">{city}</span>
   {#if navLinks.length > 0}
     <BurgerNav
       links={navLinks}
@@ -102,27 +97,23 @@
     border-bottom: 1px solid var(--rule);
   }
   /*
-    Invisible clickable target spanning the flex row available to
-    it — grows to push the burger button to the far right, and
-    internally distributes the two text fragments with its own
-    flex. `text-decoration: none` + `color: inherit` keep the link
-    from showing any default styling; the `:focus-visible` outline
-    from app.css still lands on the anchor for keyboard users.
+    Invisible clickable brand mark on the left. `text-decoration:
+    none` + `color: inherit` keep it visually plain; the
+    `:focus-visible` outline from app.css still lands on the
+    anchor so keyboard users get a clear indicator.
   */
   .top-link {
-    flex: 1 1 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
     text-decoration: none;
-    color: inherit;
-  }
-  .mark {
     color: var(--graphite);
     font-weight: 500;
   }
+  /*
+    City label — pushed to the right with `margin-left: auto` so
+    the burger button follows at the far edge. Not clickable
+    (intentionally separate from `.top-link`).
+  */
   .mark-meta {
+    margin-left: auto;
     color: var(--graphite-soft);
   }
 

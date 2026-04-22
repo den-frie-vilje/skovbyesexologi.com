@@ -360,24 +360,26 @@
     scrollbar-width: none;
 
     /*
-      Right-edge fade so the partial card peeking in from the
-      infinite-wrap + snap-scroll looks like a soft transition
-      rather than a hard cut. Width is `--t-fade`, bumped by a
-      media query at ≥720px once the list is wide enough for a
-      second card to actually peek in. The left edge stays sharp
-      because the scroll-snap always starts there — no "previous"
-      card sticks out on the left in this layout.
+      Both-edges fade so the partial peek from the infinite-wrap
+      (next card on the right as autoplay advances; previous card
+      on the left after it scrolls past) dissolves instead of
+      hard-clipping. Width is `--t-fade`, zero at mobile where
+      cards are near-full-width and there IS no peek, widening
+      via media queries at breakpoints where the layout actually
+      shows partial cards.
     */
-    --t-fade: 2rem;
+    --t-fade: 0px;
     mask-image: linear-gradient(
       to right,
-      black 0,
+      transparent 0,
+      black var(--t-fade),
       black calc(100% - var(--t-fade)),
       transparent 100%
     );
     -webkit-mask-image: linear-gradient(
       to right,
-      black 0,
+      transparent 0,
+      black var(--t-fade),
       black calc(100% - var(--t-fade)),
       transparent 100%
     );
@@ -483,11 +485,11 @@
       margin-left: -2rem;
       margin-right: -2rem;
       scroll-padding-left: 2rem;
-      /* At this breakpoint the list is wide enough that the
-         next card visibly peeks in on the right. Widen the fade
-         so the peek dissolves rather than hard-clipping at the
-         edge. */
-      --t-fade: 6rem;
+      /* Peek fade kicks in — narrow, covers just the partial
+         card showing past the edge. Widen further and the mask
+         starts eating into the first visible card, which is
+         what we want to keep crisp. */
+      --t-fade: 1.5rem;
     }
     [data-layout='scroll'] .t-card {
       flex-basis: 380px;
@@ -500,9 +502,7 @@
       margin-left: -3rem;
       margin-right: -3rem;
       scroll-padding-left: 3rem;
-      /* Even wider at this breakpoint — 2+ cards peek on the
-         right at once; fade needs to cover the whole overlap. */
-      --t-fade: 10rem;
+      --t-fade: 2rem;
     }
   }
 
