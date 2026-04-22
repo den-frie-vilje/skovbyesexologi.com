@@ -33,18 +33,88 @@
 # in rendered HTML. Sveltia uploads land in the media_folder.
 #
 # ============================================================
+# I18N / LOCALES
+# ============================================================
+# Bilingual site: Danish (default) + English. Content lives under
+# `src/content/{da,en}/...` — one folder per locale at the top of
+# the tree. That layout doesn't match Sveltia's native
+# `multiple_folders` i18n (which expects locale as a SUBFOLDER of
+# each collection, e.g. `services/da/…` + `services/en/…`), so the
+# config below takes the simpler, more explicit route: each content
+# type has TWO collections — one for DA, one for EN — with their
+# own `file:` / `folder:` paths. More YAML, fewer moving parts, and
+# no `translationKey` coupling.
+#
+# Paired entries (DA + EN) are kept in sync by filename convention:
+# both `src/content/da/services/terapi.json` and
+# `src/content/en/services/terapi.json` share the stable ID
+# `terapi` derived from the filename. The `slug` field inside each
+# JSON is the per-locale URL segment (`terapi` vs `therapy`). When
+# creating a new service in EN, use the SAME filename as the DA
+# entry so hreflang + language-switcher pairing keeps working.
+#
+# ============================================================
 # POSE PALETTE
 # ============================================================
-# The `options:` arrays for the three stage-pose select fields under
-# home.sections[*].stage MUST stay in sync with the palette in
-# `src/lib/stage/poses.ts`. When editing poses.ts, also:
+# The `options:` arrays for the three stage-pose select fields
+# (mercury orb / gold metaballs / faceted gem) MUST stay in sync
+# with the palette in `src/lib/stage/poses.ts`. When editing
+# poses.ts, also:
 #   1. Regenerate SVG thumbnails: `pkgx pnpm icons`
-#   2. Update the main/gold/gem options lists below
+#   2. Update the main/gold/gem options lists below (both DA and
+#      EN collections define their own copies)
 #
-# A future `pose-select` custom widget will render the SVG thumbnails
-# in a click-grid and auto-sync with poses.ts — at which point this
-# manual upkeep goes away. Until then: discipline.
+# A future `pose-select` custom widget will render the SVG
+# thumbnails in a click-grid and auto-sync with poses.ts — at
+# which point this manual upkeep goes away. Until then: discipline.
+#
 # ============================================================
+# YAML ANCHORS — shared field fragments
+# ============================================================
+# The pose option lists are identical across DA/EN collections AND
+# across the homepage stage and per-service stage, so they're
+# declared once with YAML anchors (`&name`) and reused with aliases
+# (`*name`). If you extend a pose set in poses.ts, update the
+# anchor once and every referencing block picks it up.
+
+pose_options_main: &pose_options_main
+  - offstage
+  - heroFarRight
+  - heroRightBig
+  - heroLeftBig
+  - upperRightBig
+  - centerMax
+  - topRightSm
+  - topLeftSm
+  - bottomLeftSm
+  - cornerBLtiny
+  - fullBleed
+
+pose_options_gold: &pose_options_gold
+  - offstage
+  - disperseLowC
+  - disperseLowR
+  - disperseLowL
+  - disperseRightMid
+  - topRightMed
+  - topLeftSm
+  - bottomLeftMed
+  - cornerTLtiny
+  - cornerBRsm
+  - cornerBLsm
+  - fullBleed
+
+pose_options_gem: &pose_options_gem
+  - offstage
+  - heroBRhuge
+  - heroRightBig
+  - midRightBig
+  - cornerBRsm
+  - cornerTRsm
+  - topRightSm
+  - topLeftSm
+  - upperRightMed
+  - fullBleed
 
 backend:
   name: test-repo
@@ -53,9 +123,11 @@ media_folder: static/img
 public_folder: /img
 
 collections:
-  # ---- Site metadata (single file) ----
-  - name: site
-    label: Site metadata
+  # ================================================================
+  # SITE METADATA (single file per locale)
+  # ================================================================
+  - name: site-da
+    label: 'Site metadata (DA)'
     label_singular: Site
     editor: { preview: false }
     files:
@@ -72,10 +144,38 @@ collections:
             hint: ISO 639-1 code.
           - { name: tagline, label: Tagline, widget: string }
           - { name: leadIn, label: Lead-in paragraph, widget: text }
+          - name: footerCopyright
+            label: Footer copyright
+            widget: string
+            hint: 'Template: tokens {year}, {name}, {cvr} are substituted live.'
 
-  # ---- Contact info (single file) ----
-  - name: contact
-    label: Contact info
+  - name: site-en
+    label: 'Site metadata (EN)'
+    label_singular: Site
+    editor: { preview: false }
+    files:
+      - name: site
+        label: Site metadata
+        file: src/content/en/site.json
+        format: json
+        fields:
+          - { name: name, label: Site name, widget: string }
+          - name: lang
+            label: Language code
+            widget: string
+            default: en
+          - { name: tagline, label: Tagline, widget: string }
+          - { name: leadIn, label: Lead-in paragraph, widget: text }
+          - name: footerCopyright
+            label: Footer copyright
+            widget: string
+            hint: 'Template tokens: {year}, {name}, {cvr}.'
+
+  # ================================================================
+  # CONTACT INFO (single file per locale)
+  # ================================================================
+  - name: contact-da
+    label: 'Contact info (DA)'
     label_singular: Contact
     editor: { preview: false }
     files:
@@ -84,16 +184,57 @@ collections:
         file: src/content/da/contact.json
         format: json
         fields:
+          - { name: label, label: Section label, widget: string }
+          - { name: heading, widget: string }
+          - { name: lede, widget: text }
           - { name: email, widget: string }
           - { name: phone, widget: string }
           - { name: address, widget: string }
           - { name: cvr, label: CVR number, widget: string }
           - { name: hours, label: Opening hours, widget: string }
           - { name: responseTime, label: Response time note, widget: text }
+          - name: fieldLabels
+            label: Inline field labels (contact card)
+            widget: object
+            fields:
+              - { name: email, widget: string }
+              - { name: phone, widget: string }
+              - { name: address, widget: string }
+              - { name: hours, widget: string }
 
-  # ---- Bio (single file) ----
-  - name: bio
-    label: Biography
+  - name: contact-en
+    label: 'Contact info (EN)'
+    label_singular: Contact
+    editor: { preview: false }
+    files:
+      - name: contact
+        label: Contact info
+        file: src/content/en/contact.json
+        format: json
+        fields:
+          - { name: label, label: Section label, widget: string }
+          - { name: heading, widget: string }
+          - { name: lede, widget: text }
+          - { name: email, widget: string }
+          - { name: phone, widget: string }
+          - { name: address, widget: string }
+          - { name: cvr, label: CVR number, widget: string }
+          - { name: hours, label: Opening hours, widget: string }
+          - { name: responseTime, label: Response time note, widget: text }
+          - name: fieldLabels
+            label: Inline field labels (contact card)
+            widget: object
+            fields:
+              - { name: email, widget: string }
+              - { name: phone, widget: string }
+              - { name: address, widget: string }
+              - { name: hours, widget: string }
+
+  # ================================================================
+  # BIO (single file per locale)
+  # ================================================================
+  - name: bio-da
+    label: 'Biography (DA)'
     label_singular: Bio
     editor: { preview: false }
     files:
@@ -102,16 +243,47 @@ collections:
         file: src/content/da/bio.json
         format: json
         fields:
+          - { name: label, label: Section label, widget: string }
           - { name: heading, widget: string }
           - { name: pronouns, widget: string }
+          - { name: portraitAlt, label: Portrait alt text, widget: string }
           - name: body
             label: Body paragraphs
             widget: list
             field: { name: paragraph, widget: text }
 
-  # ---- Home page (single file — includes stage choreography) ----
-  - name: home
-    label: Home page
+  - name: bio-en
+    label: 'Biography (EN)'
+    label_singular: Bio
+    editor: { preview: false }
+    files:
+      - name: bio
+        label: Bio
+        file: src/content/en/bio.json
+        format: json
+        fields:
+          - { name: label, label: Section label, widget: string }
+          - { name: heading, widget: string }
+          - { name: pronouns, widget: string }
+          - { name: portraitAlt, label: Portrait alt text, widget: string }
+          - name: body
+            label: Body paragraphs
+            widget: list
+            field: { name: paragraph, widget: text }
+
+  # ================================================================
+  # HOME PAGE (single file per locale; includes stage choreography)
+  # ================================================================
+  # The home file holds both editorial copy (hero, chapters, manifest,
+  # ritual, for-personal, for-work, testimonials) AND the scroll-
+  # anchored stage configuration. The stage block (bottom of the
+  # fields list) is intentionally hard to edit — the anchor IDs must
+  # match `data-stage-anchor` attributes in the homepage template,
+  # and the pose options must match what poses.ts exports. The
+  # options here are kept in sync with poses.ts via manual upkeep
+  # (see the note at the top of this file).
+  - name: home-da
+    label: 'Home page (DA)'
     label_singular: Home
     editor: { preview: false }
     files:
@@ -120,28 +292,6 @@ collections:
         file: src/content/da/home.json
         format: json
         fields:
-          - { name: pillQuote, label: Pill quote, widget: text }
-          - name: manifest
-            label: Manifest (Chapter I intro cards)
-            widget: list
-            fields:
-              - { name: word, label: Keyword, widget: string }
-              - { name: text, widget: text }
-          - name: ritual
-            label: Ritual steps (Chapter I)
-            widget: list
-            fields:
-              - { name: n, label: Number, widget: string }
-              - { name: title, widget: string }
-              - { name: body, widget: text }
-          - name: forPersonal
-            label: "Kom forbi hvis du — personal"
-            widget: list
-            field: { name: line, widget: string }
-          - name: forWork
-            label: "Kom forbi hvis du — work"
-            widget: list
-            field: { name: line, widget: string }
           - name: nav
             label: Top-nav links
             widget: list
@@ -150,85 +300,294 @@ collections:
               - name: href
                 widget: string
                 hint: Use #anchor for in-page links.
-
-          # ---- Stage choreography ----
-          - name: sections
-            label: Stage sections
-            widget: list
-            allow_add: false
-            collapsed: false
-            hint: >-
-              Each entry configures the WebGL stage when its section
-              scrolls into view. IDs must match data-stage-anchor="<id>"
-              attributes in src/routes/+page.svelte — do not add,
-              remove, or rename sections without a developer.
+          - name: hero
+            label: Hero
+            widget: object
             fields:
-              - name: id
-                widget: string
-                hint: >-
-                  Must match a data-stage-anchor attribute in the template.
-                  Editing this breaks the stage for this section.
-              - name: stage
-                widget: object
+              - { name: name, label: Brand name (hero), widget: string }
+              - { name: city, widget: string }
+              - name: statementStart
+                label: Statement (start)
+                widget: text
+                hint: First line of the three-piece hero statement.
+              - { name: statementEnd, label: Statement (end before em), widget: text }
+              - { name: statementEm, label: Statement (emphasised tail), widget: string }
+              - name: attribution
+                widget: text
+                hint: Role line shown under the hero statement.
+              - { name: scrollLabel, label: Scroll-cue label, widget: string }
+          - name: nameSection
+            label: 'Who: name + role block'
+            widget: object
+            fields:
+              - { name: eyebrow, widget: string }
+              - { name: firstName, widget: string }
+              - { name: lastName, widget: string }
+              - { name: pronouns, widget: string }
+              - { name: roleLine, label: Role line, widget: text }
+              - { name: roleSub, label: Role sub-paragraph, widget: text }
+          - name: chapter1
+            label: Chapter I header (Terapi)
+            widget: object
+            fields:
+              - { name: mark, widget: string, hint: Roman numeral marker. }
+              - { name: title, widget: string }
+              - { name: lede, widget: text }
+          - name: chapter2
+            label: Chapter II header (Konsulentydelser)
+            widget: object
+            fields:
+              - { name: mark, widget: string }
+              - { name: title, widget: string }
+              - { name: lede, widget: text }
+          - name: manifest
+            label: Manifest (Chapter I)
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                label: Items
+                widget: list
                 fields:
-                  - name: main
-                    label: Mercury orb
-                    widget: select
-                    default: offstage
-                    options:
-                      - offstage
-                      - heroFarRight
-                      - heroRightBig
-                      - heroLeftBig
-                      - upperRightBig
-                      - centerMax
-                      - topRightSm
-                      - topLeftSm
-                      - bottomLeftSm
-                      - cornerBLtiny
-                      - fullBleed
-                  - name: gold
-                    label: Gold metaballs
-                    widget: select
-                    default: offstage
-                    options:
-                      - offstage
-                      - disperseLowC
-                      - disperseLowR
-                      - disperseLowL
-                      - disperseRightMid
-                      - topLeftSm
-                      - bottomLeftMed
-                      - cornerTLtiny
-                      - cornerBRsm
-                      - cornerBLsm
-                      - fullBleed
-                  - name: gem
-                    label: Faceted gem
-                    widget: select
-                    default: offstage
-                    options:
-                      - offstage
-                      - heroBRhuge
-                      - heroRightBig
-                      - midRightBig
-                      - cornerBRsm
-                      - cornerTRsm
-                      - topRightSm
-                      - topLeftSm
-                      - upperRightMed
-                      - fullBleed
-                  - name: intensity
-                    widget: number
-                    value_type: float
-                    min: 0.5
-                    max: 2.0
-                    step: 0.05
-                    default: 1.0
+                  - { name: word, label: Keyword, widget: string }
+                  - { name: text, widget: text }
+          - name: ritual
+            label: Ritual (Chapter I)
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - { name: subtitle, widget: string }
+              - name: steps
+                label: Steps
+                widget: list
+                fields:
+                  - { name: n, label: Number, widget: string }
+                  - { name: title, widget: string }
+                  - { name: body, widget: text }
+          - name: forPersonal
+            label: 'Kom forbi hvis du — personal'
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                label: Lines
+                widget: list
+                field: { name: line, widget: string }
+          - name: pillQuote
+            label: Pull-quote (inside intimacy section)
+            widget: text
+          - name: forWork
+            label: 'Skriv hvis I — work'
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                label: Lines
+                widget: list
+                field: { name: line, widget: string }
+          - name: testimonials
+            label: Featured testimonials (between bio + contact)
+            widget: object
+            required: false
+            fields:
+              - { name: label, label: Section label, widget: string }
+              - name: items
+                label: Quotes
+                widget: list
+                summary: '{{fields.source}}'
+                fields:
+                  - { name: quote, widget: text }
+                  - { name: source, widget: string }
+          - name: stage
+            label: Stage choreography
+            widget: object
+            fields:
+              - name: sections
+                label: Stage sections
+                widget: list
+                allow_add: false
+                collapsed: false
+                hint: >-
+                  Each entry configures the WebGL stage when its
+                  section scrolls into view. IDs must match
+                  data-stage-anchor="<id>" attributes in the homepage
+                  template — do not add, remove, or rename sections
+                  without a developer.
+                fields:
+                  - name: id
+                    widget: string
+                    hint: >-
+                      Must match a data-stage-anchor attribute. Editing
+                      this breaks the stage for this section.
+                  - name: stage
+                    widget: object
+                    fields:
+                      - name: main
+                        label: Mercury orb
+                        widget: select
+                        default: offstage
+                        options: *pose_options_main
+                      - name: gold
+                        label: Gold metaballs
+                        widget: select
+                        default: offstage
+                        options: *pose_options_gold
+                      - name: gem
+                        label: Faceted gem
+                        widget: select
+                        default: offstage
+                        options: *pose_options_gem
+                      - name: intensity
+                        widget: number
+                        value_type: float
+                        min: 0.5
+                        max: 2.0
+                        step: 0.05
+                        default: 1.0
 
-  # ---- Services (folder; one file per service) ----
-  - name: services
-    label: Services
+  - name: home-en
+    label: 'Home page (EN)'
+    label_singular: Home
+    editor: { preview: false }
+    files:
+      - name: home
+        label: Home
+        file: src/content/en/home.json
+        format: json
+        fields:
+          # EN home mirrors the DA schema above — see that collection
+          # for hints + commentary. Any structural change must land
+          # in both.
+          - name: nav
+            label: Top-nav links
+            widget: list
+            fields:
+              - { name: label, widget: string }
+              - { name: href, widget: string }
+          - name: hero
+            widget: object
+            fields:
+              - { name: name, widget: string }
+              - { name: city, widget: string }
+              - { name: statementStart, widget: text }
+              - { name: statementEnd, widget: text }
+              - { name: statementEm, widget: string }
+              - { name: attribution, widget: text }
+              - { name: scrollLabel, widget: string }
+          - name: nameSection
+            widget: object
+            fields:
+              - { name: eyebrow, widget: string }
+              - { name: firstName, widget: string }
+              - { name: lastName, widget: string }
+              - { name: pronouns, widget: string }
+              - { name: roleLine, widget: text }
+              - { name: roleSub, widget: text }
+          - name: chapter1
+            widget: object
+            fields:
+              - { name: mark, widget: string }
+              - { name: title, widget: string }
+              - { name: lede, widget: text }
+          - name: chapter2
+            widget: object
+            fields:
+              - { name: mark, widget: string }
+              - { name: title, widget: string }
+              - { name: lede, widget: text }
+          - name: manifest
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                widget: list
+                fields:
+                  - { name: word, widget: string }
+                  - { name: text, widget: text }
+          - name: ritual
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - { name: subtitle, widget: string }
+              - name: steps
+                widget: list
+                fields:
+                  - { name: n, widget: string }
+                  - { name: title, widget: string }
+                  - { name: body, widget: text }
+          - name: forPersonal
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                widget: list
+                field: { name: line, widget: string }
+          - { name: pillQuote, widget: text }
+          - name: forWork
+            widget: object
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                widget: list
+                field: { name: line, widget: string }
+          - name: testimonials
+            widget: object
+            required: false
+            fields:
+              - { name: label, widget: string }
+              - name: items
+                widget: list
+                summary: '{{fields.source}}'
+                fields:
+                  - { name: quote, widget: text }
+                  - { name: source, widget: string }
+          - name: stage
+            widget: object
+            fields:
+              - name: sections
+                widget: list
+                allow_add: false
+                collapsed: false
+                fields:
+                  - { name: id, widget: string }
+                  - name: stage
+                    widget: object
+                    fields:
+                      - name: main
+                        widget: select
+                        default: offstage
+                        options: *pose_options_main
+                      - name: gold
+                        widget: select
+                        default: offstage
+                        options: *pose_options_gold
+                      - name: gem
+                        widget: select
+                        default: offstage
+                        options: *pose_options_gem
+                      - name: intensity
+                        widget: number
+                        value_type: float
+                        min: 0.5
+                        max: 2.0
+                        step: 0.05
+                        default: 1.0
+
+  # ================================================================
+  # SERVICES (folder; one file per service, mirrored per locale)
+  # ================================================================
+  # Multi-locale pattern: each service lives as TWO files with the
+  # SAME filename — `src/content/da/services/X.json` and
+  # `src/content/en/services/X.json`. The filename is the stable
+  # cross-locale `id` used for hreflang pairing; the `slug` field
+  # inside each file is the per-locale URL segment.
+  #
+  # Changing `slug` does NOT rename the file — it only changes the
+  # URL. When creating a new service, use the SAME filename in DA
+  # + EN so the language switcher and hreflang alternates keep
+  # working.
+  - name: services-da
+    label: 'Services (DA)'
     label_singular: Service
     folder: src/content/da/services
     format: json
@@ -242,19 +601,29 @@ collections:
       - name: slug
         widget: string
         hint: >-
-          URL slug. Also used as the section id (#anchor) on the home page.
+          URL segment for this service in DA — appears in
+          /ydelser/{slug} and as the section id (#anchor) on the
+          home page.
       - name: number
         widget: string
         hint: Two-digit display number (e.g. "01"). Drives service ordering.
+      - name: chapter
+        widget: select
+        default: terapi
+        options:
+          - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
+          - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
+        hint: >-
+          Narrative chapter — drives the service detail page's
+          palette and homepage grouping. Keep in sync across DA + EN.
       - { name: title, widget: string }
-      - name: kicker
-        widget: string
-        hint: 'Short audience line, e.g. "film · tv · teater".'
+      - { name: kicker, widget: string, hint: 'Short audience line, e.g. "film · tv · teater".' }
       - { name: blurb, widget: text }
       - name: bullets
         label: Feature bullets
         widget: list
         field: { name: bullet, widget: string }
+      - { name: supportsLabel, label: Supports list label (optional), widget: string, required: false }
       - name: supports
         label: Supporting keywords (optional)
         widget: list
@@ -264,7 +633,7 @@ collections:
         label: Testimonials (optional)
         widget: list
         required: false
-        summary: "{{fields.source}}"
+        summary: '{{fields.source}}'
         fields:
           - { name: quote, widget: text }
           - { name: source, widget: string }
@@ -274,25 +643,101 @@ collections:
         required: false
         fields:
           - { name: label, widget: string, hint: Button text }
-          - name: href
-            widget: string
-            hint: "mailto:…, tel:…, or https://… booking URL"
+          - { name: href, widget: string, hint: 'mailto:…, tel:…, or https://…' }
           - name: kind
             widget: select
             default: primary
             options: [primary, secondary]
+      - { name: studiosLabel, label: Studios list label (optional), widget: string, required: false }
       - name: studios
         label: Studio credits (optional)
         widget: list
         required: false
-        hint: Black cut-out silhouette SVGs on transparent backgrounds.
         fields:
           - { name: name, widget: string }
           - name: logo
             widget: image
             media_folder: /static/img/studios
             public_folder: /img/studios
-          - name: url
-            widget: string
-            required: false
-            hint: Optional link-out URL.
+          - { name: url, widget: string, required: false }
+      - name: stage
+        label: Detail-page stage pose
+        widget: object
+        hint: >-
+          WebGL stage pose on this service's detail page. Typically
+          one of main/gold/gem uses `fullBleed` as a background
+          wash; the others sit `offstage`.
+        fields:
+          - { name: main, label: Mercury orb, widget: select, default: offstage, options: *pose_options_main }
+          - { name: gold, label: Gold metaballs, widget: select, default: offstage, options: *pose_options_gold }
+          - { name: gem, label: Faceted gem, widget: select, default: offstage, options: *pose_options_gem }
+          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+
+  - name: services-en
+    label: 'Services (EN)'
+    label_singular: Service
+    folder: src/content/en/services
+    format: json
+    extension: json
+    create: true
+    delete: true
+    slug: '{{fields.slug}}'
+    identifier_field: title
+    editor: { preview: false }
+    fields:
+      - name: slug
+        widget: string
+        hint: URL segment for this service in EN — appears in /en/services/{slug}.
+      - { name: number, widget: string }
+      - name: chapter
+        widget: select
+        default: terapi
+        options:
+          - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
+          - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
+      - { name: title, widget: string }
+      - { name: kicker, widget: string }
+      - { name: blurb, widget: text }
+      - name: bullets
+        widget: list
+        field: { name: bullet, widget: string }
+      - { name: supportsLabel, widget: string, required: false }
+      - name: supports
+        widget: list
+        required: false
+        field: { name: keyword, widget: string }
+      - name: testimonials
+        widget: list
+        required: false
+        summary: '{{fields.source}}'
+        fields:
+          - { name: quote, widget: text }
+          - { name: source, widget: string }
+      - name: cta
+        widget: object
+        required: false
+        fields:
+          - { name: label, widget: string }
+          - { name: href, widget: string }
+          - name: kind
+            widget: select
+            default: primary
+            options: [primary, secondary]
+      - { name: studiosLabel, widget: string, required: false }
+      - name: studios
+        widget: list
+        required: false
+        fields:
+          - { name: name, widget: string }
+          - name: logo
+            widget: image
+            media_folder: /static/img/studios
+            public_folder: /img/studios
+          - { name: url, widget: string, required: false }
+      - name: stage
+        widget: object
+        fields:
+          - { name: main, widget: select, default: offstage, options: *pose_options_main }
+          - { name: gold, widget: select, default: offstage, options: *pose_options_gold }
+          - { name: gem, widget: select, default: offstage, options: *pose_options_gem }
+          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
