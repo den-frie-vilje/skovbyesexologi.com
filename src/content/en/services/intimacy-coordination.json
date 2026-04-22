@@ -11,10 +11,32 @@
     "Upholding a safe set",
     "Support after the scene"
   ],
-  "testimonial": {
-    "quote": "I can recommend Signe Skovbye — she is deeply professional and a pleasure to work with.",
-    "source": "Michael Panduro, film director"
-  },
+  "testimonials": [
+    {
+      "quote": "I can recommend Signe Skovbye — she is deeply professional and a pleasure to work with.",
+      "source": "Michael Panduro, film director"
+    },
+    {
+      "quote": "[mock] Our actors showed up the next day without the usual dread around intimate scenes. It changed the whole set.",
+      "source": "[mock] Line producer, TV series"
+    },
+    {
+      "quote": "[mock] Signe prepared our director and performers without ever being in the way. A calm, clear voice in a space that's often confused.",
+      "source": "[mock] Artistic director, theatre"
+    },
+    {
+      "quote": "[mock] She broke the choreography down like a dance sequence — everyone knew what they were doing before we rolled.",
+      "source": "[mock] 1st AD"
+    },
+    {
+      "quote": "[mock] First time in my career an intimate scene didn't feel like a negotiation happening after the fact. Signe made the prep the actual work.",
+      "source": "[mock] Actor"
+    },
+    {
+      "quote": "[mock] The cast debrief afterwards was what really surprised me. No one had to perform being okay.",
+      "source": "[mock] Director, short film"
+    }
+  ],
   "studiosLabel": "Previous collaborations",
   "studios": [
     {
@@ -32,5 +54,7 @@
     "label": "Get in touch",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimacy%20coordination",
     "kind": "primary"
-  }
+  },
+  "chapter": "konsulent",
+  "stage": { "main": "offstage", "gold": "topRightMed", "gem": "offstage", "intensity": 1.15 }
 }

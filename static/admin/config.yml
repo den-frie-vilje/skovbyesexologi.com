@@ -260,10 +260,11 @@ collections:
         widget: list
         required: false
         field: { name: keyword, widget: string }
-      - name: testimonial
-        label: Testimonial (optional)
-        widget: object
+      - name: testimonials
+        label: Testimonials (optional)
+        widget: list
         required: false
+        summary: "{{fields.source}}"
         fields:
           - { name: quote, widget: text }
           - { name: source, widget: string }

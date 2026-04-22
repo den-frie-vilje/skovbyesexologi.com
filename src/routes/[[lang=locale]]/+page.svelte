@@ -4,6 +4,10 @@
   import { contentFor, renderFooterCopyright, type Locale } from '$lib/content';
   import FlodStage from '$lib/components/FlodStage.svelte';
   import StickyCta from '$lib/components/StickyCta.svelte';
+  import SiteHeader from '$lib/components/SiteHeader.svelte';
+  import SiteFooter from '$lib/components/SiteFooter.svelte';
+  import ContactSection from '$lib/components/ContactSection.svelte';
+  import Testimonials from '$lib/components/Testimonials.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
   import { buildSiteJsonLd, SITE_URL } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
@@ -19,7 +23,15 @@
   const bio = $derived(bundle.bio);
   const home = $derived(bundle.home);
   const services = $derived(bundle.services);
-  const findService = (slug: string) => services.find((s) => s.slug === slug);
+  /*
+    Look up services by their stable cross-locale `id` (derived from
+    the content filename), NOT by `slug` — slugs are localised
+    (e.g. DA `intimitetskoordinering` vs EN `intimacy-coordination`)
+    and differ per locale, while the id stays constant. Was `s.slug`
+    before per-locale slugs landed, which made intimacy-coordination
+    disappear on the DA homepage.
+  */
+  const findService = (id: string) => services.find((s) => s.id === id);
 
   const jsonLd = $derived(JSON.stringify(buildSiteJsonLd({ site, bio, contact, services })));
 
@@ -192,15 +204,7 @@
 <div class="flod" class:in-konsulent={chapterMode === 1}>
   <FlodStage anchors={stageAnchors} {chapterMode} />
 
-  <!--
-    Site banner. No site nav (editorial single-page), so this is
-    `<header>` rather than `<nav>` — `<nav>` without links was
-    semantically empty and confused assistive tech.
-  -->
-  <header class="top">
-    <span class="mark">{hero.name}</span>
-    <span class="mark-meta">{hero.city}</span>
-  </header>
+  <SiteHeader name={hero.name} city={hero.city} />
 
   <main>
 
@@ -376,10 +380,11 @@
       <blockquote class="inline-quote reveal">
         <p>{pillQuote}</p>
       </blockquote>
-      {#if intimacyService.testimonial}
+      {#if intimacyService.testimonials && intimacyService.testimonials.length > 0}
+        {@const t = intimacyService.testimonials[0]}
         <footer class="s-testimonial reveal">
-          <p>"{intimacyService.testimonial.quote}"</p>
-          <cite>— {intimacyService.testimonial.source}</cite>
+          <p>"{t.quote}"</p>
+          <cite>— {t.source}</cite>
         </footer>
       {/if}
       {#if intimacyService.studios?.length && intimacyService.studiosLabel}
@@ -474,36 +479,26 @@
 
   </div><!-- /.chapter-wrap-konsulent — bio is inside so Kom i kontakt stays pinned through the about-section -->
 
-  <section id="kontakt" class="contact" data-stage-anchor="contact">
-    <p class="section-label reveal">{contact.label}</p>
-    <h2 class="reveal">
-      {contact.heading}<span class="dot">.</span>
-    </h2>
-    <p class="contact-lede reveal">{contact.lede}</p>
-    <div class="contact-grid">
-      <div class="reveal">
-        <p class="label">{contact.fieldLabels.email}</p>
-        <a href="mailto:{contact.email}">{contact.email}</a>
-      </div>
-      <div class="reveal">
-        <p class="label">{contact.fieldLabels.phone}</p>
-        <a href="tel:+4531604215">{contact.phone}</a>
-      </div>
-      <div class="reveal">
-        <p class="label">{contact.fieldLabels.address}</p>
-        <p>{contact.address}</p>
-      </div>
-      <div class="reveal">
-        <p class="label">{contact.fieldLabels.hours}</p>
-        <p>{contact.hours}</p>
-      </div>
-    </div>
-  </section>
+  {#if home.testimonials && home.testimonials.items.length > 0}
+    <!--
+      Featured testimonials — curated mix across services, not
+      tied to a specific chapter. Sits between the bio and the
+      contact block as a closing-act of voices before the final CTA.
+    -->
+    <section class="home-testimonials" data-stage-anchor="testimonials">
+      <Testimonials
+        items={home.testimonials.items}
+        label={home.testimonials.label}
+        prevLabel={locale === 'da' ? 'Forrige udtalelse' : 'Previous testimonial'}
+        nextLabel={locale === 'da' ? 'Næste udtalelse' : 'Next testimonial'}
+      />
+    </section>
+  {/if}
+
+  <ContactSection {contact} />
   </main>
 
-  <footer class="foot">
-    <p>{footerCopyright}</p>
-  </footer>
+  <SiteFooter text={footerCopyright} />
 </div>
 
 <style>
@@ -552,34 +547,7 @@
     isolation: isolate;
   }
 
-  .top {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 1rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--graphite-soft);
-    position: sticky;
-    top: 0;
-    /* Solid fill — `backdrop-filter: blur()` on a sticky header kills
-       scroll perf in Safari, particularly compounding with the WebGL
-       canvas underneath. Pay the opacity trick in plain RGBA instead. */
-    background: var(--bone);
-    z-index: 10;
-    border-bottom: 1px solid var(--rule);
-  }
-  .mark {
-    color: var(--graphite);
-    font-weight: 500;
-  }
-  .mark-meta {
-    color: var(--graphite-soft);
-  }
+  /* `.top` brand mark moved to $lib/components/SiteHeader.svelte. */
 
   /* ============== HERO ============== */
   .hero {
@@ -1272,122 +1240,19 @@
     }
   }
 
-  /* ============== CONTACT ============== */
-  .contact {
-    position: relative;
-    /* Muted sage — a warmer green companion to the cool bone bg up top */
-    background: oklch(0.48 0.09 152);
-    color: var(--bone);
-    padding: clamp(5rem, 12vw, 10rem) 1.25rem;
-    overflow: hidden;
-    /* Sits above the fixed stage canvas so the sage is solid, not
-       blended with the 3D elements behind */
-    z-index: 1;
-  }
-  .contact > * {
-    position: relative;
-    z-index: 2;
-  }
-  .contact .section-label {
-    /* Was 70% bone on sage-green bg — 3.63:1, fails WCAG AA for the
-       11pt label. 90% lifts it above the 4.5:1 threshold for small
-       text without losing the quiet, de-emphasised look. */
-    color: color-mix(in oklch, var(--bone) 90%, transparent);
-  }
-  .contact h2 {
-    font-family: var(--font-serif);
-    font-size: clamp(4rem, 22vw, 14rem);
-    line-height: 0.88;
-    letter-spacing: -0.045em;
-    font-weight: 400;
-    margin: 0 0 2rem;
-    color: var(--bone);
-  }
-  .contact h2 .dot {
-    color: var(--tangerine);
-  }
-  /*
-    `.contact p` below sets mono font + `margin: 0` on every
-    paragraph inside the contact block. The lede inherits both
-    (intentional — the mono aesthetic ties the prose to the
-    labels below) and only needs two overrides: a reading-width
-    constraint and the wide bottom margin so "svære at sige højt"
-    doesn't butt up against the "Email" label.
+  /* Contact section + footer strip moved to
+     $lib/components/ContactSection.svelte and
+     $lib/components/SiteFooter.svelte. */
 
-    A prior version declared font-family: var(--font-serif) here,
-    but `.contact p`'s higher specificity meant the serif rule
-    never actually rendered — removed to avoid implying a visual
-    that wasn't happening.
-  */
-  .contact .contact-lede {
-    max-width: 40ch;
-    margin: 0 0 4rem;
-  }
-  .contact-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    max-width: 1100px;
-  }
-  .contact a,
-  .contact p {
-    font-family: var(--font-mono);
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: inherit;
-    text-decoration: none;
-    margin: 0;
-  }
-  .contact a {
-    border-bottom: 1px solid currentColor;
-    /* Touch-target minimum — the email and phone links are the
-       only interactive elements in the contact block, and at the
-       default line-box height they're ~21px tall on mobile, well
-       under the 44px guideline. Inline-flex + min-height keeps the
-       visual underline aligned with the text while enlarging the
-       hit area. */
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-  }
-  .contact a:hover {
-    color: var(--tangerine);
-    border-color: var(--tangerine);
-  }
-  .label {
-    font-size: 0.66rem !important;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    /* Was 55% bone on sage-green bg — 2.85:1, fails WCAG AA badly
-       for the 7.9pt (small) label. 85% gets small-text above 4.5:1
-       while still reading as muted next to the full-strength
-       contact values below. */
-    color: color-mix(in oklch, var(--bone) 85%, transparent) !important;
-    margin: 0 0 0.35rem !important;
-    border: none !important;
-  }
-
-  .foot {
-    /* Deep fern — a darker floor below the .contact sage. Kept as its
-       own explicit value rather than deriving from var(--violet) so the
-       typography accent can be a lighter, more-obviously-green sage
-       without darkening the .foot strip. */
-    background: oklch(0.2 0.06 152);
-    /* Was 45% bone — 4.06:1 on the deep-fern bg, below WCAG AA's
-       4.5:1 threshold for this 7.9pt copyright line. 65% lifts it
-       above the bar while still reading as de-emphasised. */
-    color: color-mix(in oklch, var(--bone) 65%, transparent);
-    padding: 1rem 1.25rem 2.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-  }
-  .foot p {
+  /* ============== HOME TESTIMONIALS ============== */
+  /* Carries the same horizontal gutter as the other bone-background
+     sections (hero, manifest, ritual, etc.) so the testimonial
+     cards align with the article column above. The Testimonials
+     component handles its own internal scroll bleed on mobile. */
+  .home-testimonials {
     max-width: 1320px;
     margin: 0 auto;
+    padding: clamp(3rem, 8vw, 6rem) 1.25rem clamp(3rem, 8vw, 6rem);
   }
 
   /* ============== REVEAL STAGGER ============== */
@@ -1398,8 +1263,11 @@
   }
 
   /* ============== RESPONSIVE ============== */
+  /* `.top`, `.contact`, `.foot p` responsive rules live inside
+     their own components now (SiteHeader, ContactSection, SiteFooter) —
+     Svelte's scoped CSS means selectors for moved elements don't
+     match anything in this file's DOM fragment anyway. */
   @media (min-width: 720px) {
-    .top { padding: 1rem 2rem; }
     .hero,
     .name-section,
     .chapter,
@@ -1409,8 +1277,7 @@
     .for-personal,
     .for-work,
     .bio,
-    .contact,
-    .foot p {
+    .home-testimonials {
       padding-left: 2rem;
       padding-right: 2rem;
     }
@@ -1437,8 +1304,7 @@
     .for-personal,
     .for-work,
     .bio,
-    .contact,
-    .foot p {
+    .home-testimonials {
       padding-left: 3rem;
       padding-right: 3rem;
     }

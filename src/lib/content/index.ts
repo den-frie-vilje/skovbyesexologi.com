@@ -14,7 +14,7 @@
  * them — nothing floats in a catch-all `ui` bucket.
  */
 
-import type { SectionStage } from '$lib/stage/poses';
+import type { SectionStage, StageConfig } from '$lib/stage/poses';
 
 // ---- DA (default) ----
 import siteDa from '../../content/da/site.json';
@@ -88,7 +88,22 @@ export type StudioCredit = {
   url?: string;
 };
 
+export type Testimonial = { quote: string; source: string };
+
+/** Which narrative chapter a service belongs to. Maps 1:1 to the
+ *  homepage's chapterMode (therapy = 0, konsulent = 1) and drives
+ *  the service detail page's palette: cool bone + iridescent in
+ *  terapi, warm bone + chrome in konsulent. */
+export type ServiceChapter = 'terapi' | 'konsulent';
+
 export type Service = {
+  /** Stable cross-locale identifier — derived from the content
+   *  filename (`terapi.json` → `id: "terapi"`). Used to pair a
+   *  service's DA and EN versions for hreflang / language switching.
+   *  Never appears in a URL; `slug` is the per-locale URL segment. */
+  id: string;
+  /** Per-locale URL segment, e.g. `terapi` in DA, `therapy` in EN.
+   *  Editable in Sveltia; must be unique within its locale. */
   slug: string;
   number: string;
   title: string;
@@ -99,10 +114,23 @@ export type Service = {
    *  translate with the service. */
   supportsLabel?: string;
   supports?: string[];
-  testimonial?: { quote: string; source: string };
+  /** One or more client testimonials for this service. Rendered via
+   *  the shared `<Testimonials>` component, which switches layout
+   *  based on count (single → featured pull-quote; 2–3 → grid;
+   *  4+ → horizontal scroll). Previously `testimonial` (singular);
+   *  the array form lets a service accumulate quotes over time
+   *  without a schema change. */
+  testimonials?: Testimonial[];
   cta?: ServiceCTA;
   studiosLabel?: string;
   studios?: StudioCredit[];
+  /** Which palette the service detail page inherits from the
+   *  homepage (therapy chapter I vs konsulent chapter II). */
+  chapter: ServiceChapter;
+  /** FlodStage configuration for the service detail page. Typically
+   *  one of the three elements uses the `fullBleed` pose as a
+   *  background wash, with the others `offstage`. */
+  stage: StageConfig;
 };
 
 export type NavLink = { label: string; href: string };
@@ -141,6 +169,8 @@ export type HomeRitual = { label: string; subtitle: string; steps: RitualStep[] 
 
 export type HomeList = { label: string; items: string[] };
 
+export type HomeTestimonials = { label: string; items: Testimonial[] };
+
 export type HomeStage = { sections: SectionStage[] };
 
 /** Homepage content, grouped by section in the order it renders. */
@@ -155,6 +185,10 @@ export type HomePage = {
   chapter2: ChapterHeader;
   pillQuote: string;
   forWork: HomeList;
+  /** Curated featured testimonials — a mix across services rather
+   *  than per-service, shown between the bio and contact sections.
+   *  Optional: an empty array or missing field hides the section. */
+  testimonials?: HomeTestimonials;
   stage: HomeStage;
 };
 
@@ -169,18 +203,33 @@ export type LocaleBundle = {
 
 // ---- services (globbed per locale) ----
 
-const daServiceModules = import.meta.glob<{ default: Service }>(
+/*
+  Content files don't carry their own `id` field — the JSON is
+  kept as lean as possible for the Sveltia editor. Instead the
+  filename is the stable cross-locale identifier: both
+  `da/services/terapi.json` and `en/services/terapi.json` load as
+  `id: "terapi"`, even though their `slug` fields differ
+  (`terapi` in DA, `therapy` in EN).
+*/
+type RawServiceModule = { default: Omit<Service, 'id'> };
+
+const daServiceModules = import.meta.glob<RawServiceModule>(
   '../../content/da/services/*.json',
   { eager: true }
 );
-const enServiceModules = import.meta.glob<{ default: Service }>(
+const enServiceModules = import.meta.glob<RawServiceModule>(
   '../../content/en/services/*.json',
   { eager: true }
 );
 
-function resolveServices(modules: typeof daServiceModules): Service[] {
-  return Object.values(modules)
-    .map((mod) => mod.default)
+function idFromPath(path: string): string {
+  const match = path.match(/\/([^/]+)\.json$/);
+  return match ? match[1] : 'unknown';
+}
+
+function resolveServices(modules: Record<string, RawServiceModule>): Service[] {
+  return Object.entries(modules)
+    .map(([path, mod]) => ({ id: idFromPath(path), ...mod.default }))
     .sort((a, b) => a.number.localeCompare(b.number));
 }
 
@@ -213,6 +262,13 @@ export function contentFor(locale: Locale | string | undefined): LocaleBundle {
 /** Service lookup within a given locale. */
 export function serviceBySlug(locale: Locale | string | undefined, slug: string): Service | undefined {
   return contentFor(locale).services.find((s) => s.slug === slug);
+}
+
+/** Service lookup by stable cross-locale id (= filename). Used to
+ *  resolve a service's peer in a different locale for hreflang and
+ *  language-switch links. */
+export function serviceById(locale: Locale | string | undefined, id: string): Service | undefined {
+  return contentFor(locale).services.find((s) => s.id === id);
 }
 
 /** Render the site's footer-copyright template with live values. */

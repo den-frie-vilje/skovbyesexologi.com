@@ -9,5 +9,7 @@
     "Rådgivning om aldersrelevante hjælpemidler",
     "Oplæg og samtaler for beboere",
     "Kasuistik og konkrete redskaber"
-  ]
+  ],
+  "chapter": "konsulent",
+  "stage": { "main": "offstage", "gold": "offstage", "gem": "fullBleed", "intensity": 1.00 }
 }

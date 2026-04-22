@@ -1,5 +1,5 @@
 {
-  "slug": "aeldrepleje",
+  "slug": "sexual-health-elder-care",
   "number": "03",
   "title": "Sexual health in elder care",
   "kicker": "care staff · residents",
@@ -9,5 +9,7 @@
     "Guidance on age-appropriate aids",
     "Talks and conversations with residents",
     "Case studies and concrete tools"
-  ]
+  ],
+  "chapter": "konsulent",
+  "stage": { "main": "offstage", "gold": "offstage", "gem": "fullBleed", "intensity": 1.00 }
 }

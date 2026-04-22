@@ -1,5 +1,5 @@
 {
-  "slug": "intimacy-coordination",
+  "slug": "intimitetskoordinering",
   "number": "02",
   "title": "Intimitets­koordinering",
   "kicker": "film · tv · teater",
@@ -11,10 +11,32 @@
     "Opretholdelse af et sikkert sæt",
     "Støtte efter scenen"
   ],
-  "testimonial": {
-    "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
-    "source": "Michael Panduro, filminstruktør"
-  },
+  "testimonials": [
+    {
+      "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
+      "source": "Michael Panduro, filminstruktør"
+    },
+    {
+      "quote": "[mock] Vores skuespillere mødte op næste dag uden den sædvanlige ængstelighed omkring intime scener. Det ændrede hele settet.",
+      "source": "[mock] Produktionsleder, tv-serie"
+    },
+    {
+      "quote": "[mock] Signe forberedte vores instruktør og performere uden at være i vejen. En rolig, klar stemme i et område der ofte er forvirret.",
+      "source": "[mock] Teaterchef"
+    },
+    {
+      "quote": "[mock] Koreografien lagde hun frem som en danseserie — alle vidste hvad de gjorde, inden vi rullede.",
+      "source": "[mock] 1st AD"
+    },
+    {
+      "quote": "[mock] Det var første gang i min karriere, at en intim scene ikke føltes som et forhandlingsrum bagefter. Signe gjorde forberedelsen til selve arbejdet.",
+      "source": "[mock] Skuespiller"
+    },
+    {
+      "quote": "[mock] Eftersamtalen med casten var det, der for alvor overraskede mig. Ingen skulle præstere at være okay.",
+      "source": "[mock] Instruktør, kortfilm"
+    }
+  ],
   "studiosLabel": "Tidligere samarbejder",
   "studios": [
     {
@@ -32,5 +54,7 @@
     "label": "Kom i kontakt",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
     "kind": "primary"
-  }
+  },
+  "chapter": "konsulent",
+  "stage": { "main": "offstage", "gold": "topRightMed", "gem": "offstage", "intensity": 1.15 }
 }

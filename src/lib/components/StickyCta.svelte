@@ -43,7 +43,25 @@
   href={cta.href}
   aria-label={cta.label}
 >
-  {cta.label}
+  <!--
+    Chartreuse dot AFTER the label — echoes the `.` at the end of
+    "Skriv." in the contact heading. Baseline-aligned so it reads
+    as a punctuation mark on the label, not a floating disc.
+
+    Wrapped in a single inline container so the dot's
+    `vertical-align: baseline` actually binds to the label's text
+    baseline — on a flex layout, `vertical-align` is ignored, so
+    the button itself is flex but its children share an inline
+    formatting context inside `.cta-inner`.
+
+    On hover the dot scales up to fill the whole button; the
+    label is z-indexed above and shifts slightly to the right so
+    its centre lands on the button's geometric centre once the
+    dot is no longer visually taking space.
+  -->
+  <span class="cta-inner">
+    <span class="cta-label">{cta.label}</span><span class="cta-dot" aria-hidden="true"></span>
+  </span>
 </a>
 
 <style>
@@ -70,9 +88,14 @@
 
     /* Right-aligned in the containing block via auto-left margin. Using
        block-level `flex` (not `inline-flex`) so the auto margin works
-       while still centering the label vertically inside the box. */
+       while still centering the label vertically inside the box.
+       `align-items: center` keeps the inline content (label + dot)
+       vertically centred in the 3.3rem-tall button; the dot's
+       baseline alignment to the label happens inside `.cta-inner`
+       via `vertical-align`, not at the flex layer. */
     display: flex;
     align-items: center;
+    justify-content: center;
     width: fit-content;
     margin-left: auto;
     margin-right: var(--cta-h);
@@ -88,41 +111,129 @@
        margin-top (see +page.svelte) to cancel the button's vertical
        footprint in flow without affecting the CTA's own geometry. */
     height: var(--cta-h-box);
-    padding: 0 1.9em;
+    /* Horizontal padding matches the vertical (button is
+       `--cta-h-box` tall; text is 1.15rem so implicit vertical
+       pad is ~0.9em). Left padding is slightly more than right
+       to optically balance the chartreuse dot's visual weight on
+       the right edge — without it, the label reads as crowded
+       toward the left. 0.25em extra roughly equals half the
+       dot + its left margin. */
+    padding: 0 0.9em 0 1.15em;
 
     font-family: var(--font-serif);
     font-size: 1.15rem;
+    font-weight: 400;
     letter-spacing: 0.02em;
     text-decoration: none;
-    /* Default fill: deep fern green (shared with .foot footer bg). */
-    background: var(--violet);
     color: var(--bone);
-    border: 1px solid var(--violet);
+    border: none;
     border-radius: 2px;
+    background: var(--violet);
     box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--violet) 60%, transparent);
 
-    transition:
-      background 0.2s ease,
-      color 0.2s ease,
-      border-color 0.2s ease;
+    /*
+      Clip the expanding chartreuse dot to the button's shape — on
+      hover the dot scales up past the button's edges, and overflow
+      clipping is what makes the "fill" look clean. `isolation`
+      keeps the dot's stacking context local so its z-index doesn't
+      leak out into the page.
+    */
+    overflow: hidden;
+    isolation: isolate;
+
+    transition: color 0.25s ease;
   }
 
-  /* Hover + active: neon tangerine accent, dark text. */
+  /* Inline wrapper — shared inline formatting context for the
+     label + dot so `vertical-align: baseline` on the dot binds to
+     the label's text baseline. Nothing layout-changing here;
+     `.sticky-cta`'s flex alignment positions this wrapper as a
+     unit inside the button. */
+  .cta-inner {
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Chartreuse disk — sits on the label's text baseline like the
+     `.` in `Skriv.`. `vertical-align: baseline` works here because
+     both `.cta-label` and `.cta-dot` are inline-level inside
+     `.cta-inner`. The dot's bottom edge aligns with the text
+     baseline, so visually the disk sits just above the baseline —
+     the same relationship a period has to its surrounding text.
+     On hover it scales 60× from its own centre, filling the
+     button with chartreuse. */
+  .cta-dot {
+    display: inline-block;
+    width: 0.45em;
+    height: 0.45em;
+    margin-left: 0.22em;
+    border-radius: 50%;
+    background: var(--tangerine);
+    vertical-align: baseline;
+    z-index: 0;
+    /* Optical correction — with pure `vertical-align: baseline`
+       the dot's bottom edge sits exactly on the text baseline,
+       which visually reads as "hovering" because the dot's small
+       size makes it occupy the x-height band. Nudging half a
+       pixel lower lets the dot read as resting on (and just
+       barely past) the baseline, like a period's visual weight
+       in a serif face. Browsers paint subpixel translates
+       consistently on high-DPI displays; on 1× the value rounds
+       to 1px without a layout shift. */
+    position: relative;
+    top: 0.5px;
+    transform-origin: 50% 50%;
+    /* Half the speed of a typical hover — 0.7s lets the fill
+       feel like a deliberate reveal rather than a burst. */
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cta-label {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* On hover: shift the label right by half of (dot + margin) so
+     its centre lands on the button's geometric centre. The dot
+     has already scaled past visibility, so the label reads as
+     centred against a uniform chartreuse fill. */
+  .sticky-cta:hover .cta-label,
+  .sticky-cta:active .cta-label {
+    /* +(dot + dot-margin) / 2 = +(0.45 + 0.22) / 2 = +0.335em. */
+    transform: translateX(0.335em);
+  }
+
+  /* Hover / click / focus-visible: dot expands to fill. The
+     scale factor is generous (×60) so even wide buttons get
+     fully covered — cheap compared to measuring the diagonal
+     per instance. Text colour darkens so it stays legible on
+     the chartreuse fill. */
+  .sticky-cta:hover .cta-dot,
+  .sticky-cta:active .cta-dot {
+    transform: scale(60);
+  }
   .sticky-cta:hover,
   .sticky-cta:active {
-    background: var(--tangerine);
     color: var(--violet);
-    border-color: var(--tangerine);
   }
 
+  /*
+    Secondary variant — same mechanic, but the base is transparent
+    rather than filled violet. At rest: just the chartreuse dot
+    next to violet text. On hover: dot expands, button "fills" to
+    chartreuse.
+  */
   .sticky-cta.secondary {
     background: transparent;
     color: var(--violet);
   }
+  .sticky-cta.secondary:hover .cta-dot,
+  .sticky-cta.secondary:active .cta-dot {
+    transform: scale(60);
+  }
   .sticky-cta.secondary:hover,
   .sticky-cta.secondary:active {
-    background: var(--tangerine);
     color: var(--violet);
-    border-color: var(--tangerine);
   }
 </style>

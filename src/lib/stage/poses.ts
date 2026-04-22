@@ -50,6 +50,7 @@ export const goldPoses = {
   disperseLowR:     { x: 0.35,  y: -0.75, scale: 0.78 },
   disperseLowL:     { x: -0.65, y: -0.5,  scale: 0.8  },
   disperseRightMid: { x: 0.85,  y: 0.1,   scale: 0.8  },
+  topRightMed:      { x: 0.82,  y: 0.6,   scale: 0.5  },
   topLeftSm:        { x: -0.78, y: 0.55,  scale: 0.4  },
   bottomLeftMed:    { x: -0.78, y: -0.55, scale: 0.47 },
   cornerTLtiny:     { x: -0.91, y: 0.84,  scale: 0.24 },

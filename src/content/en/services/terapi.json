@@ -1,5 +1,5 @@
 {
-  "slug": "terapi",
+  "slug": "therapy",
   "number": "01",
   "title": "Psychomotor sexological therapy",
   "kicker": "solo · couples · poly",
@@ -22,5 +22,7 @@
     "label": "Book a session",
     "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
     "kind": "primary"
-  }
+  },
+  "chapter": "terapi",
+  "stage": { "main": "fullBleed", "gold": "offstage", "gem": "offstage", "intensity": 1.05 }
 }

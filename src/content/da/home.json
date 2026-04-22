@@ -72,6 +72,35 @@
       "er ung og vil have undervisning der ikke kun handler om biologi"
     ]
   },
+  "testimonials": {
+    "label": "Det siger samarbejdspartnere",
+    "items": [
+      {
+        "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
+        "source": "Michael Panduro, filminstruktør"
+      },
+      {
+        "quote": "[mock] Signes tilstedeværelse på settet gjorde forskellen på, om skuespillerne følte sig trygge eller blev bedt om at præstere tryghed.",
+        "source": "[mock] Producent, spillefilm"
+      },
+      {
+        "quote": "[mock] Workshoppen hun kørte for plejepersonalet ændrede, hvordan vi taler med beboerne om intimitet. Vi havde undgået emnet i årevis.",
+        "source": "[mock] Plejeleder, plejehjem"
+      },
+      {
+        "quote": "[mock] Som par gik vi ind og var kørt fast. Signe fiksede os ikke — hun lærte os at mærke, når vi var på vej til at køre fast igen.",
+        "source": "[mock] Par, København"
+      },
+      {
+        "quote": "[mock] Workshoppen for de unge var første gang, vores elever stillede spørgsmål om lyst og samtykke uden at trække sig.",
+        "source": "[mock] Lærer, ungdomsuddannelse"
+      },
+      {
+        "quote": "[mock] Jeg kom ud som queer som 47-årig og havde ingen anelse om, hvad det hele betød i kroppen. Tre sessioner senere havde jeg et ordforråd, jeg ikke vidste fandtes.",
+        "source": "[mock] Terapiklient"
+      }
+    ]
+  },
   "stage": {
     "sections": [
       { "id": "hero",              "stage": { "main": "heroFarRight",   "gold": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },

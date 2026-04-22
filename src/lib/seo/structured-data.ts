@@ -95,13 +95,16 @@ export function buildSiteJsonLd(input: BuildInput): object {
     areaServed: { '@type': 'Country', name: 'Denmark' },
     inLanguage: site.lang,
     url: `${SITE_URL}/#${s.slug}`,
-    // Testimonial on the intimacy service → schema Review.
-    ...(s.testimonial && {
-      review: {
+    // Each testimonial becomes a schema Review. When multiple
+    // testimonials are present, schema.org's `review` field accepts
+    // an array of Review nodes, so we map all of them rather than
+    // emitting only the first.
+    ...(s.testimonials && s.testimonials.length > 0 && {
+      review: s.testimonials.map((t) => ({
         '@type': 'Review',
-        reviewBody: s.testimonial.quote,
-        author: { '@type': 'Person', name: s.testimonial.source }
-      }
+        reviewBody: t.quote,
+        author: { '@type': 'Person', name: t.source }
+      }))
     })
   }));
 
