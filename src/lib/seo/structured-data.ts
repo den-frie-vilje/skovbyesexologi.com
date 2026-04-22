@@ -12,8 +12,26 @@
  */
 
 import type { Bio, Contact, Service, Site } from '$lib/content';
+import { env } from '$env/dynamic/public';
 
-export const SITE_URL = 'https://skovbyesexologi.com';
+/*
+  Reading PUBLIC_SITE_URL via `$env/dynamic/public` instead of the
+  static variant: the static import fails at dev boot when no
+  `.env.development` is on disk, because SvelteKit refuses to emit
+  an export for a var that isn't declared at build time. Dynamic
+  env proxies `process.env`, so a missing value is `undefined`
+  rather than a hard module error — the fallback below then kicks
+  in and dev works out of the box. Production + staging builds
+  still read their respective `.env.[mode]` files at build time,
+  so the canonical URL is baked into the prerendered output.
+*/
+function normalizeSiteUrl(raw: string | undefined): string {
+  const fallback = 'https://skovbyesexologi.com';
+  const value = (raw ?? '').trim() || fallback;
+  return value.replace(/\/+$/, '');
+}
+
+export const SITE_URL = normalizeSiteUrl(env.PUBLIC_SITE_URL);
 
 type BuildInput = {
   site: Site;
