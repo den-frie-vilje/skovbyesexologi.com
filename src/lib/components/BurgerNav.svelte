@@ -7,9 +7,17 @@
   `position: fixed` so it can cover the page regardless of the
   header's own stacking context.
 
-  Closing triggers: the × button in the overlay, the ESC key, a
-  click on the backdrop, and clicking any nav link (so the menu
-  dismisses as the destination page loads).
+  Single toggle model — one burger button, not burger + close X.
+  It stays pinned in its resting position inside the header at
+  `z-index: 102` (above the panel's `101`), and its three bars
+  CSS-morph into an X while the panel flies in behind. Because
+  the DOM element never moves, the X lands in exactly the same
+  place the three bars occupied — no coordinate arithmetic needed
+  to keep them aligned.
+
+  Closing triggers: the burger button itself (second click), the
+  ESC key, a click on the backdrop, and clicking any nav link (so
+  the menu dismisses as the destination page loads).
 
   Not a focus-trap yet — ESC + the generous tap targets + the
   `:focus-visible` outline from app.css carry a11y for now.
@@ -19,7 +27,6 @@
 -->
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
-  import { tick } from 'svelte';
   import type { NavLink } from '$lib/content';
 
   interface Props {
@@ -41,42 +48,44 @@
 
   let open = $state(false);
   let burgerBtn: HTMLButtonElement | null = $state(null);
-  let closeBtn: HTMLButtonElement | null = $state(null);
 
-  async function openMenu() {
-    open = true;
-    // After Svelte applies the DOM update + transition start,
-    // move focus into the panel so ESC and Tab both behave
-    // predictably from the get-go.
-    await tick();
-    closeBtn?.focus();
+  function toggleMenu() {
+    open = !open;
   }
 
-  async function closeMenu() {
+  function closeMenu() {
     if (!open) return;
     open = false;
-    await tick();
-    burgerBtn?.focus();
   }
 
   function onWindowKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape' && open) {
       e.preventDefault();
       closeMenu();
+      // Return focus to the burger so keyboard users land back on
+      // the control that opened the menu.
+      burgerBtn?.focus();
     }
   }
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />
 
+<!--
+  Single toggle button — bars → X via CSS when `.open`. Stays in
+  the header's layout flow; a high z-index lifts it above the panel
+  when the panel is open, so the X visually covers the burger's
+  resting position exactly.
+-->
 <button
   class="burger"
+  class:open
   type="button"
-  aria-label={openLabel}
+  aria-label={open ? closeLabel : openLabel}
   aria-expanded={open}
   aria-controls="burger-panel"
   bind:this={burgerBtn}
-  onclick={openMenu}
+  onclick={toggleMenu}
 >
   <span class="bars" aria-hidden="true">
     <span></span>
@@ -100,16 +109,6 @@
     aria-label={menuLabel}
     transition:fly={{ y: -24, duration: 260, opacity: 0 }}
   >
-    <button
-      class="close"
-      type="button"
-      aria-label={closeLabel}
-      bind:this={closeBtn}
-      onclick={closeMenu}
-    >
-      <span aria-hidden="true">×</span>
-    </button>
-
     <nav>
       <p class="nav-eyebrow">{menuLabel}</p>
       <ul>
@@ -138,7 +137,17 @@
 
 <style>
   /* ============== BURGER BUTTON ============== */
+  /*
+    `position: relative` + `z-index: 102` lifts the button above
+    the open panel (101) and backdrop (100). The header around it
+    is already at z-index 110 in its stacking context, so this
+    z-index is a belt-and-braces safeguard in case the button is
+    ever composed into a container without its own stacking
+    context.
+  */
   .burger {
+    position: relative;
+    z-index: 102;
     width: 44px;
     height: 44px;
     border: none;
@@ -149,27 +158,76 @@
     align-items: center;
     justify-content: center;
     color: var(--graphite);
+    transition: color 0.2s ease;
   }
+  /*
+    Fixed-height bars container so the bar spans have a stable
+    parent box when they translate + rotate into an X. Without
+    an explicit height, the flex `gap` collapses once the spans
+    translate out of their natural positions and the X drifts
+    a few pixels upward during the transition.
+  */
   .bars {
     display: flex;
     flex-direction: column;
     gap: 5px;
     width: 22px;
+    height: 14.5px; /* 3 × 1.5px bars + 2 × 5px gaps */
   }
   .bars span {
     display: block;
     height: 1.5px;
     background: currentColor;
     border-radius: 1px;
-    /* Middle bar is a touch shorter — small editorial nod,
-       avoids the "three equal stacks" cliché. */
+    transition:
+      transform 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.16s ease;
   }
+  /* Middle bar is a touch shorter at rest — small editorial
+     nod, avoids the "three equal stacks" cliché. Widens to
+     full span when the menu opens so the fade-out doesn't read
+     as a shifted element. */
   .bars span:nth-child(2) {
     width: 70%;
     margin-left: auto;
   }
   .burger:hover .bars span,
   .burger:focus-visible .bars span {
+    background: var(--violet);
+  }
+
+  /* ============== OPEN STATE — BARS → X ============== */
+  /*
+    Top and bottom bars translate toward the middle bar's resting
+    y (6.5px from the top of `.bars`) and rotate 45° in opposite
+    directions, meeting as an X. The middle bar fades out rather
+    than rotating — it's shorter at rest, so rotating it in
+    would require an additional width tween and produce a busier
+    visual. Fading it is cleaner and reads as a single morph.
+
+    Transform-origin stays at the bar's own centre (default 50%
+    50%), so the cross point lands at (width/2, 6.5px) from the
+    `.bars` container's top-left — which is exactly the middle
+    bar's centre, making the X optically centred inside the same
+    22×14.5px box the bars occupied at rest.
+  */
+  .burger.open .bars span:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+  .burger.open .bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .burger.open .bars span:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+  /* When open, keep the bars in the hover colour regardless of
+     pointer state — signals that the control is "active". */
+  .burger.open .bars span {
+    background: var(--graphite);
+  }
+  .burger.open:hover .bars span,
+  .burger.open:focus-visible .bars span {
     background: var(--violet);
   }
 
@@ -189,13 +247,21 @@
   }
 
   /* ============== PANEL ============== */
+  /*
+    Panel takes only vertical padding — the `<nav>` inside owns
+    the horizontal gutter so its content lines up with the page
+    content frame (max-width 1320px + 2rem side padding, set
+    below). The burger button (still rendered in the header at
+    z-index 102) sits above the panel at its resting position,
+    so no close-X inside the panel is needed.
+  */
   .panel {
     position: fixed;
     inset: 0;
     z-index: 101;
     display: flex;
     flex-direction: column;
-    padding: clamp(4rem, 10vh, 6rem) clamp(1.25rem, 5vw, 4rem);
+    padding: clamp(4rem, 10vh, 6rem) 0;
     pointer-events: none; /* backdrop captures outside clicks */
     /*
       Reset `text-transform: uppercase` + `letter-spacing` inherited
@@ -213,40 +279,20 @@
   }
 
   /*
-    Close X sits at the exact same position as the hamburger
-    button in `.top` — `top: 1rem; right: 1.25rem` matches
-    `.top`'s padding. The replacement feels like the trigger
-    toggles in place rather than the X appearing elsewhere on
-    the page. Responsive right-offset tracks the header's
-    media-query bump at ≥720px.
+    The nav column caps at the same frame as page content
+    (1320px max + 2rem horizontal padding). `margin-top/bottom:
+    auto` pair with `.panel`'s `flex-direction: column` to
+    vertically center the block; `margin-left/right: auto` keeps
+    it horizontally centered inside the viewport-wide panel.
+    `width: 100%` so flex's cross-axis shrink-to-fit doesn't
+    collapse the block below the max-width at narrow widths.
   */
-  .close {
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
-    width: 44px;
-    height: 44px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-family: var(--font-serif);
-    font-size: 2.2rem;
-    line-height: 1;
-    color: var(--graphite);
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.15s;
-  }
-  .close:hover,
-  .close:focus-visible {
-    color: var(--violet);
-  }
-
   nav {
-    margin-top: auto;
-    margin-bottom: auto;
+    width: 100%;
+    max-width: 1320px;
+    margin: auto;
+    padding: 0 2rem;
+    box-sizing: border-box;
   }
   .nav-eyebrow {
     font-family: var(--font-mono);
@@ -357,18 +403,9 @@
     color: var(--violet);
   }
 
-  /* Match SiteHeader's ≥720px right-padding bump so the close
-     X stays aligned with where the hamburger sits at that
-     breakpoint (1rem → 2rem right). */
-  @media (min-width: 720px) {
-    .close {
-      right: 2rem;
-    }
-  }
-
-  /* Reduced motion — skip the per-link stagger + arrow slide,
-     let the panel fade still happen but keep link content
-     static and the arrow always visible. */
+  /* Reduced motion — skip the per-link stagger + arrow slide +
+     bar-to-X animation. Panel fade still happens (fade is gentle
+     enough) but the toggle snaps instead of morphing. */
   @media (prefers-reduced-motion: reduce) {
     li {
       animation: none;
@@ -377,6 +414,9 @@
     .arrow {
       transform: none;
       opacity: 1;
+      transition: none;
+    }
+    .bars span {
       transition: none;
     }
   }

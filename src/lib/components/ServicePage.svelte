@@ -1,58 +1,46 @@
 <!--
-  Service detail page shell. Consumed by both
-  `routes/ydelser/[slug]/+page.svelte` (DA) and
-  `routes/en/services/[slug]/+page.svelte` (EN) — the two routes
-  handle URL resolution, hreflang, and canonical tags; this
-  component only concerns itself with presenting one service.
+  Service detail page — content-only component. Consumed by both
+  `routes/(app)/ydelser/[slug]/+page.svelte` (DA) and
+  `routes/(app)/en/services/[slug]/+page.svelte` (EN); each route
+  handles URL resolution, hreflang, and canonical tags.
 
-  Content model intentionally matches the existing Service type
-  (see $lib/content) so no schema migration is needed to ship the
-  first service page. Sections render only when the corresponding
-  content fields are present (`supports`, `testimonial`, `studios`),
-  which lets each service grow richer over time without this
-  component branching.
-
-  No FlodStage here yet — deferred until per-service stage anchors
-  are designed. The `.flod` gradient background still reads cleanly
-  as a static backdrop, and the @media (prefers-reduced-motion)
-  code path on the homepage is effectively the default here.
+  The `.flod` shell, FlodStage, SiteHeader, ContactSection, and
+  SiteFooter all live in `(app)/+layout.svelte` — they mount once
+  and persist across client-side navigation, so switching from
+  one service page to another (or home → service) keeps the same
+  WebGL stage instance and lerps its pose rather than
+  re-initialising. This component only contributes the article
+  content + publishes stage config to the shared `stage` store.
 -->
 <script lang="ts">
   import type {
     HomeList,
     HomeManifest,
     HomeRitual,
-    Locale,
     LocaleBundle,
     Service
   } from '$lib/content';
-  import { primaryNav } from '$lib/content';
   import { mainPoses, goldPoses, gemPoses } from '$lib/stage/poses';
-  import SiteHeader from './SiteHeader.svelte';
-  import SiteFooter from './SiteFooter.svelte';
-  import ContactSection from './ContactSection.svelte';
+  import { stage } from '$lib/stage/store.svelte';
   import Testimonials from './Testimonials.svelte';
-  import FlodStage from './FlodStage.svelte';
   import StickyCta from './StickyCta.svelte';
   import ManifestSection from './ManifestSection.svelte';
   import RitualSection from './RitualSection.svelte';
   import NumberedList from './NumberedList.svelte';
 
   interface Props {
-    locale: Locale;
     service: Service;
     /** The `contentFor(locale)` bundle — passed in rather than
-     *  re-derived so the caller controls locale reactivity. */
+     *  re-derived so the caller controls locale reactivity. Used
+     *  here for the chapter-level CTA fallback (looks up terapi
+     *  / intimacy-coordination's own cta when the current
+     *  service doesn't define one). */
     bundle: LocaleBundle;
-    /** Copy of the caller's rendered footer copyright. The template
-     *  render lives at the route level so year/name/CVR tokens
-     *  resolve with the same clock the rest of the page uses. */
-    footerCopyright: string;
-    /** Label for the "back to all services" link at the page bottom.
-     *  Passed in so it translates with the locale. */
+    /** Label for the "back to all services" link at the article
+     *  bottom. Passed in so it translates with the locale. */
     backLabel: string;
-    /** Destination of the back link — the homepage of the current
-     *  locale, i.e. `/` for DA or `/en` for EN. */
+    /** Destination of the back link — the homepage of the
+     *  current locale: `/` (DA) or `/en` (EN). */
     backHref: string;
     /**
      * Optional chapter-context blocks carried over from the
@@ -68,19 +56,14 @@
   }
 
   let {
-    locale,
     service,
     bundle,
-    footerCopyright,
     backLabel,
     backHref,
     manifest,
     ritual,
     forPersonal
   }: Props = $props();
-
-  const hero = $derived(bundle.home.hero);
-  const contact = $derived(bundle.contact);
 
   /*
     Resolve the sticky CTA with a chapter-level fallback:
@@ -102,69 +85,74 @@
   );
 
   /*
-    Per-service stage configuration: resolve the content's named
-    poses into concrete NDC coords, and map the narrative chapter
-    into FlodStage's `chapterMode` (0 = terapi / iridescent,
-    1 = konsulent / chrome).
+    Publish this service's stage config to the shared store. The
+    layout's persistent FlodStage consumes it; when navigating
+    between services (or home → service), the new anchors +
+    chapterMode land on the same FlodStage instance and it lerps
+    to the new pose.
 
-    The service page has no scroll-driven anchor changes — it's one
-    article, one pose. The `.service-stage-zone` below is a
-    full-viewport anchor so FlodStage always sees visibility 1.0
-    and settles on the pose in the first few frames.
+    `.service-stage-zone` (rendered below as a fixed full-viewport
+    span) is the anchor selector — keeps visibility at 1.0 so the
+    stage settles on the configured pose in the first few frames.
+
+    `stage.konsulentY` branches on chapter:
+      • terapi  → null (layout's CSS fallback → whole page cool)
+      • konsulent → 0 (gradient split at the very top → whole
+                        page warm)
   */
-  const stageAnchors = $derived([
-    {
-      selector: '.service-stage-zone',
-      main: mainPoses[service.stage.main],
-      drip1: goldPoses[service.stage.gold],
-      drip2: gemPoses[service.stage.gem],
-      intensity: service.stage.intensity ?? 1.0
-    }
-  ]);
-  const chapterMode = $derived(service.chapter === 'konsulent' ? 1 : 0);
+  $effect(() => {
+    stage.anchors = [
+      {
+        selector: '.service-stage-zone',
+        main: mainPoses[service.stage.main],
+        drip1: goldPoses[service.stage.gold],
+        drip2: gemPoses[service.stage.gem],
+        intensity: service.stage.intensity ?? 1.0
+      }
+    ];
+  });
+  $effect(() => {
+    stage.chapterMode = service.chapter === 'konsulent' ? 1 : 0;
+  });
+  $effect(() => {
+    stage.konsulentY = service.chapter === 'konsulent' ? 0 : null;
+  });
 </script>
 
-<div class="flod flod-service" lang={locale} data-chapter={service.chapter}>
+<!--
+  Invisible full-viewport anchor span — FlodStage reads its
+  bounding rect for visibility weighting, so a fixed-inset span
+  keeps the weight at 1.0 regardless of scroll position. Lives
+  outside the article's flow via `position: fixed`, takes no
+  layout space.
+-->
+<span class="service-stage-zone" aria-hidden="true"></span>
+
+<!--
+  `.service-wrap` mirrors the homepage's `.chapter-wrap`: it spans
+  the full viewport width (no max-width, no horizontal padding) so
+  that `<StickyCta>` — a child of this wrap — computes its right
+  gutter against the viewport edge via `--cta-h` rather than
+  against the inner article's padded content box. Without this
+  wrap the CTA would be nested inside `.service-page`'s 2rem
+  padding and end up `padding + --cta-h` from the viewport edge,
+  sitting visibly further in than the homepage CTA at wide
+  breakpoints.
+-->
+<div class="service-wrap" class:has-cta={!!effectiveCta}>
   <!--
-    Full-viewport FlodStage. Same component as the homepage, but
-    mounted with a single fixed anchor from the service's content
-    config (typically one element at `fullBleed` acting as a
-    background wash). Automatically skips mount under
-    `prefers-reduced-motion: reduce`.
+    Sticky CTA — pinned near the viewport bottom-right while the
+    user is scrolling through this article, released when the
+    wrap's bottom approaches (i.e. right before the contact
+    section). Uses `effectiveCta` (with chapter-level fallback)
+    so every service gets a CTA, matching the homepage where one
+    CTA covers the whole konsulent chapter.
   -->
-  <FlodStage anchors={stageAnchors} {chapterMode} />
+  {#if effectiveCta}
+    <StickyCta cta={effectiveCta} />
+  {/if}
 
-  <!--
-    Invisible, full-card anchor span — FlodStage reads its
-    bounding rect for visibility weighting. Inset:0 keeps the
-    weight at 1.0 regardless of scroll position.
-  -->
-  <span class="service-stage-zone" aria-hidden="true"></span>
-
-  <SiteHeader
-    name={hero.name}
-    city={hero.city}
-    homeHref={backHref}
-    navLinks={primaryNav(locale)}
-    burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
-    burgerCloseLabel={locale === 'en' ? 'Close menu' : 'Luk menu'}
-    burgerMenuLabel={locale === 'en' ? 'Primary navigation' : 'Hovednavigation'}
-  />
-
-  <main>
-    <article class="service-page" class:has-cta={!!effectiveCta}>
-      <!--
-        Sticky CTA — pinned near the viewport bottom-right while
-        the user is scrolling through this article, released when
-        the article's bottom approaches (i.e. right before the
-        contact section). Uses `effectiveCta` (with chapter-level
-        fallback) so every service gets a CTA, matching the
-        homepage where one CTA covers the whole konsulent chapter.
-      -->
-      {#if effectiveCta}
-        <StickyCta cta={effectiveCta} />
-      {/if}
-
+  <article class="service-page">
       <!-- ============== HEADER ============== -->
       <header class="s-head">
         <!--
@@ -283,54 +271,19 @@
       <nav class="s-back">
         <a href={backHref}>← {backLabel}</a>
       </nav>
-    </article>
-
-    <ContactSection {contact} />
-  </main>
-
-  <SiteFooter text={footerCopyright} />
+  </article>
 </div>
 
 <style>
   /*
-    Same `.flod` palette the homepage uses — keeps service pages
-    visually part of the site. `.flod-service` is a single-article
-    variant: no scroll-driven konsulent split, just one solid
-    chapter-appropriate bone tint decided by the `data-chapter`
-    attribute (`terapi` → cool bone, `konsulent` → warm bone).
+    `.flod` design tokens, gradient bg, and stacking context all
+    live in `(app)/+layout.svelte` — this component inherits them
+    via normal CSS cascade. The terapi/konsulent palette branch
+    happens through the shared store's `konsulentY` (see the
+    `$effect` above): setting it to 0 makes the layout's gradient
+    paint the whole viewport warm, null falls through to the CSS
+    fallback of 200vh = whole viewport cool.
   */
-  .flod {
-    --bone: oklch(0.96 0.009 215);
-    --bone-warm: oklch(0.94 0.03 72);
-    --graphite: oklch(0.17 0.012 240);
-    --graphite-soft: color-mix(in oklch, var(--graphite) 70%, transparent);
-    --tangerine: oklch(0.94 0.26 120);
-    --violet: oklch(0.48 0.09 152);
-    --rule: color-mix(in oklch, var(--graphite) 18%, transparent);
-    /* Sticky-CTA gutters — inherit `--cta-h` from StickyCta's
-       own default (the 1320px homepage frame) so the CTA sits at
-       the same distance from the viewport's right edge on every
-       page type. The article's narrower 1100px max-width is a
-       content constraint, not a chrome constraint. `--cta-v` is
-       the inner gutter that controls the sticky release point. */
-    --cta-v: 1.5rem;
-    --cta-h-box: 3.3rem;
-    min-height: 100vh;
-    color: var(--graphite);
-    font-family: var(--font-sans);
-    font-weight: 300;
-    position: relative;
-    /* Contain FlodStage's position:fixed canvas (z-index: -1)
-       within this page's stacking context — otherwise the canvas
-       escapes behind the root and disappears. */
-    isolation: isolate;
-  }
-  .flod-service[data-chapter='terapi'] {
-    background: var(--bone);
-  }
-  .flod-service[data-chapter='konsulent'] {
-    background: var(--bone-warm);
-  }
 
   /* Full-viewport invisible anchor — FlodStage uses its bounding
      rect to compute visibility weighting. Fixed so it stays in
@@ -343,28 +296,46 @@
     z-index: -1;
   }
 
-  /* ============== ARTICLE FRAME ============== */
+  /* ============== WRAP + ARTICLE FRAME ============== */
   /*
+    `.service-wrap` spans the full viewport width with no
+    horizontal padding — directly parallel to the homepage's
+    `.chapter-wrap`. It exists so the <StickyCta> child can
+    compute its right gutter via `--cta-h` against the viewport
+    edge, producing the same flush-to-edge placement the
+    homepage CTA has. Any horizontal padding on this wrap would
+    be additive with `--cta-h` and push the CTA inward.
+
     `padding-bottom: var(--cta-v)` matches the homepage's
-    chapter-wrap convention — the sticky CTA's release point sits
-    this far above the article's bottom, so the CTA scrolls out of
-    the viewport just before the contact section begins.
+    chapter-wrap convention — the sticky CTA's release point
+    sits this far above the wrap's bottom, so the CTA scrolls
+    out of the viewport just before the contact section begins.
   */
-  .service-page {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: clamp(3rem, 8vw, 6rem) 1.25rem var(--cta-v);
+  .service-wrap {
+    position: relative;
+    padding-bottom: var(--cta-v);
   }
   /*
-    StickyCta's fixed height gets negated here by lifting the
-    first post-CTA section up by an equal amount — otherwise the
-    header would start a full button's height below the top
-    padding. Gated on `.has-cta` so services without a CTA (e.g.
-    aeldrepleje, undervisning) don't pull their header up into
-    a negative space that collapses the intended gap before the
-    first block.
+    The article holds the page content and caps at the same 1320px
+    frame the homepage sections use, with the same 2rem horizontal
+    padding — so service detail pages share the home's left/right
+    gutters at every breakpoint.
   */
-  .service-page.has-cta > :nth-child(2) {
+  .service-page {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(3rem, 8vw, 6rem) 2rem 0;
+  }
+  /*
+    StickyCta is `.service-wrap`'s first child and takes up
+    `--cta-h-box` of vertical space in flow. Pull the SECOND
+    child (the `.service-page` article) up by exactly that
+    amount so the article's top padding starts where it would
+    have without the CTA above it — same trick the homepage
+    uses on `.chapter-wrap > :nth-child(2)`. Gated on `.has-cta`
+    so services without a CTA don't collapse their top padding.
+  */
+  .service-wrap.has-cta > :nth-child(2) {
     margin-top: calc(-1 * var(--cta-h-box));
   }
 

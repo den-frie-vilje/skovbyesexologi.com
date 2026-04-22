@@ -1,16 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { contentFor, primaryNav, renderFooterCopyright, type Locale } from '$lib/content';
-  import FlodStage from '$lib/components/FlodStage.svelte';
+  import { contentFor, type Locale } from '$lib/content';
   import StickyCta from '$lib/components/StickyCta.svelte';
-  import SiteHeader from '$lib/components/SiteHeader.svelte';
-  import SiteFooter from '$lib/components/SiteFooter.svelte';
-  import ContactSection from '$lib/components/ContactSection.svelte';
   import Testimonials from '$lib/components/Testimonials.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
+  import { stage } from '$lib/stage/store.svelte';
   import { buildSiteJsonLd, SITE_URL } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
+
+  /*
+    `.flod`, `<FlodStage>`, `<SiteHeader>`, `<ContactSection>`,
+    `<SiteFooter>` — all now live in the shared `(app)/+layout.svelte`
+    shell. This page contributes only the homepage's own content:
+    chapter wraps, sections, testimonials. Stage state is published
+    through the `stage` store so the layout's persistent FlodStage
+    picks it up.
+  */
 
   let { data }: PageProps = $props();
 
@@ -68,29 +74,29 @@
   // with the "Skriv." heading the user mentioned would require
   // restructuring contact in the DOM — deferred to a separate pass.)
   let chapterMode = $state(0);
+  let konsulentY = $state<number | null>(null);
 
   onMount(() => {
     if (!browser) return;
+    // `.flod` is rendered by the (app) layout. The chapter-II
+    // divider is measured at the TOP of chapter-wrap-konsulent
+    // (the konsulent wrap's border-box top sits exactly at the
+    // chapter boundary), so the bg gradient hard-stop stays in
+    // step with where the user actually sees the text change.
     const flodEl = document.querySelector('.flod') as HTMLElement | null;
-    // The chapter-II divider (bg gradient hard-stop + chapter-mode threshold)
-    // is measured at the TOP of chapter-wrap-konsulent, not chapter-konsulent
-    // itself. The wrap adds padding-top: var(--cta-v) so Kom i kontakt's
-    // natural position sits below the divider with a matching gap — keeping
-    // the divider at the wrap's border-box top keeps the bg transition
-    // visually aligned with the Chapter-II boundary the user sees.
     const konsulentWrapEl = document.querySelector('.chapter-wrap-konsulent');
     if (!flodEl || !konsulentWrapEl) return;
     let raf = 0;
     const measure = () => {
       const flodRect = flodEl.getBoundingClientRect();
       const wrapRect = konsulentWrapEl.getBoundingClientRect();
-      // Position of chapter-II divider top relative to .flod's top (for bg gradient)
-      const y = wrapRect.top - flodRect.top;
-      flodEl.style.setProperty('--konsulent-y', `${y}px`);
-      // Smooth chapter progression (continuous, not binary). 0 when the
-      // divider is well below the fold, 1 when it has scrolled past the
-      // upper band. The FlodStage lerps materials along this value, so
-      // scrolling gives continuous visual transition.
+      // Divider-top relative to .flod's top — feeds the bg
+      // gradient's hard-stop via the shared store.
+      konsulentY = wrapRect.top - flodRect.top;
+      // Smooth chapter progression (continuous, not binary): 0
+      // when the divider is well below the fold, 1 when it has
+      // scrolled past the upper band. FlodStage lerps materials
+      // along this value for a scroll-driven palette transition.
       const vh = window.innerHeight;
       const startY = vh * 0.75; // begin crossfade at 75% of viewport
       const endY = vh * 0.15; // full konsulent when divider is at 15%
@@ -117,6 +123,24 @@
     };
   });
 
+  /*
+    Publish this page's stage state to the shared store. The
+    layout's single FlodStage mount consumes it and lerps
+    internally between publishes — so scroll updates on this
+    page animate smoothly, and client-side navigation to a
+    service page sees the store mutate to the new anchors and
+    eases the stage to the new pose without remounting.
+  */
+  $effect(() => {
+    stage.anchors = home.stage.sections.map(resolveAnchor);
+  });
+  $effect(() => {
+    stage.chapterMode = chapterMode;
+  });
+  $effect(() => {
+    stage.konsulentY = konsulentY;
+  });
+
   // Section sequence:
   //   hero → who → CHAPTER I · Terapi (manifest, ritual, therapy service, for-personal)
   //        → CHAPTER II · Konsulentydelser (intimacy + embedded testimonial, elderly, teaching, for-work)
@@ -141,18 +165,13 @@
   const chapter2 = $derived(home.chapter2);
   const pillQuote = $derived(home.pillQuote);
   const forWork = $derived(home.forWork);
-  const stageAnchors = $derived(home.stage.sections.map(resolveAnchor));
-
-  // Individual services by slug so each section can compose its own
+  // Individual services by id so each section can compose its own
   // bespoke layout (services are intentionally NOT rendered by one
   // shared component — see AGENTS.md).
   const therapyService = $derived(findService('terapi'));
   const intimacyService = $derived(findService('intimacy-coordination'));
   const elderlyService = $derived(findService('aeldrepleje'));
   const teachingService = $derived(findService('undervisning'));
-
-  // Footer copyright template rendered with live year + site data.
-  const footerCopyright = $derived(renderFooterCopyright(site, contact));
 </script>
 
 <svelte:head>
@@ -201,23 +220,8 @@
   {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
-<div class="flod" class:in-konsulent={chapterMode === 1}>
-  <FlodStage anchors={stageAnchors} {chapterMode} />
-
-  <SiteHeader
-    name={hero.name}
-    city={hero.city}
-    homeHref={locale === 'en' ? '/en' : '/'}
-    navLinks={primaryNav(locale)}
-    burgerOpenLabel={locale === 'en' ? 'Open menu' : 'Åbn menu'}
-    burgerCloseLabel={locale === 'en' ? 'Close menu' : 'Luk menu'}
-    burgerMenuLabel={locale === 'en' ? 'Primary navigation' : 'Hovednavigation'}
-  />
-
-  <main>
-
-  <!--
-    Chapter I wrapper. The therapy CTA sits as the first child so its
+<!--
+  Chapter I wrapper. The therapy CTA sits as the first child so its
     sticky-bottom position engages from the top of the scrollable area;
     it stays pinned until the chapter-wrap's bottom (the end of
     for-personal) scrolls up past the sticky threshold, at which point
@@ -503,63 +507,20 @@
     </section>
   {/if}
 
-  <ContactSection {contact} />
-  </main>
-
-  <SiteFooter text={footerCopyright} />
-</div>
+  <!--
+    The `<ContactSection>` + `<SiteFooter>` that used to close
+    the page out are now rendered by `(app)/+layout.svelte`
+    (common to every content route).
+  -->
 
 <style>
-  .flod {
-    --bone: oklch(0.96 0.009 215);
-    --bone-warm: oklch(0.94 0.03 72);
-    --bone-2: oklch(0.93 0.012 210);
-    --graphite: oklch(0.17 0.012 240);
-    --graphite-soft: color-mix(in oklch, var(--graphite) 70%, transparent);
-    --tangerine: oklch(0.94 0.26 120);
-    /* Accent green — chapter numerals, list numbers, default CTA fill.
-       Matched to the sage green of the .contact "Skriv." section (the
-       large footer block the user sees). Visible as green against the
-       bone bg while still reading as dark. The .foot strip keeps its
-       own deeper shade as a visual floor beneath contact. */
-    --violet: oklch(0.48 0.09 152);
-    --rose-deep: oklch(0.48 0.14 20);
-    --mercury: oklch(0.78 0.015 220);
-    --rule: color-mix(in oklch, var(--graphite) 18%, transparent);
-    /* Canonical CTA gutter — inherited by StickyCta (via custom-property
-       inheritance) AND used as chapter-wrap padding-bottom so the CTA's
-       sticky release happens with this same gap before the chapter divider. */
-    --cta-v: 1.5rem;
-    /* Horizontal gutter — aligns the sticky CTA's right edge with
-       the homepage's 1320px content frame. Service pages set their
-       own `--cta-h` with a narrower frame (1100px). */
-    --cta-h: max(1.25rem, calc((100vw - 1320px) / 2 + 1.25rem));
-    /* CTA button height — shared so the first-section negative margin-top
-       (below) can cancel the CTA's flow footprint exactly. */
-    --cta-h-box: 3.3rem;
-    min-height: 100vh;
-    /* Cool bone above the chapter-II divider, warm paper below. The
-       `--konsulent-y` custom property is set from JS to the exact pixel
-       position of `.chapter-konsulent` within `.flod`, so the split line
-       aligns with the divider and scrolls naturally with the page. */
-    background: linear-gradient(
-      to bottom,
-      var(--bone) 0,
-      var(--bone) var(--konsulent-y, 200vh),
-      var(--bone-warm) var(--konsulent-y, 200vh),
-      var(--bone-warm) 100%
-    );
-    color: var(--graphite);
-    font-family: var(--font-sans);
-    font-weight: 300;
-    position: relative;
-    /* Form a stacking context so the fixed canvas at z-index:-1 paints
-       between .flod's gradient bg and the sections, rather than escaping
-       out behind .flod entirely. */
-    isolation: isolate;
-  }
-
-  /* `.top` brand mark moved to $lib/components/SiteHeader.svelte. */
+  /*
+    Shell styles — `.flod` design tokens + gradient bg, sticky
+    header, site footer — all moved to `(app)/+layout.svelte`.
+    This page inherits every `--bone`/`--graphite`/`--cta-*`
+    custom property from the layout via normal CSS cascade.
+    Below are only the homepage's section-specific rules.
+  */
 
   /* ============== HERO ============== */
   .hero {

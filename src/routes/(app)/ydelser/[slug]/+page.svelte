@@ -11,16 +11,22 @@
   identical; any change here should be mirrored there.
 -->
 <script lang="ts">
-  import { contentFor, renderFooterCopyright } from '$lib/content';
+  import { contentFor } from '$lib/content';
   import { SITE_URL } from '$lib/seo/structured-data';
   import ServicePage from '$lib/components/ServicePage.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
 
+  /*
+    Locale-resolved content bundle. The shared `(app)/+layout.svelte`
+    also reads `data.locale` via `$page.data` to render the header,
+    contact section, and footer — so we don't touch the shell here;
+    this wrapper only owns the service-specific <svelte:head> and
+    hands body props to <ServicePage>.
+  */
   const bundle = $derived(contentFor(data.locale));
   const site = $derived(bundle.site);
-  const contact = $derived(bundle.contact);
   const home = $derived(bundle.home);
   const service = $derived(data.service);
 
@@ -40,8 +46,6 @@
   // stable service `id` (filename) so the URL is the same in
   // both locales even when the service's URL slug differs.
   const ogImageUrl = $derived(`${SITE_URL}/img/og/${service.id}.da.jpg`);
-
-  const footerCopyright = $derived(renderFooterCopyright(site, contact));
 </script>
 
 <svelte:head>
@@ -80,10 +84,8 @@
 </svelte:head>
 
 <ServicePage
-  locale={data.locale}
   service={data.service}
   {bundle}
-  {footerCopyright}
   backLabel="Forsiden"
   backHref="/"
   manifest={service.chapter === 'terapi' ? home.manifest : undefined}

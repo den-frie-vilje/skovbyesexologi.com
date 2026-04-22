@@ -4,16 +4,18 @@
   commentary. Any change here should also land there.
 -->
 <script lang="ts">
-  import { contentFor, renderFooterCopyright } from '$lib/content';
+  import { contentFor } from '$lib/content';
   import { SITE_URL } from '$lib/seo/structured-data';
   import ServicePage from '$lib/components/ServicePage.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
 
+  // See the DA mirror for commentary — the shared `(app)/+layout.svelte`
+  // owns the header/contact/footer shell; this wrapper only emits
+  // service-specific <svelte:head> + body via <ServicePage>.
   const bundle = $derived(contentFor(data.locale));
   const site = $derived(bundle.site);
-  const contact = $derived(bundle.contact);
   const home = $derived(bundle.home);
   const service = $derived(data.service);
 
@@ -26,7 +28,6 @@
   const pageDescription = $derived(service.blurb || site.tagline);
   // Per-service OG (EN variant) — see DA mirror for commentary.
   const ogImageUrl = $derived(`${SITE_URL}/img/og/${service.id}.en.jpg`);
-  const footerCopyright = $derived(renderFooterCopyright(site, contact));
 </script>
 
 <svelte:head>
@@ -62,10 +63,8 @@
 </svelte:head>
 
 <ServicePage
-  locale={data.locale}
   service={data.service}
   {bundle}
-  {footerCopyright}
   backLabel="Home"
   backHref="/en"
   manifest={service.chapter === 'terapi' ? home.manifest : undefined}
