@@ -212,8 +212,18 @@
     pointer-events: auto;
   }
 
+  /*
+    Close X sits at the exact same position as the hamburger
+    button in `.top` — `top: 1rem; right: 1.25rem` matches
+    `.top`'s padding. The replacement feels like the trigger
+    toggles in place rather than the X appearing elsewhere on
+    the page. Responsive right-offset tracks the header's
+    media-query bump at ≥720px.
+  */
   .close {
-    align-self: flex-end;
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
     width: 44px;
     height: 44px;
     border: none;
@@ -283,7 +293,15 @@
     gap: 0.75em;
     color: var(--graphite);
     text-decoration: none;
-    padding: 0.15em 0;
+    /*
+      Generous vertical padding so each nav row is ≥44px tall
+      (WCAG AA tap target) at every font-size in the clamp and
+      so the rows read as a paced list rather than a tight
+      paragraph. 0.55em top+bottom at the min font-size
+      (1.35rem ≈ 21.6px) gives ~23.8px padding → ~70px row
+      height, well above the 44px minimum.
+    */
+    padding: 0.55em 0;
     transition: color 0.15s;
   }
   .n {
@@ -337,6 +355,15 @@
     transform: translateX(0);
     opacity: 1;
     color: var(--violet);
+  }
+
+  /* Match SiteHeader's ≥720px right-padding bump so the close
+     X stays aligned with where the hamburger sits at that
+     breakpoint (1rem → 2rem right). */
+  @media (min-width: 720px) {
+    .close {
+      right: 2rem;
+    }
   }
 
   /* Reduced motion — skip the per-link stagger + arrow slide,

@@ -359,16 +359,26 @@
        the right edge still communicates "there's more". */
     scrollbar-width: none;
 
+    /*
+      Right-edge fade so the partial card peeking in from the
+      infinite-wrap + snap-scroll looks like a soft transition
+      rather than a hard cut. Width is `--t-fade`, bumped by a
+      media query at ≥720px once the list is wide enough for a
+      second card to actually peek in. The left edge stays sharp
+      because the scroll-snap always starts there — no "previous"
+      card sticks out on the left in this layout.
+    */
+    --t-fade: 2rem;
     mask-image: linear-gradient(
       to right,
       black 0,
-      black calc(100% - 2rem),
+      black calc(100% - var(--t-fade)),
       transparent 100%
     );
     -webkit-mask-image: linear-gradient(
       to right,
       black 0,
-      black calc(100% - 2rem),
+      black calc(100% - var(--t-fade)),
       transparent 100%
     );
   }
@@ -473,6 +483,11 @@
       margin-left: -2rem;
       margin-right: -2rem;
       scroll-padding-left: 2rem;
+      /* At this breakpoint the list is wide enough that the
+         next card visibly peeks in on the right. Widen the fade
+         so the peek dissolves rather than hard-clipping at the
+         edge. */
+      --t-fade: 6rem;
     }
     [data-layout='scroll'] .t-card {
       flex-basis: 380px;
@@ -485,6 +500,9 @@
       margin-left: -3rem;
       margin-right: -3rem;
       scroll-padding-left: 3rem;
+      /* Even wider at this breakpoint — 2+ cards peek on the
+         right at once; fade needs to cover the whole overlap. */
+      --t-fade: 10rem;
     }
   }
 
