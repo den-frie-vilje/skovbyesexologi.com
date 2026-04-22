@@ -133,7 +133,7 @@
   />
 
   <main>
-    <article class="service-page">
+    <article class="service-page" class:has-cta={!!service.cta}>
       <!--
         Sticky CTA — pinned near the viewport bottom-right while
         the user is scrolling through this article, released when
@@ -341,10 +341,12 @@
     StickyCta's fixed height gets negated here by lifting the
     first post-CTA section up by an equal amount — otherwise the
     header would start a full button's height below the top
-    padding. Same pattern as `.chapter-wrap > :nth-child(2)` on
-    the homepage.
+    padding. Gated on `.has-cta` so services without a CTA (e.g.
+    aeldrepleje, undervisning) don't pull their header up into
+    a negative space that collapses the intended gap before the
+    first block.
   */
-  .service-page > :nth-child(2) {
+  .service-page.has-cta > :nth-child(2) {
     margin-top: calc(-1 * var(--cta-h-box));
   }
 
