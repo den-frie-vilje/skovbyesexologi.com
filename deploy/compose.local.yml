@@ -43,7 +43,7 @@ services:
 
   # sveltia-auth: profile gating keeps it off in local dev.
   # The `never` profile is not activated by any --profile flag,
-  # so compose skips the service entirely. Caddy's /auth/*
-  # route will 502 — expected, we're not testing OAuth locally.
+  # so compose skips the service. Caddy's /auth/* route will
+  # 502 — expected, we're not testing OAuth locally.
   sveltia-auth:
     profiles: [never]

@@ -26,16 +26,24 @@ services:
     networks: [skovbye-deploy]
     ports:
       # Bind to loopback only — Web Station (DSM nginx)
-      # terminates TLS on signe.denfrievilje.dk and reverse-
-      # proxies to 127.0.0.1:8080.
+      # terminates TLS on the site's staging hostname and
+      # reverse-proxies to 127.0.0.1:8080.
       - "127.0.0.1:8080:80"
     volumes:
       - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - site
-      - sveltia-auth
+      site:
+        condition: service_started
+      # `required: false` keeps this dep optional — if the
+      # sveltia-auth service is profile-excluded (as in local
+      # dev via compose.local.yml) or simply crashes, caddy
+      # still starts. /auth/* routes 502 in that case, which
+      # is the observable failure mode for missing OAuth.
+      sveltia-auth:
+        condition: service_started
+        required: false
 
   site:
     image: ghcr.io/den-frie-vilje/skovbyesexologi:staging-latest
@@ -64,12 +72,19 @@ services:
     restart: unless-stopped
     networks: [skovbye-deploy]
     environment:
-      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
+      # `:-` defaults silence var-not-set warnings during local
+      # dev (compose.local.yml profile-gates this service off
+      # but compose still parses env blocks at load time). In
+      # production these MUST be set via staging.env — empty
+      # values will cause the auth container to fail its own
+      # startup, which is the observable failure mode we want.
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET:-}
       # CSRF guard — only accept auth initiations from this
-      # site's staging URL. `${DOMAIN}` is substituted at
-      # compose-up time from staging.env on the NAS.
-      ORIGIN: ${DOMAIN}.stage.denfrievilje.dk
+      # site's staging URL. `${DOMAIN}` comes from staging.env
+      # on the NAS; the "localhost" fallback is only hit during
+      # local dev where the service isn't running anyway.
+      ORIGIN: ${DOMAIN:-localhost}.stage.denfrievilje.dk
       # Where the auth success page redirects to. Empty → the
       # provider renders a tiny self-closing postMessage page,
       # which is what Sveltia expects.
