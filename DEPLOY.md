@@ -434,6 +434,23 @@ On DSM:
    sudo docker network create skovbye-deploy
    ```
 
+   **If you're using DSM ACLs on the docker shared folder**,
+   the `chown` is redundant — DSM's ACL layer runs in parallel
+   with POSIX perms, and if your ACL grants the right access
+   to the `deploy` user (or whoever will operate this),
+   ownership doesn't matter for function.
+
+   What to verify instead: ACL inheritance is enabled on the
+   parent folder so files the containers create later inherit
+   the permissions. Control Panel → Shared Folder → edit the
+   docker folder → Permissions → check that deploy/admin
+   entries have **"Apply to this folder, sub-folders, and
+   files"** ticked. Or via SSH:
+   ```sh
+   sudo synoacltool -get /volume1/docker
+   # look for `inherit` flags on the allow entries
+   ```
+
 5. **Bootstrap the webhook container.** This step is done
    **once per NAS**, not once per site.
 
