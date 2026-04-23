@@ -231,6 +231,12 @@ On DSM:
    # install check will bail unless we pass `--force`.
    curl https://get.acme.sh | sh -s email=<your-email> -- --force
 
+   # Pin the default CA to Let's Encrypt. Since v3.0.0, acme.sh
+   # defaults to ZeroSSL, which requires EAB (External Account
+   # Binding) credentials we don't have — leaving fresh orders
+   # stuck in `processing` forever. Do this BEFORE --issue.
+   ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+
    # Paste the CF values from step (a).
    export CF_Token="<the token you just created>"
    export CF_Account_ID="<CF account ID from the right sidebar>"
