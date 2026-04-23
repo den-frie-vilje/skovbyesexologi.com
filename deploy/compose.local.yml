@@ -27,7 +27,13 @@ networks:
 
 services:
   caddy:
-    ports:
+    # `!override` replaces the parent file's ports list instead
+    # of merging it. Without this, compose would concatenate —
+    # trying to bind both `127.0.0.1:8080:80` (staging.yml) and
+    # `0.0.0.0:8080:80` (this file), which fails with
+    # "address already in use" because the second bind collides
+    # with the first. `!override` needs Compose 2.24+.
+    ports: !override
       - "8080:80"
     restart: "no"
 
