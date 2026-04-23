@@ -61,7 +61,15 @@ services:
       - /volume1/docker:/volume1/docker
     command: >-
       -verbose
+      -template
       -hooks=/etc/webhook/hooks.yaml
       -hotreload
       -ip=0.0.0.0
       -port=9000
+    # -template: evaluate Go-template syntax in hooks.yaml so
+    #            `{{ getenv "SOME_SECRET" }}` in the trigger-
+    #            rule `secret:` field pulls from the container
+    #            env at hook-load time. Without this, the
+    #            string is taken literally, HMAC eval panics,
+    #            and every POST returns 500 "Error occurred
+    #            while evaluating hook rules."
