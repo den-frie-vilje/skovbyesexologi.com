@@ -642,7 +642,30 @@ sudo nano /volume1/docker/webhook/webhook/hooks.yaml
 ```
 
 With `-hotreload` on the webhook command, hooks.yaml edits
-are picked up live — no container restart needed.
+are picked up live — no container restart needed **for the
+hooks file**.
+
+⚠️  **But webhook.env changes require `down` + `up -d`, not
+`restart`.** Environment variables are baked into a
+container at creation time. `docker compose restart` restarts
+the process inside the *same* container (same env); only
+recreating the container picks up new `env_file` values:
+
+```sh
+cd /volume1/docker/webhook
+sudo docker compose down
+sudo docker compose up -d
+
+# Verify the values actually landed inside the container:
+sudo docker exec skovbyesexologi-webhook-webhook-1 env | grep WEBHOOK_SECRET
+# Should show non-empty values. If empty, the env_file edit
+# didn't take — check for CRLF / duplicates / quoting.
+```
+
+Applies to any compose service whose env you edit later —
+webhook, sveltia-auth, anything. `restart` is only the right
+move for "process inside is stuck, kick it" scenarios; env
+changes always need a recreation.
 
 **Security property**: the domain in each hook entry's args
 is a static string, not read from the incoming request. An
@@ -952,6 +975,22 @@ sudo docker logs -f webhook-webhook-1
 Likely `git fetch` perms (chown the repo clone to `deploy:users`)
 or `docker compose pull` failure (check GHCR image visibility is
 Public).
+
+**Webhook returns 500 "Error occurred while evaluating hook
+rules."** The HMAC secret env var is missing or empty inside
+the container. Check:
+```sh
+sudo docker exec skovbyesexologi-webhook-webhook-1 env | grep WEBHOOK_SECRET
+```
+If you see `VAR=` with no value, the env_file didn't land.
+Most common causes:
+- You edited `webhook.env` but used `docker compose restart`
+  — that doesn't reload env. Use `down` + `up -d`.
+- CRLF line endings from a Windows-style paste: `sed -i 's/\r$//'
+  /volume1/docker/webhook/webhook.env`, then down+up.
+- Duplicate var definitions (empty line from the template
+  overriding a later populated one, or vice versa): `grep -c
+  VARNAME` — should be 1.
 
 **`/admin` loops on sign-in.** OAuth callback URL mismatch. GH
 OAuth App's callback must be **exactly**
