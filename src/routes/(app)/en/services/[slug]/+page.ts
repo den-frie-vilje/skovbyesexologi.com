@@ -1,10 +1,13 @@
 /**
  * English service detail routes — mirror of `ydelser/[slug]` under
- * the `/en/services/{slug}` path. See the DA route for the full
- * rationale; this file just swaps the locales in the lookup.
+ * `/en/services/{slug}`. See the DA route for the full rationale;
+ * this file just swaps the locales in the lookup.
+ *
+ * Shared lookup + peer/altHref logic lives in `$lib/content`'s
+ * `loadService()`.
  */
 
-import { contentFor, serviceById, serviceBySlug } from '$lib/content';
+import { contentFor, loadService } from '$lib/content';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -15,19 +18,7 @@ export const entries = () => {
 };
 
 export const load: PageLoad = ({ params }) => {
-  const service = serviceBySlug('en', params.slug);
-  if (!service) throw error(404, 'Service not found');
-
-  const peerDa = serviceById('da', service.id);
-
-  // Mirror of the DA load — see that file for commentary on altHref.
-  return {
-    locale: 'en' as const,
-    altLocale: 'da' as const,
-    altHref: peerDa ? `/ydelser/${peerDa.slug}` : '/',
-    service,
-    peer: peerDa
-      ? ({ locale: 'da' as const, slug: peerDa.slug } as const)
-      : null
-  };
+  const result = loadService('en', params.slug);
+  if (!result) throw error(404, 'Service not found');
+  return result;
 };

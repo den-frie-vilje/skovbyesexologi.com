@@ -227,3 +227,224 @@ export function buildServicePageJsonLd(input: BuildServiceInput): object {
     '@graph': [business, person, thisService, breadcrumb]
   };
 }
+
+/* ==================================================================
+ * PAGE-LEVEL SEO HEAD — typed shape for <SeoHead>
+ * ==================================================================
+ *
+ * Single `PageSeo` object per page. The view layer (`<SeoHead>`) is
+ * dumb rendering — all the locale-specific URL / string decisions
+ * live in the two `buildXxxPageSeo` builders below so the head
+ * emission stays consistent across home, DA service, and EN service
+ * pages.
+ */
+
+export type PageSeoImage = {
+  /** Absolute URL. */
+  url: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** MIME type, e.g. `image/jpeg`. */
+  type: string;
+};
+
+export type PageSeo = {
+  /** `<title>` contents. May differ from `og.title` (home uses a
+   *  short brand name for OG, longer `name · tagline` for <title>). */
+  title: string;
+  /** `<meta name="description">` — crawler snippet. */
+  description: string;
+  /** `<meta name="author">`. */
+  author: string;
+  /** `<meta name="theme-color">` for mobile address-bar tint. */
+  themeColor: string;
+  /** Absolute canonical URL for this page. */
+  canonical: string;
+  /** Hreflang alternates — all three emitted in this order every time. */
+  alternates: {
+    da: string;
+    en: string;
+    /** Always the DA URL (DA is the default locale). */
+    xDefault: string;
+  };
+  og: {
+    type: 'website';
+    siteName: string;
+    title: string;
+    description: string;
+    /** Full locale tag, e.g. `da_DK` / `en_US`. */
+    locale: string;
+    localeAlternate: string;
+    url: string;
+    image: PageSeoImage;
+  };
+  twitter: {
+    card: 'summary_large_image';
+    title: string;
+    description: string;
+    image: string;
+  };
+  /** Pre-serialised JSON-LD string, ready for `{@html}` rendering. */
+  jsonLd: string;
+};
+
+/** Facebook/OG locale tag derived from a 2-letter locale code. */
+function ogLocaleFor(locale: Locale): string {
+  return locale === 'en' ? 'en_US' : 'da_DK';
+}
+
+type BuildHomePageSeoInput = {
+  locale: Locale;
+  site: Site;
+  bio: Bio;
+  contact: Contact;
+  services: Service[];
+};
+
+/** Assemble the `PageSeo` for the bilingual homepage (`/` or `/en`).
+ *
+ *  Homepage copy conventions (preserved from the pre-refactor state):
+ *    • `<title>` = `${site.name} · ${site.tagline}` (long, descriptive)
+ *    • `<meta description>` = `${site.leadIn} — ${service titles}` (long,
+ *      mentions every service so the SERP snippet advertises the range)
+ *    • `og:title` = `site.name` (short; OG previews favour brevity)
+ *    • `og:description` = `site.tagline` (short)
+ *    • `og:image:alt` = `site.name`
+ *    • JSON-LD = full `@graph` with business + person + every service
+ */
+export function buildHomePageSeo(input: BuildHomePageSeoInput): PageSeo {
+  const { locale, site, bio, contact, services } = input;
+  const canonical = homeUrl(locale);
+
+  const jsonLd = JSON.stringify(
+    buildSiteJsonLd({ locale, site, bio, contact, services, pageUrl: canonical })
+  );
+  const ogImageUrl = `${SITE_URL}/img/og/home.${locale}.jpg`;
+
+  return {
+    title: `${site.name} · ${site.tagline}`,
+    description: `${site.leadIn} — ${services.map((s) => s.title).join(' · ')}`,
+    author: site.name,
+    themeColor: '#f3ede2',
+    canonical,
+    alternates: {
+      da: homeUrl('da'),
+      en: homeUrl('en'),
+      xDefault: homeUrl('da')
+    },
+    og: {
+      type: 'website',
+      siteName: site.name,
+      title: site.name,
+      description: site.tagline,
+      locale: ogLocaleFor(locale),
+      localeAlternate: ogLocaleFor(locale === 'en' ? 'da' : 'en'),
+      url: canonical,
+      image: {
+        url: ogImageUrl,
+        alt: site.name,
+        width: 1200,
+        height: 630,
+        type: 'image/jpeg'
+      }
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: site.name,
+      description: site.tagline,
+      image: ogImageUrl
+    },
+    jsonLd
+  };
+}
+
+type BuildServicePageSeoInput = {
+  locale: Locale;
+  site: Site;
+  bio: Bio;
+  contact: Contact;
+  service: Service;
+  /** Stable service id of the peer in the other locale, used to
+   *  construct the hreflang alternate. `null` when no peer exists
+   *  (shouldn't happen in practice — content/en mirrors content/da). */
+  peer: { locale: Locale; slug: string } | null;
+  /** Localised label for the "Home" breadcrumb item ("Forsiden" / "Home"). */
+  homeLabel: string;
+};
+
+/** Assemble the `PageSeo` for a single service detail page.
+ *
+ *  Service-page copy conventions (preserved from the pre-refactor state):
+ *    • `<title>` = `og:title` = `twitter:title` = `${service.title} · ${site.name}`
+ *    • `<meta description>` = `og:description` = `twitter:description` =
+ *      `service.blurb` (falls back to `site.tagline` if blurb missing).
+ *    • `og:image` = per-service JPEG at `/img/og/{service.id}.{locale}.jpg`.
+ *    • `og:image:alt` = `service.title`.
+ *    • JSON-LD = business + person + THIS service + BreadcrumbList.
+ *
+ *  Hreflang alternates always emit da, en, x-default in that order
+ *  regardless of the page's own locale — fixes the inconsistency
+ *  where EN pages used to emit en-first.
+ */
+export function buildServicePageSeo(input: BuildServicePageSeoInput): PageSeo {
+  const { locale, site, bio, contact, service, peer, homeLabel } = input;
+  const canonical = servicePageUrl(locale, service.slug);
+  const pageTitle = `${service.title} · ${site.name}`;
+  const pageDescription = service.blurb || site.tagline;
+  const ogImageUrl = `${SITE_URL}/img/og/${service.id}.${locale}.jpg`;
+
+  const jsonLd = JSON.stringify(
+    buildServicePageJsonLd({
+      locale,
+      site,
+      bio,
+      contact,
+      service,
+      pageUrl: canonical,
+      homeLabel
+    })
+  );
+
+  // Hreflang alternates: canonical for the current locale, the peer
+  // URL for the other locale (or homeUrl fallback), x-default → DA.
+  const thisLocaleUrl = canonical;
+  const otherLocale: Locale = locale === 'en' ? 'da' : 'en';
+  const otherLocaleUrl = peer ? servicePageUrl(peer.locale, peer.slug) : homeUrl(otherLocale);
+
+  return {
+    title: pageTitle,
+    description: pageDescription,
+    author: site.name,
+    themeColor: '#f3ede2',
+    canonical,
+    alternates: {
+      da: locale === 'da' ? thisLocaleUrl : otherLocaleUrl,
+      en: locale === 'en' ? thisLocaleUrl : otherLocaleUrl,
+      xDefault: locale === 'da' ? thisLocaleUrl : otherLocaleUrl
+    },
+    og: {
+      type: 'website',
+      siteName: site.name,
+      title: pageTitle,
+      description: pageDescription,
+      locale: ogLocaleFor(locale),
+      localeAlternate: ogLocaleFor(otherLocale),
+      url: canonical,
+      image: {
+        url: ogImageUrl,
+        alt: service.title,
+        width: 1200,
+        height: 630,
+        type: 'image/jpeg'
+      }
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDescription,
+      image: ogImageUrl
+    },
+    jsonLd
+  };
+}

@@ -25,10 +25,9 @@
 
   interface Props {
     anchors: SectionAnchor[];
-    tint?: string;
-    accent?: string;
-    background?: string;
-    /** 0 = therapy palette, 1 = konsulent palette. Smoothly interpolated. */
+    /** 0 = therapy palette, 1 = konsulent palette. Smoothly
+     *  interpolated — the homepage drives this continuously from
+     *  scroll position; service pages pin it to 0 or 1. */
     chapterMode?: number;
     /**
      * When set, the renderer and camera use these pixel dimensions
@@ -44,13 +43,27 @@
 
   let {
     anchors,
-    tint = '#e3c3cb',
-    accent = '#d7ff3a',
-    background = '#f3ede2',
     chapterMode = 0,
     width: widthOverride,
     height: heightOverride
   }: Props = $props();
+
+  /*
+    Therapy-palette endpoints + scene lighting colours. These used
+    to be props but were never driven externally — the defaults
+    matched our design tokens and nothing had a plan to vary them
+    at runtime. Inlining removes API noise.
+
+    Chapter differentiation lives in `chapterMode` (above): this
+    component lerps from `tint` / `gold` / `gem` (THERAPY) to
+    hardcoded konsulent endpoints (below in this file — search
+    for `Konsulent`) along that 0..1 value. Change these constants
+    to retune the therapy palette; the konsulent endpoints live
+    alongside the lerp call where they're used.
+  */
+  const tint = '#e3c3cb';       // mercury-orb base + therapy end of orb lerp
+  const accent = '#d7ff3a';     // scene key-light colour
+  const background = '#f3ede2'; // scene fill-light colour
 
   let host: HTMLDivElement;
   let cleanup: (() => void) | null = null;

@@ -292,6 +292,68 @@ export function serviceById(locale: Locale | string | undefined, id: string): Se
   return contentFor(locale).services.find((s) => s.id === id);
 }
 
+/** Locale-specific detail-page path for a service slug. Matches the
+ *  route tree: DA at `/ydelser/{slug}`, EN at `/en/services/{slug}`. */
+function servicePath(locale: Locale, slug: string): string {
+  return locale === 'en' ? `/en/services/${slug}` : `/ydelser/${slug}`;
+}
+
+/**
+ * Shape returned from `loadService`. The route wrapper spreads
+ * this straight into its `load()` return so `$page.data` carries
+ * `locale`, `altLocale`, `altHref` (consumed by the shared
+ * `(app)/+layout.svelte` for the DA|EN switcher), plus `service`
+ * + `peer` for `<ServicePage>` / `<SeoHead>`.
+ */
+export type LoadServiceResult = {
+  locale: Locale;
+  altLocale: Locale;
+  altHref: string;
+  service: Service;
+  peer: { locale: Locale; slug: string } | null;
+};
+
+/**
+ * Shared loader body for the two service-detail routes
+ * (`/ydelser/[slug]` and `/en/services/[slug]`). Returns `null`
+ * when the slug doesn't resolve in the requested locale — the
+ * caller is responsible for mapping that to a 404 via SvelteKit's
+ * `error()` helper. `entries()` stays route-local because the
+ * slug universe differs by locale.
+ */
+export function loadService(locale: Locale, slug: string): LoadServiceResult | null {
+  const service = contentFor(locale).services.find((s) => s.slug === slug);
+  if (!service) return null;
+
+  // Peer lives at the same filename in the other locale — look it
+  // up by stable cross-locale id so hreflang + language-switcher
+  // pairing keeps working even when slugs are translated.
+  const otherLocale: Locale = locale === 'en' ? 'da' : 'en';
+  const peerService = contentFor(otherLocale).services.find((s) => s.id === service.id);
+  const peer: LoadServiceResult['peer'] = peerService
+    ? { locale: otherLocale, slug: peerService.slug }
+    : null;
+
+  // altHref powers the header DA|EN switcher: land on the peer
+  // page when one exists, otherwise fall back to the other-locale
+  // homepage so the switcher is never broken.
+  const altHref = peer ? servicePath(peer.locale, peer.slug) : homePath(otherLocale);
+
+  return {
+    locale,
+    altLocale: otherLocale,
+    altHref,
+    service,
+    peer
+  };
+}
+
+/** Locale-specific homepage path. `/` for DA (default locale,
+ *  no prefix), `/en` for EN. */
+function homePath(locale: Locale): string {
+  return locale === 'en' ? '/en' : '/';
+}
+
 /**
  * Primary navigation links for the burger menu. One entry per
  * service (pointing at the locale-appropriate detail page) plus a

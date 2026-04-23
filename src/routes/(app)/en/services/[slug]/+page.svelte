@@ -5,8 +5,9 @@
 -->
 <script lang="ts">
   import { contentFor } from '$lib/content';
-  import { buildServicePageJsonLd, SITE_URL } from '$lib/seo/structured-data';
+  import { buildServicePageSeo } from '$lib/seo/structured-data';
   import ServicePage from '$lib/components/ServicePage.svelte';
+  import SeoHead from '$lib/components/SeoHead.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -21,66 +22,21 @@
   const home = $derived(bundle.home);
   const service = $derived(data.service);
 
-  const canonicalUrl = $derived(`${SITE_URL}/en/services/${service.slug}`);
-  const alternateDa = $derived(
-    data.peer ? `${SITE_URL}/ydelser/${data.peer.slug}` : null
-  );
-
-  const pageTitle = $derived(`${service.title} · ${site.name}`);
-  const pageDescription = $derived(service.blurb || site.tagline);
-  // Per-service OG (EN variant) — see DA mirror for commentary.
-  const ogImageUrl = $derived(`${SITE_URL}/img/og/${service.id}.en.jpg`);
-
-  // EN mirror of DA's JSON-LD — see DA wrapper for commentary.
-  const jsonLd = $derived(
-    JSON.stringify(
-      buildServicePageJsonLd({
-        locale: 'en',
-        site,
-        bio,
-        contact,
-        service,
-        pageUrl: canonicalUrl,
-        homeLabel: 'Home'
-      })
-    )
+  // EN mirror of DA's SEO head — see DA wrapper for commentary.
+  const seo = $derived(
+    buildServicePageSeo({
+      locale: 'en',
+      site,
+      bio,
+      contact,
+      service,
+      peer: data.peer,
+      homeLabel: 'Home'
+    })
   );
 </script>
 
-<svelte:head>
-  <title>{pageTitle}</title>
-  <meta name="description" content={pageDescription} />
-
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="en" href={canonicalUrl} />
-  {#if alternateDa}
-    <link rel="alternate" hreflang="da" href={alternateDa} />
-    <link rel="alternate" hreflang="x-default" href={alternateDa} />
-  {/if}
-
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content={site.name} />
-  <meta property="og:title" content={pageTitle} />
-  <meta property="og:description" content={pageDescription} />
-  <meta property="og:locale" content="en_US" />
-  {#if alternateDa}
-    <meta property="og:locale:alternate" content="da_DK" />
-  {/if}
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:image" content={ogImageUrl} />
-  <meta property="og:image:alt" content={service.title} />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/jpeg" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={pageTitle} />
-  <meta name="twitter:description" content={pageDescription} />
-  <meta name="twitter:image" content={ogImageUrl} />
-
-  <!-- Structured data — see DA mirror for commentary. -->
-  {@html `<script type="application/ld+json">${jsonLd}</script>`}
-</svelte:head>
+<SeoHead {seo} />
 
 <ServicePage
   service={data.service}
