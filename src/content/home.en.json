@@ -103,20 +103,20 @@
   },
   "stage": {
     "sections": [
-      { "id": "hero",              "stage": { "main": "heroFarRight",   "gold": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },
-      { "id": "name-section",      "stage": { "main": "topRightSm",     "gold": "disperseLowR",     "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "chapter-terapi",    "stage": { "main": "heroRightBig",   "gold": "cornerTLtiny",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "manifest",          "stage": { "main": "cornerBLtiny",   "gold": "cornerTLtiny",     "gem": "midRightBig",    "intensity": 1.00 } },
-      { "id": "ritual",            "stage": { "main": "upperRightBig",  "gold": "bottomLeftMed",    "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "service-terapi",    "stage": { "main": "topRightSm",     "gold": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "for-personal",      "stage": { "main": "topLeftSm",      "gold": "bottomLeftMed",    "gem": "heroRightBig",   "intensity": 1.05 } },
-      { "id": "chapter-konsulent", "stage": { "main": "heroLeftBig",    "gold": "cornerBRsm",       "gem": "cornerTRsm",     "intensity": 1.05 } },
-      { "id": "service-intimacy",  "stage": { "main": "heroRightBig",   "gold": "bottomLeftMed",    "gem": "topRightSm",     "intensity": 1.20 } },
-      { "id": "service-elderly",   "stage": { "main": "topLeftSm",      "gold": "cornerBLsm",       "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "service-teaching",  "stage": { "main": "topRightSm",     "gold": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.00 } },
-      { "id": "for-work",          "stage": { "main": "bottomLeftSm",   "gold": "topLeftSm",        "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "bio",               "stage": { "main": "bottomLeftSm",   "gold": "disperseRightMid", "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "contact",           "stage": { "main": "centerMax",      "gold": "disperseLowL",     "gem": "upperRightMed",  "intensity": 1.35 } }
+      { "id": "hero",              "stage": { "bubble": "heroFarRight",   "drops": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },
+      { "id": "name-section",      "stage": { "bubble": "topRightSm",     "drops": "disperseLowR",     "gem": "topLeftSm",      "intensity": 1.00 } },
+      { "id": "chapter-terapi",    "stage": { "bubble": "heroRightBig",   "drops": "cornerTLtiny",     "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "manifest",          "stage": { "bubble": "cornerBLtiny",   "drops": "cornerTLtiny",     "gem": "midRightBig",    "intensity": 1.00 } },
+      { "id": "ritual",            "stage": { "bubble": "upperRightBig",  "drops": "bottomLeftMed",    "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "service-terapi",    "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.05 } },
+      { "id": "for-personal",      "stage": { "bubble": "topLeftSm",      "drops": "bottomLeftMed",    "gem": "heroRightBig",   "intensity": 1.05 } },
+      { "id": "chapter-konsulent", "stage": { "bubble": "heroLeftBig",    "drops": "cornerBRsm",       "gem": "cornerTRsm",     "intensity": 1.05 } },
+      { "id": "service-intimacy",  "stage": { "bubble": "heroRightBig",   "drops": "bottomLeftMed",    "gem": "topRightSm",     "intensity": 1.20 } },
+      { "id": "service-elderly",   "stage": { "bubble": "topLeftSm",      "drops": "cornerBLsm",       "gem": "heroRightBig",   "intensity": 1.00 } },
+      { "id": "service-teaching",  "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.00 } },
+      { "id": "for-work",          "stage": { "bubble": "bottomLeftSm",   "drops": "topLeftSm",        "gem": "heroRightBig",   "intensity": 1.00 } },
+      { "id": "bio",               "stage": { "bubble": "bottomLeftSm",   "drops": "disperseRightMid", "gem": "topLeftSm",      "intensity": 1.00 } },
+      { "id": "contact",           "stage": { "bubble": "centerMax",      "drops": "disperseLowL",     "gem": "upperRightMed",  "intensity": 1.35 } }
     ]
   }
 }

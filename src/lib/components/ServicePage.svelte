@@ -20,7 +20,7 @@
     LocaleBundle,
     Service
   } from '$lib/content';
-  import { mainPoses, goldPoses, gemPoses } from '$lib/stage/poses';
+  import { bubblePoses, dropsPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import { handleBackToHome } from '$lib/nav/backNav.svelte';
   import Testimonials from './Testimonials.svelte';
@@ -105,9 +105,9 @@
     stage.anchors = [
       {
         selector: '.service-stage-zone',
-        main: mainPoses[service.stage.main],
-        drip1: goldPoses[service.stage.gold],
-        drip2: gemPoses[service.stage.gem],
+        bubble: bubblePoses[service.stage.bubble],
+        drops: dropsPoses[service.stage.drops],
+        gem: gemPoses[service.stage.gem],
         intensity: service.stage.intensity ?? 1.0
       }
     ];

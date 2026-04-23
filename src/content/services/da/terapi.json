@@ -38,5 +38,5 @@
     }
   ],
   "chapter": "terapi",
-  "stage": { "main": "fullBleed", "gold": "offstage", "gem": "offstage", "intensity": 1.05 }
+  "stage": { "bubble": "fullBleed", "drops": "offstage", "gem": "offstage", "intensity": 1.05 }
 }

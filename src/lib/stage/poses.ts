@@ -27,7 +27,7 @@ export type Pose = {
 };
 
 /** Mercury orb — the displaced sphere, iridescent in Terapi / chrome in Konsulent. */
-export const mainPoses = {
+export const bubblePoses = {
   offstage:       { x: 1.8,   y: 0,     scale: 0.01 },
   heroFarRight:   { x: 1.15,  y: -0.1,  scale: 1.05 },
   heroRightBig:   { x: 0.5,   y: -0.05, scale: 1.2  },
@@ -44,7 +44,7 @@ export const mainPoses = {
 } as const satisfies Record<string, Pose>;
 
 /** Gold metaball cluster — MarchingCubes, warm in Terapi / cool chrome in Konsulent. */
-export const goldPoses = {
+export const dropsPoses = {
   offstage:         { x: 2,     y: 0,     scale: 0.01 },
   disperseLowC:     { x: -0.25, y: -0.45, scale: 0.82 },
   disperseLowR:     { x: 0.35,  y: -0.75, scale: 0.78 },
@@ -79,18 +79,22 @@ export const gemPoses = {
   fullBleed:     { x: 0.15,  y: -0.1,  scale: 3.5  }
 } as const satisfies Record<string, Pose>;
 
-export type MainPose = keyof typeof mainPoses;
-export type GoldPose = keyof typeof goldPoses;
+export type BubblePose = keyof typeof bubblePoses;
+export type DropsPose = keyof typeof dropsPoses;
 export type GemPose = keyof typeof gemPoses;
 
 /**
  * A section's stage configuration — the CMS-editable, content-side shape.
  * Editors pick pose names from the palette above; this is what they author
  * in frontmatter.
+ *
+ * Field naming matches the element vocabulary used across code, content,
+ * and Sveltia admin: `bubble` (the mercury orb), `drops` (the gold
+ * metaballs), `gem` (the faceted icosahedron).
  */
 export type StageConfig = {
-  main: MainPose;
-  gold: GoldPose;
+  bubble: BubblePose;
+  drops: DropsPose;
   gem: GemPose;
   /** Tone mapping exposure multiplier when this section is in view. */
   intensity?: number;
@@ -105,9 +109,9 @@ export type SectionStage = {
 /** Runtime shape consumed by Stage. */
 export type ResolvedAnchor = {
   selector: string;
-  main: Pose;
-  drip1: Pose;
-  drip2: Pose;
+  bubble: Pose;
+  drops: Pose;
+  gem: Pose;
   intensity: number;
 };
 
@@ -118,9 +122,9 @@ export type ResolvedAnchor = {
 export function resolveAnchor(section: SectionStage): ResolvedAnchor {
   return {
     selector: `[data-stage-anchor="${section.id}"]`,
-    main: mainPoses[section.stage.main],
-    drip1: goldPoses[section.stage.gold],
-    drip2: gemPoses[section.stage.gem],
+    bubble: bubblePoses[section.stage.bubble],
+    drops: dropsPoses[section.stage.drops],
+    gem: gemPoses[section.stage.gem],
     intensity: section.stage.intensity ?? 1.0
   };
 }

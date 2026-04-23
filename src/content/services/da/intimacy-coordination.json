@@ -56,5 +56,5 @@
     "kind": "primary"
   },
   "chapter": "konsulent",
-  "stage": { "main": "offstage", "gold": "topRightMed", "gem": "offstage", "intensity": 1.15 }
+  "stage": { "bubble": "offstage", "drops": "topRightMed", "gem": "offstage", "intensity": 1.15 }
 }

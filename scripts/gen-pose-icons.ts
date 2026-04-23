@@ -22,7 +22,7 @@ import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { mainPoses, goldPoses, gemPoses, type Pose } from '../src/lib/stage/poses.ts';
+import { bubblePoses, dropsPoses, gemPoses, type Pose } from '../src/lib/stage/poses.ts';
 
 // ---- layout ----
 
@@ -41,9 +41,9 @@ const colors = {
   bgStroke: '#d0cab8',
   col:      '#e4dec9', // text column hint
   label:    '#766e5a',
-  mercury:       { fill: '#c5c9d0', stroke: '#8f949d' },
-  mercuryEdge:   '#8f949d',
-  gold:          { fill: '#e0b359', stroke: '#a8842c' },
+  bubble:        { fill: '#c5c9d0', stroke: '#8f949d' },
+  bubbleEdge:    '#8f949d',
+  drops:         { fill: '#e0b359', stroke: '#a8842c' },
   gem:           { fill: '#7a5a8e', stroke: '#4d3659' }
 };
 
@@ -80,24 +80,24 @@ function baseBg(): string {
   );
 }
 
-function renderMain(pose: Pose): string {
+function renderBubble(pose: Pose): string {
   const { px, py } = ndcToSvg(pose.x, pose.y);
   const r = scaleToRadius(pose.scale);
   return (
     `<circle cx="${n(px)}" cy="${n(py)}" r="${n(r)}" ` +
-    `fill="${colors.mercury.fill}" stroke="${colors.mercury.stroke}" stroke-width="0.5"/>`
+    `fill="${colors.bubble.fill}" stroke="${colors.bubble.stroke}" stroke-width="0.5"/>`
   );
 }
 
 // Cluster of three offset circles — hints at the MarchingCubes metaballs.
-function renderGold(pose: Pose): string {
+function renderDrops(pose: Pose): string {
   const { px, py } = ndcToSvg(pose.x, pose.y);
   const r = scaleToRadius(pose.scale);
   const d = r * 0.45;
   const c = (cx: number, cy: number, cr: number) =>
     `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(cr)}"/>`;
   return (
-    `<g fill="${colors.gold.fill}" stroke="${colors.gold.stroke}" stroke-width="0.4">` +
+    `<g fill="${colors.drops.fill}" stroke="${colors.drops.stroke}" stroke-width="0.4">` +
     c(px - d, py + d * 0.3, r * 0.7) +
     c(px + d * 0.5, py - d * 0.4, r * 0.8) +
     c(px + d * 0.2, py + d * 0.6, r * 0.6) +
@@ -123,11 +123,11 @@ function renderGem(pose: Pose): string {
   );
 }
 
-type Element = 'main' | 'gold' | 'gem';
+type Element = 'bubble' | 'drops' | 'gem';
 
 const renderers: Record<Element, (p: Pose) => string> = {
-  main: renderMain,
-  gold: renderGold,
+  bubble: renderBubble,
+  drops: renderDrops,
   gem: renderGem
 };
 
@@ -157,9 +157,9 @@ const outRoot = resolve(rootDir, 'static', 'admin', 'pose-icons');
 
 type Palette = { element: Element; poses: Record<string, Pose>; title: string };
 const palettes: Palette[] = [
-  { element: 'main', poses: mainPoses, title: 'Mercury orb (main)' },
-  { element: 'gold', poses: goldPoses, title: 'Gold metaballs (drip1)' },
-  { element: 'gem',  poses: gemPoses,  title: 'Faceted gem (drip2)' }
+  { element: 'bubble', poses: bubblePoses, title: 'Bubble (mercury orb)' },
+  { element: 'drops',  poses: dropsPoses,  title: 'Drops (gold metaballs)' },
+  { element: 'gem',    poses: gemPoses,    title: 'Gem (faceted icosahedron)' }
 ];
 
 // Nuke and recreate the output tree so deleted poses don't leave stale

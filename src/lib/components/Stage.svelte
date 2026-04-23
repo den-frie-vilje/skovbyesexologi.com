@@ -17,9 +17,9 @@
   };
   export type SectionAnchor = {
     selector: string;
-    main: ElementState;
-    drip1: ElementState;
-    drip2: ElementState;
+    bubble: ElementState;
+    drops: ElementState;
+    gem: ElementState;
     intensity?: number;
   };
 
@@ -243,7 +243,7 @@ uniform float uEnvMix;`
       const accentColor = new THREE.Color(accent);
       const bgColor = new THREE.Color(background);
 
-      const mainMat = new THREE.MeshPhysicalMaterial({
+      const bubbleMat = new THREE.MeshPhysicalMaterial({
         color: tintColor,
         metalness: 0.9,
         roughness: 0.12,
@@ -259,12 +259,12 @@ uniform float uEnvMix;`
         iridescenceThicknessRange: [120, 700]
       });
 
-      const mainSegs = 128;
-      const mainGeom = new THREE.SphereGeometry(1, mainSegs, Math.round(mainSegs * 0.75));
-      const mainBase = mainGeom.attributes.position.array.slice() as Float32Array;
-      const mainMesh = new THREE.Mesh(mainGeom, mainMat);
-      scene.add(mainMesh);
-      const mainEnvUniforms = enableEnvCrossfade(mainMat, chromeEnvMap);
+      const bubbleSegs = 128;
+      const bubbleGeom = new THREE.SphereGeometry(1, bubbleSegs, Math.round(bubbleSegs * 0.75));
+      const bubbleBase = bubbleGeom.attributes.position.array.slice() as Float32Array;
+      const bubbleMesh = new THREE.Mesh(bubbleGeom, bubbleMat);
+      scene.add(bubbleMesh);
+      const bubbleEnvUniforms = enableEnvCrossfade(bubbleMat, chromeEnvMap);
 
       // Polished gold — Filament/Disney F0 reference, no clearcoat.
       // The dramatic dark-floor env gives the deep reflection valleys that
@@ -303,8 +303,8 @@ uniform float uEnvMix;`
       const gemEnvUniforms = enableEnvCrossfade(gemMat, chromeEnvMap);
 
       // Chapter palette endpoints — lerp'd toward based on `chapterMode`
-      const mainTintTerapi = new THREE.Color(tint);
-      const mainTintKonsulent = new THREE.Color('#b6c5da');
+      const bubbleTintTerapi = new THREE.Color(tint);
+      const bubbleTintKonsulent = new THREE.Color('#b6c5da');
       // Chrome F0 (Filament reference, cooled slightly for "mercury" feel)
       const goldTerapi = new THREE.Color(1.0, 0.86, 0.57);
       const goldKonsulent = new THREE.Color(0.82, 0.85, 0.9);
@@ -409,7 +409,7 @@ uniform float uEnvMix;`
       }
 
       const fluidGold = makeFluidGold();
-      const drip2 = makeGem(0.26, 2.3);
+      const gem = makeGem(0.26, 2.3);
 
       const keyLight = new THREE.PointLight(accentColor, 2.5, 16, 1.4);
       keyLight.position.set(-2.4, 1.8, 2.6);
@@ -443,7 +443,7 @@ uniform float uEnvMix;`
         pinEls.clear();
         for (const a of anchors) {
           sectionEls.set(a.selector, document.querySelector(a.selector) as HTMLElement | null);
-          for (const el of [a.main, a.drip1, a.drip2]) {
+          for (const el of [a.bubble, a.drops, a.gem]) {
             if (el.pin && !pinEls.has(el.pin.selector)) {
               pinEls.set(
                 el.pin.selector,
@@ -494,9 +494,9 @@ uniform float uEnvMix;`
           • main   (orb)        → enters from the RIGHT, small
                                     offset; lands first — reads
                                     as the hero element settling.
-          • drip1  (gold balls) → enters from the LEFT, medium
+          • drops  (gold balls) → enters from the LEFT, medium
                                     offset; arrives second.
-          • drip2  (gem)        → enters from the RIGHT, largest
+          • gem  (gem)        → enters from the RIGHT, largest
                                     offset; arrives last.
 
         With the opacity fade layered on top (700ms), the canvas
@@ -504,21 +504,46 @@ uniform float uEnvMix;`
         end state feels like a coordinated reveal rather than
         three independent pop-ins.
       */
+      /*
+        First-mount entry choreography. Seed gem + drops with an
+        x-offset from their anchor targets so the existing per-
+        frame lerp carries them in horizontally. Bubble starts
+        exactly at its target — no slide, it's visible from frame
+        1 (only the 700ms opacity fade-in animates for the orb).
+        Scale + y start at anchor values; only x animates for
+        the other two, so they enter at full target size.
+
+        Arrival order: bubble (immediate) → gem → drops. Because
+        the lerp is exponential at a fixed rate per frame, a
+        larger offset takes proportionally longer to close — so
+        "first to arrive after bubble" gets the smaller offset.
+        Directions alternate sides so the entries read as
+        spreading, not racing:
+          • bubble → no offset; at target from frame 1.
+          • gem    → enters from the RIGHT, medium offset;
+                     arrives shortly after bubble has faded in.
+          • drops  → enters from the LEFT, largest offset;
+                     arrives last, closes the reveal.
+
+        With the opacity fade layered on top, the canvas comes in
+        while gem + drops are mid-slide — a single coordinated
+        reveal rather than three independent pop-ins.
+      */
       const firstAnchor = anchors[0];
-      const liveMain: Live = {
-        x: firstAnchor.main.x + 1.8,
-        y: firstAnchor.main.y,
-        scale: firstAnchor.main.scale
+      const liveBubble: Live = {
+        x: firstAnchor.bubble.x,
+        y: firstAnchor.bubble.y,
+        scale: firstAnchor.bubble.scale
       };
-      const liveDrip1: Live = {
-        x: firstAnchor.drip1.x - 2.8,
-        y: firstAnchor.drip1.y,
-        scale: firstAnchor.drip1.scale
+      const liveDrops: Live = {
+        x: firstAnchor.drops.x - 3.6,
+        y: firstAnchor.drops.y,
+        scale: firstAnchor.drops.scale
       };
-      const liveDrip2: Live = {
-        x: firstAnchor.drip2.x + 3.6,
-        y: firstAnchor.drip2.y,
-        scale: firstAnchor.drip2.scale
+      const liveGem: Live = {
+        x: firstAnchor.gem.x + 2.2,
+        y: firstAnchor.gem.y,
+        scale: firstAnchor.gem.scale
       };
       let liveIntensity = firstAnchor.intensity ?? 1;
 
@@ -533,15 +558,15 @@ uniform float uEnvMix;`
       const blendTargets = () => {
         const vis = computeVisibility();
         let sumW = 0;
-        let mx = 0,
-          my = 0,
-          ms = 0;
-        let d1x = 0,
-          d1y = 0,
-          d1s = 0;
-        let d2x = 0,
-          d2y = 0,
-          d2s = 0;
+        let bx = 0,
+          by = 0,
+          bs = 0;
+        let dx = 0,
+          dy = 0,
+          dsc = 0;
+        let gx = 0,
+          gy = 0,
+          gsc = 0;
         let inten = 0;
 
         let dominant: SectionAnchor | null = null;
@@ -559,42 +584,42 @@ uniform float uEnvMix;`
           sumW += w;
 
           // For pinned elements, sample pin position at blend time
-          const mPin = resolvePin(a.main.pin);
-          const mainX = mPin ? mPin.x : a.main.x;
-          const mainY = mPin ? mPin.y : a.main.y;
-          const d1Pin = resolvePin(a.drip1.pin);
-          const d1X = d1Pin ? d1Pin.x : a.drip1.x;
-          const d1Y = d1Pin ? d1Pin.y : a.drip1.y;
-          const d2Pin = resolvePin(a.drip2.pin);
-          const d2X = d2Pin ? d2Pin.x : a.drip2.x;
-          const d2Y = d2Pin ? d2Pin.y : a.drip2.y;
+          const bubblePin = resolvePin(a.bubble.pin);
+          const bubbleX = bubblePin ? bubblePin.x : a.bubble.x;
+          const bubbleY = bubblePin ? bubblePin.y : a.bubble.y;
+          const dropsPin = resolvePin(a.drops.pin);
+          const dropsX = dropsPin ? dropsPin.x : a.drops.x;
+          const dropsY = dropsPin ? dropsPin.y : a.drops.y;
+          const gemPin = resolvePin(a.gem.pin);
+          const gemX = gemPin ? gemPin.x : a.gem.x;
+          const gemY = gemPin ? gemPin.y : a.gem.y;
 
-          mx += mainX * w;
-          my += mainY * w;
-          ms += a.main.scale * w;
-          d1x += d1X * w;
-          d1y += d1Y * w;
-          d1s += a.drip1.scale * w;
-          d2x += d2X * w;
-          d2y += d2Y * w;
-          d2s += a.drip2.scale * w;
+          bx += bubbleX * w;
+          by += bubbleY * w;
+          bs += a.bubble.scale * w;
+          dx += dropsX * w;
+          dy += dropsY * w;
+          dsc += a.drops.scale * w;
+          gx += gemX * w;
+          gy += gemY * w;
+          gsc += a.gem.scale * w;
           inten += (a.intensity ?? 1) * w;
         }
 
         if (sumW > 1e-5) {
           return {
-            main: { x: mx / sumW, y: my / sumW, scale: ms / sumW },
-            drip1: { x: d1x / sumW, y: d1y / sumW, scale: d1s / sumW },
-            drip2: { x: d2x / sumW, y: d2y / sumW, scale: d2s / sumW },
+            bubble: { x: bx / sumW, y: by / sumW, scale: bs / sumW },
+            drops: { x: dx / sumW, y: dy / sumW, scale: dsc / sumW },
+            gem: { x: gx / sumW, y: gy / sumW, scale: gsc / sumW },
             intensity: inten / sumW
           };
         }
         // Fallback to dominant or first
         const a = dominant ?? anchors[0];
         return {
-          main: { x: a.main.x, y: a.main.y, scale: a.main.scale },
-          drip1: { x: a.drip1.x, y: a.drip1.y, scale: a.drip1.scale },
-          drip2: { x: a.drip2.x, y: a.drip2.y, scale: a.drip2.scale },
+          bubble: { x: a.bubble.x, y: a.bubble.y, scale: a.bubble.scale },
+          drops: { x: a.drops.x, y: a.drops.y, scale: a.drops.scale },
+          gem: { x: a.gem.x, y: a.gem.y, scale: a.gem.scale },
           intensity: a.intensity ?? 1
         };
       };
@@ -665,13 +690,13 @@ uniform float uEnvMix;`
       let rotY = 0;
 
       const displaceMain = () => {
-        const pos = mainGeom.attributes.position;
+        const pos = bubbleGeom.attributes.position;
         const count = pos.count;
         for (let i = 0; i < count; i++) {
           const ix = i * 3;
-          const bx = mainBase[ix];
-          const by = mainBase[ix + 1];
-          const bz = mainBase[ix + 2];
+          const bx = bubbleBase[ix];
+          const by = bubbleBase[ix + 1];
+          const bz = bubbleBase[ix + 2];
           const len = Math.sqrt(bx * bx + by * by + bz * bz) || 1;
           const nx = bx / len;
           const ny = by / len;
@@ -687,7 +712,7 @@ uniform float uEnvMix;`
           pos.array[ix + 2] = bz + nz * wave;
         }
         pos.needsUpdate = true;
-        mainGeom.computeVertexNormals();
+        bubbleGeom.computeVertexNormals();
       };
 
       const updateFluidGold = (f: FluidGold, live: Live) => {
@@ -739,12 +764,12 @@ uniform float uEnvMix;`
         f.mesh.update();
       };
 
-      const positionMain = () => {
-        const world = ndcToWorld(liveMain.x, liveMain.y);
-        mainMesh.position.x = world.x;
-        mainMesh.position.y = world.y;
-        const s = Math.max(0.001, liveMain.scale);
-        mainMesh.scale.setScalar(s);
+      const positionBubble = () => {
+        const world = ndcToWorld(liveBubble.x, liveBubble.y);
+        bubbleMesh.position.x = world.x;
+        bubbleMesh.position.y = world.y;
+        const s = Math.max(0.001, liveBubble.scale);
+        bubbleMesh.scale.setScalar(s);
         /*
           Background-fill clipping guard: when the orb is scaled
           past ~1.5 its surface starts approaching the camera
@@ -757,13 +782,13 @@ uniform float uEnvMix;`
           keep their default z=0 placement.
         */
         const SURFACE_LIMIT_Z = 1.5;
-        mainMesh.position.z = s > SURFACE_LIMIT_Z ? SURFACE_LIMIT_Z - s : 0;
-        mainMesh.visible = liveMain.scale > 0.02;
+        bubbleMesh.position.z = s > SURFACE_LIMIT_Z ? SURFACE_LIMIT_Z - s : 0;
+        bubbleMesh.visible = liveBubble.scale > 0.02;
 
         rotX += (pointerY * 0.18 - rotX) * 0.04;
         rotY += (pointerX * 0.22 - rotY) * 0.04;
-        mainMesh.rotation.x = rotX + Math.sin(time * 0.3) * 0.06;
-        mainMesh.rotation.y = rotY + time * 0.15;
+        bubbleMesh.rotation.x = rotX + Math.sin(time * 0.3) * 0.06;
+        bubbleMesh.rotation.y = rotY + time * 0.15;
       };
 
       const positionGem = (d: GemState, live: Live, wobbleAmp: number) => {
@@ -776,7 +801,7 @@ uniform float uEnvMix;`
         d.mesh.position.x = world.x + side;
         d.mesh.position.y = world.y + bob;
         /*
-          Same camera-clipping guard as `positionMain`: when the
+          Same camera-clipping guard as `positionBubble`: when the
           gem is scaled past ~1.5 (fullBleed / cover-background)
           its surface crosses the camera plane. Pin the front
           surface at `baseZ + 1.5` so the gem stays in front of
@@ -800,9 +825,9 @@ uniform float uEnvMix;`
 
       // Critically-damped smoothing via double-lerp for extra silky easing.
       // Works in two stages: target → smoothed → live, both with slow k.
-      const smoothedMain: Live = { ...liveMain };
-      const smoothedD1: Live = { ...liveDrip1 };
-      const smoothedD2: Live = { ...liveDrip2 };
+      const smoothedBubble: Live = { ...liveBubble };
+      const smoothedDrops: Live = { ...liveDrops };
+      const smoothedGem: Live = { ...liveGem };
       let smoothedIntensity = liveIntensity;
 
       const lerpLive = (live: Live, target: Live, k: number) => {
@@ -822,15 +847,15 @@ uniform float uEnvMix;`
 
         // Very slow critically-damped tracking — prioritises readability
         const k1 = 0.012;
-        lerpLive(smoothedMain, t.main, k1);
-        lerpLive(smoothedD1, t.drip1, k1);
-        lerpLive(smoothedD2, t.drip2, k1);
+        lerpLive(smoothedBubble, t.bubble, k1);
+        lerpLive(smoothedDrops, t.drops, k1);
+        lerpLive(smoothedGem, t.gem, k1);
         smoothedIntensity += (t.intensity - smoothedIntensity) * k1;
 
         const k2 = 0.015;
-        lerpLive(liveMain, smoothedMain, k2);
-        lerpLive(liveDrip1, smoothedD1, k2);
-        lerpLive(liveDrip2, smoothedD2, k2);
+        lerpLive(liveBubble, smoothedBubble, k2);
+        lerpLive(liveDrops, smoothedDrops, k2);
+        lerpLive(liveGem, smoothedGem, k2);
         liveIntensity += (smoothedIntensity - liveIntensity) * k2;
 
         renderer.toneMappingExposure = 0.9 + liveIntensity * 0.25;
@@ -849,16 +874,16 @@ uniform float uEnvMix;`
         // scrolling) so the hint is visible, return gently at rest.
         const chapRate = effectiveChapter > liveChapter ? 0.08 : 0.03;
         liveChapter += (effectiveChapter - liveChapter) * chapRate;
-        mainMat.color.lerpColors(mainTintTerapi, mainTintKonsulent, liveChapter);
+        bubbleMat.color.lerpColors(bubbleTintTerapi, bubbleTintKonsulent, liveChapter);
         // Fade the holographic iridescence out — in konsulent the main orb
         // joins the same pure-chrome family as the metaballs and gem.
-        mainMat.iridescence = 1.0 - liveChapter;
+        bubbleMat.iridescence = 1.0 - liveChapter;
         // Env crossfade — each material's shader was patched at mount to
         // sample BOTH its therapy env AND the shared chromeEnvMap, mixing
         // by `uEnvMix`. Setting it equal to `liveChapter` means env maps
         // blend continuously with the material-colour lerp above. No more
         // threshold swap, no shader recompile, no uniform thrashing.
-        mainEnvUniforms.uEnvMix.value = liveChapter;
+        bubbleEnvUniforms.uEnvMix.value = liveChapter;
         goldEnvUniforms.uEnvMix.value = liveChapter;
         gemEnvUniforms.uEnvMix.value = liveChapter;
 
@@ -883,34 +908,34 @@ uniform float uEnvMix;`
         gemMat.clearcoatRoughness = 0.03;
 
         // Skip per-frame CPU work on elements that won't draw this frame.
-        // The mainGeom displacement + computeVertexNormals is the single
+        // The bubbleGeom displacement + computeVertexNormals is the single
         // heaviest CPU task in the tick (~12k verts); skipping it when
-        // mainMesh is offscreen-small gives a measurable recovery.
-        const mainVisible = liveMain.scale > 0.02;
-        const goldVisible = liveDrip1.scale > 0.02;
-        const gemVisible = liveDrip2.scale > 0.02;
+        // bubbleMesh is offscreen-small gives a measurable recovery.
+        const bubbleVisible = liveBubble.scale > 0.02;
+        const goldVisible = liveDrops.scale > 0.02;
+        const gemVisible = liveGem.scale > 0.02;
 
-        if (mainVisible) {
+        if (bubbleVisible) {
           displaceMain();
-          positionMain();
+          positionBubble();
           // Animate iridescence thickness for a shifting holographic shimmer
           const tLow = 150 + Math.sin(time * 0.6) * 80;
           const tHigh = 600 + Math.sin(time * 0.4 + 1.3) * 200;
-          mainMat.iridescenceThicknessRange = [tLow, tHigh];
+          bubbleMat.iridescenceThicknessRange = [tLow, tHigh];
         } else {
-          mainMesh.visible = false;
+          bubbleMesh.visible = false;
         }
 
         if (goldVisible) {
-          updateFluidGold(fluidGold, liveDrip1);
+          updateFluidGold(fluidGold, liveDrops);
         } else {
           fluidGold.mesh.visible = false;
         }
 
         if (gemVisible) {
-          positionGem(drip2, liveDrip2, 1.3);
+          positionGem(gem, liveGem, 1.3);
         } else {
-          drip2.mesh.visible = false;
+          gem.mesh.visible = false;
         }
 
         // Scroll activity — drives the scrollBias applied to `effectiveChapter`
@@ -947,10 +972,10 @@ uniform float uEnvMix;`
         window.removeEventListener('resize', onResize);
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('scroll', onScroll);
-        mainGeom.dispose();
-        mainMat.dispose();
+        bubbleGeom.dispose();
+        bubbleMat.dispose();
         fluidGold.mesh.geometry.dispose();
-        drip2.geom.dispose();
+        gem.geom.dispose();
         goldMat.dispose();
         gemMat.dispose();
         envMap.dispose();

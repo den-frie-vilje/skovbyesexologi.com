@@ -84,7 +84,7 @@
 #   1. Regenerate SVG thumbnails: `pkgx pnpm icons`
 #   2. Update the anchored option lists below.
 
-pose_options_main: &pose_options_main
+pose_options_bubble: &pose_options_bubble
   - offstage
   - heroFarRight
   - heroRightBig
@@ -97,7 +97,7 @@ pose_options_main: &pose_options_main
   - cornerBLtiny
   - fullBleed
 
-pose_options_gold: &pose_options_gold
+pose_options_drops: &pose_options_drops
   - offstage
   - disperseLowC
   - disperseLowR
@@ -385,8 +385,8 @@ collections:
                   - name: stage
                     widget: object
                     fields:
-                      - { name: main, widget: select, default: offstage, options: *pose_options_main }
-                      - { name: gold, widget: select, default: offstage, options: *pose_options_gold }
+                      - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
+                      - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
                       - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
                       - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
 
@@ -483,7 +483,7 @@ collections:
         i18n: duplicate
         hint: 'Structural — same across locales.'
         fields:
-          - { name: main, widget: select, default: offstage, options: *pose_options_main }
-          - { name: gold, widget: select, default: offstage, options: *pose_options_gold }
+          - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
           - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
           - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }

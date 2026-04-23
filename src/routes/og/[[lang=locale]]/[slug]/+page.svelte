@@ -47,9 +47,9 @@
     text column (title upper-left, URL bottom-left). Not an
     existing named pose — a custom (0.35, 0.8) for this one
     layout.
-      main:  mainPoses.heroFarRight  ( 1.15, -0.1,  1.05)
-      drip1: (custom upper-centre)   ( 0.35,  0.8,  0.45)
-      drip2: gemPoses.heroBRhuge     ( 0.9,  -0.9,  1.5)
+      bubble: bubblePoses.heroFarRight  ( 1.15, -0.1,  1.05)
+      drops: (custom upper-centre)   ( 0.35,  0.8,  0.45)
+      gem: gemPoses.heroBRhuge     ( 0.9,  -0.9,  1.5)
       intensity: 1.10
     Values are inlined rather than imported so this route stays
     zero-dep. If poses.ts changes, update here too.
@@ -57,9 +57,9 @@
   const ogAnchors = [
     {
       selector: '.og-stage-zone',
-      main:  { x: 1.15, y: -0.1, scale: 1.05 },
-      drip1: { x: 0.35, y: 0.8,  scale: 0.45 },
-      drip2: { x: 0.9,  y: -0.9, scale: 1.5 },
+      bubble: { x: 1.15, y: -0.1, scale: 1.05 },
+      drops:  { x: 0.35, y: 0.8,  scale: 0.45 },
+      gem:    { x: 0.9,  y: -0.9, scale: 1.5 },
       intensity: 1.1
     }
   ];

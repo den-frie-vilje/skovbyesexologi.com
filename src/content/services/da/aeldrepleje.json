@@ -25,5 +25,5 @@
     }
   ],
   "chapter": "konsulent",
-  "stage": { "main": "offstage", "gold": "offstage", "gem": "fullBleed", "intensity": 1.00 }
+  "stage": { "bubble": "offstage", "drops": "offstage", "gem": "fullBleed", "intensity": 1.00 }
 }
