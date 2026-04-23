@@ -91,9 +91,11 @@ deploy/
 ├── compose.staging.yml         ← staging stack (caddy + site + auth)
 ├── compose.production.yml      ← production stack (caddy + site)
 ├── compose.webhook.yml         ← shared HMAC webhook receiver
+├── compose.acme.yml            ← shared acme.sh cert manager
 ├── compose.local.yml           ← laptop-dev override
 ├── staging.env.example         ← OAuth secrets (→ NAS only)
 ├── webhook.env.example         ← HMAC + CF secrets (→ NAS only)
+├── acme.env.example            ← DNS + DSM creds (→ NAS only)
 └── webhook/
     ├── Dockerfile              ← almir/webhook + docker-cli + git + curl
     ├── hooks.yaml              ← endpoint definitions + HMAC rules
@@ -115,9 +117,13 @@ All sites follow this layout under `/volume1/docker`:
 
 ```
 /volume1/docker/
+├── acme/                             ← shared cert manager (one per NAS)
+│   ├── compose.yml                   ← copy of deploy/compose.acme.yml
+│   ├── acme.env                      ← DNS + DSM creds (chmod 600)
+│   └── data/                         ← acme.sh state + issued certs
 ├── webhook/                          ← shared receiver (one per NAS)
-│   ├── compose.yml
-│   ├── webhook.env                   ← DOMAIN, HMAC secrets, CF tokens
+│   ├── compose.yml                   ← copy of deploy/compose.webhook.yml
+│   ├── webhook.env                   ← per-site HMAC + CF secrets
 │   ├── webhook/                      ← image build context
 │   │   ├── Dockerfile
 │   │   ├── hooks.yaml
@@ -160,88 +166,107 @@ denfrievilje.dk   CAA   0 issue "letsencrypt.org"
 ```
 So Let's Encrypt is authorized to issue certs for any subdomain.
 
-### 2. Synology — Container Manager + Let's Encrypt wildcard cert
+### 2. Synology — Container Manager + shared services
 
 On DSM:
 
 1. **Install Container Manager.** Package Center → search
    "Container Manager" → Install.
 
-2. **Install Let's Encrypt wildcard certs** for the two sub-
-   zones. These are what every future site's staging + prod
-   origins will use — issued once, attached to each new vhost
-   through the DSM GUI when you add it.
+2. **Create the `deploy` user.** DSM → Control Panel → User &
+   Group → Create. Username `deploy`. No login needed (account
+   exists to own the docker directories). Group: default Users,
+   no admin.
 
-   Wildcard issuance requires **DNS-01 challenge** (not
-   HTTP-01). DSM's built-in Let's Encrypt only supports
-   HTTP-01, so wildcards live outside the GUI's direct
-   issuance flow. Use **acme.sh** for the two wildcards ONLY;
-   DSM's built-in LE keeps handling everything else (individual
-   hostname certs via HTTP-01 for per-site vhosts, DSM's own
-   web UI cert, File Station, etc.).
+3. **Create a dedicated DSM user for acme.sh cert deploys.**
+   Same path: DSM → Control Panel → User & Group → Create.
+   Username `acme`. Set a strong password (goes into the acme
+   env file later). Grant ONLY the "Certificate" admin right
+   via Control Panel → User & Group → Advanced → Application
+   permissions. DO NOT reuse your primary DSM admin account —
+   this credential lives in a container env file and has a
+   larger-than-zero blast radius on leak.
 
-   **acme.sh does not collide with DSM's LE.** They have
-   separate cert stores (`~/.acme.sh/` vs
-   `/usr/syno/etc/certificate/`), issue for different domain
-   shapes (wildcards vs individual hostnames), and DSM's
-   Certificate UI is the *single source of truth* for
-   cert↔vhost bindings either way — acme.sh's job is just to
-   *populate* the DSM cert store with the two wildcards, not
-   to manage bindings.
-
-   SSH into the NAS as admin:
+4. **Create shared docker paths + network.** SSH in as admin:
    ```sh
-   # Install acme.sh. DSM doesn't ship cron (it has Task
-   # Scheduler instead, see step (c) below), so acme.sh's
-   # install check will bail unless we pass `--force`.
-   curl https://get.acme.sh | sh -s email=<your-email> -- --force
-
-   # Issue the wildcards via your DNS provider's API. Example
-   # below is for Cloudflare — see the acme.sh dnsapi wiki for
-   # other providers.
-   export CF_Token="<CF API token with Zone:DNS:Edit on denfrievilje.dk>"
-   export CF_Account_ID="<CF account ID>"
-   ~/.acme.sh/acme.sh --issue --dns dns_cf \
-     -d '*.stage.denfrievilje.dk' -d 'stage.denfrievilje.dk'
-   ~/.acme.sh/acme.sh --issue --dns dns_cf \
-     -d '*.prod.denfrievilje.dk'  -d 'prod.denfrievilje.dk'
-
-   # One-time deploy hook: import the issued cert into DSM's
-   # cert store via DSM's WebAPI. After this runs, the cert
-   # appears in DSM → Control Panel → Security → Certificate
-   # alongside whatever DSM already issued, and you can bind
-   # it to vhosts through the usual DSM UI.
-   export SYNO_Username=<DSM admin user>
-   export SYNO_Password=<DSM admin password>
-   ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
-     -d '*.stage.denfrievilje.dk'
-   ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
-     -d '*.prod.denfrievilje.dk'
+   sudo mkdir -p /volume1/docker/{acme/data,webhook/webhook/scripts}
+   sudo chown -R deploy:users /volume1/docker
+   sudo docker network create skovbye-deploy
    ```
 
-   **(c) Schedule auto-renewal via DSM Task Scheduler.** DSM
-   doesn't have `cron`, so acme.sh can't install its normal
-   renewal cron entry — we use DSM's Task Scheduler instead.
-   DSM → Control Panel → Task Scheduler → Create →
-   **Scheduled Task** → **User-defined script**:
+5. **Bootstrap the acme.sh container.** This is how Let's
+   Encrypt wildcard certs are issued and kept renewed without
+   any host-side cron, Task Scheduler entries, or host-level
+   acme.sh install. A single always-on container handles every
+   wildcard this NAS hosts.
 
-   - **General**: Task name `acme.sh renewal`, User `root`,
-     Enabled ✓
-   - **Schedule**: Daily at 03:00 (or weekly — certs have 30
-     days of renewal slack, daily just catches DNS or API
-     failures sooner)
-   - **Task Settings → Run command**:
-     ```sh
-     "/root/.acme.sh/acme.sh" --cron --home "/root/.acme.sh" > /var/log/acme-renewal.log 2>&1
-     ```
-   - **Task Settings → Notification**: "Send run details by
-     email" + enter your email. Silent failure is the worst
-     outcome here — TLS expiring mid-quarter is painful.
+   Wildcard certs (`*.stage.denfrievilje.dk`,
+   `*.prod.denfrievilje.dk`) need DNS-01 challenge; DSM's
+   built-in LE can't do DNS-01. The container runs acme.sh's
+   official image, handles DNS-01 against your DNS provider's
+   API, and on every renewal pushes the refreshed cert into
+   DSM's cert store via acme.sh's `synology_dsm` deploy hook —
+   so DSM's Certificate UI remains the single source of truth
+   for cert↔vhost bindings.
 
-   Click OK, then hit **Run** on the task once to verify it
-   executes without errors. `acme.sh --cron` is idempotent and
-   a no-op if no certs need renewal, so running it ad-hoc is
-   safe — it just confirms the setup works.
+   **acme.sh does not collide with DSM's built-in LE.** They
+   issue for different domain shapes (wildcards vs individual
+   hostnames), use different cert stores, and DSM's GUI stays
+   the sole place vhosts are bound to certs. Think of the
+   container as a *cert producer* that populates DSM's store;
+   vhosts still pick from DSM's UI normally.
+
+   **(a) Bootstrap the container.** Copy the compose file +
+   env template from any site repo (they're identical across
+   sites; the first site on this NAS seeds it):
+   ```sh
+   REPO=/tmp/skovbye-bootstrap
+   git clone --depth 1 \
+     https://github.com/den-frie-vilje/skovbyesexologi.com.git \
+     "$REPO"
+
+   sudo cp "$REPO/deploy/compose.acme.yml" \
+           /volume1/docker/acme/compose.yml
+   sudo cp "$REPO/deploy/acme.env.example" \
+           /volume1/docker/acme/acme.env
+   sudo chmod 600 /volume1/docker/acme/acme.env
+   sudo chown -R deploy:users /volume1/docker/acme
+   rm -rf "$REPO"
+   ```
+
+   Edit `acme.env` and fill in:
+   - `CF_Token` + `CF_Account_ID` — Cloudflare API token with
+     `Zone:DNS:Edit` on `denfrievilje.dk`
+   - `SYNO_Username` + `SYNO_Password` — the `acme` DSM user
+     from step 3 above
+   - (If the DSM account has 2FA enabled, follow the
+     `SYNO_DeviceID` instructions in the file's comments)
+
+   Bring it up:
+   ```sh
+   cd /volume1/docker/acme
+   sudo docker compose up -d
+   sudo docker logs -f acme.sh    # confirm no startup errors
+   ```
+
+   **(b) Issue the wildcards.** Inside the container:
+   ```sh
+   sudo docker exec acme.sh --issue --dns dns_cf \
+     -d '*.stage.denfrievilje.dk' -d 'stage.denfrievilje.dk' \
+     --keylength ec-256
+   sudo docker exec acme.sh --issue --dns dns_cf \
+     -d '*.prod.denfrievilje.dk'  -d 'prod.denfrievilje.dk' \
+     --keylength ec-256
+   ```
+
+   **(c) Install the deploy hook per cert** so future renewals
+   automatically push to DSM:
+   ```sh
+   sudo docker exec acme.sh --deploy \
+     -d '*.stage.denfrievilje.dk' --deploy-hook synology_dsm
+   sudo docker exec acme.sh --deploy \
+     -d '*.prod.denfrievilje.dk'  --deploy-hook synology_dsm
+   ```
 
    In DSM → Control Panel → Security → Certificate you should
    now see two new entries (`*.stage.denfrievilje.dk` and
@@ -249,27 +274,17 @@ On DSM:
    managed. They're normal certs from DSM's perspective —
    bind them to vhosts in the usual way.
 
-3. **Create the `deploy` user.** DSM → Control Panel → User &
-   Group → Create. Username `deploy`. No login needed (account
-   exists to own the docker directories). Group: default Users,
-   no admin.
+   **Renewal happens automatically** — the container's internal
+   crond runs acme.sh nightly, renews any cert within 30 days
+   of expiry, re-fires the deploy hook. No Task Scheduler
+   entry, no host-side cron, no manual intervention for the
+   next decade of quarterly cert churn. Tail `docker logs
+   acme.sh` if you ever want to verify.
 
-4. **Create the webhook directory + shared docker network.**
-   SSH in as admin:
-   ```sh
-   sudo mkdir -p /volume1/docker/webhook/webhook/scripts
-   sudo chown -R deploy:users /volume1/docker
-   sudo docker network create skovbye-deploy
-   ```
-
-5. **Bootstrap the webhook container.** This step is done
-   **once per NAS**, not once per site.
+6. **Bootstrap the webhook container.** Same "once per NAS,
+   updated manually" treatment as the acme container:
 
    ```sh
-   # Pull the webhook compose file + image build context.
-   # Easiest: copy from the first site's cloned repo, but any
-   # repo with deploy/compose.webhook.yml + deploy/webhook/
-   # works — they're identical across sites.
    REPO=/tmp/skovbye-bootstrap
    git clone --depth 1 \
      https://github.com/den-frie-vilje/skovbyesexologi.com.git \
@@ -283,11 +298,13 @@ On DSM:
    rm -rf "$REPO"
    ```
 
-   The webhook is **bootstrapped once and updated manually** —
-   it does NOT self-update via the pipeline. This avoids the
+   The webhook is bootstrapped once and updated manually — it
+   does NOT self-update via the pipeline. This avoids the
    chicken-and-egg failure mode where a broken webhook upgrade
-   leaves you unable to deploy anything including a webhook
-   fix.
+   leaves you unable to deploy anything, including a webhook
+   fix. (The acme container has the same property and the
+   same rationale — a broken acme upgrade shouldn't lock out
+   cert renewal.)
 
 ---
 

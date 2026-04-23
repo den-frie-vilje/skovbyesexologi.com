@@ -14,8 +14,9 @@ tools/
 .env.*.local
 
 # Deploy env files — real values (OAuth client secrets, webhook
-# HMAC keys, Cloudflare API tokens) live only on the NAS. The
-# committed *.env.example files show the shape without values.
+# HMAC keys, Cloudflare API tokens, DSM credentials) live only
+# on the NAS. The committed *.env.example files show the shape
+# without values.
 deploy/*.env
 !deploy/*.env.example
 .DS_Store
