@@ -67,10 +67,18 @@ services:
 
   sveltia-auth:
     # GitHub OAuth proxy. vencax's image is battle-tested with
-    # Decap/Netlify CMS; Sveltia is protocol-compatible. If we
-    # want to swap, igk1972/netlify-cms-oauth-provider-go is a
-    # Go binary single-file alternative (~10 MB image).
-    image: vencax/netlify-cms-github-oauth-provider:latest
+    # Decap/Netlify CMS; Sveltia is protocol-compatible.
+    #
+    # Tag note: this image was only ever published under `:master`
+    # — no `:latest` tag exists. Using `:master` works and is the
+    # upstream-documented default. The image is ~14 months stale
+    # but the GitHub OAuth token-exchange API it implements hasn't
+    # changed; "unmaintained" here means "done."
+    #
+    # If we ever need something newer: igk1972/netlify-cms-oauth-
+    # provider-go is a Go binary (source-only, no published image);
+    # sveltia-cms-auth itself targets Cloudflare Workers only.
+    image: vencax/netlify-cms-github-oauth-provider:master
     restart: unless-stopped
     networks: [skovbye-deploy]
     environment:
