@@ -2,9 +2,16 @@ node_modules/
 .svelte-kit/
 build/
 tools/
+# Local-only secrets / overrides. The per-mode .env.production,
+# .env.staging, .env.development files in this repo contain ONLY
+# `PUBLIC_`-prefixed values, which Vite bakes into the public
+# client bundle anyway (canonical site URL, GitHub repo name,
+# indexing flag). They're NOT secrets — commit them so GH Actions
+# builds have them too. `.env` (unscoped) and `.env.*.local` remain
+# ignored for developer-specific local overrides.
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
 .DS_Store
 *.log
 
@@ -15,4 +22,4 @@ portrait/
 # Ad-hoc staging backups (zip dumps taken before risky migrations etc.).
 # These can be large and contain committed content — belong outside the
 # repo, not in its history.
-skovbyesexologi-staging-*.zip
+skovbyesexologi-*.zip

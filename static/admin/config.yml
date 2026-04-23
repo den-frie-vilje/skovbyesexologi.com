@@ -128,12 +128,28 @@ backend:
 
 # Production backend — uncomment to activate.
 #
+# Editorial-workflow note: Sveltia writes every save to the
+# `staging` branch (NOT main). A GH Actions workflow
+# (`.github/workflows/deploy-staging.yml`) picks up every push to
+# `staging` and rebuilds signe.denfrievilje.dk within ~2 min.
+# Signe reviews there, and when happy clicks "Publish to
+# production" at `/publish` on the staging domain — that page
+# merges `staging` → `main` via the GitHub API, which triggers
+# `deploy-production.yml` and the change lands on
+# skovbyesexologi.com shortly after.
+#
+# This approach replaces Sveltia's native `editorial_workflow`
+# feature (which is documented as not-yet-supported for GitHub at
+# https://sveltiacms.app/en/docs/workflows/editorial). When that
+# feature ships we can reconsider, but the two-branch + /publish
+# button gives us the same UX without extra Sveltia dependency.
+#
 # backend:
 #   name: github
 #   repo: den-frie-vilje/skovbyesexologi.com
-#   branch: main
+#   branch: staging
 #   base_url: https://<WORKER-SUBDOMAIN>.workers.dev
-#   site_domain: skovbyesexologi.com
+#   site_domain: signe.denfrievilje.dk
 
 media_folder: static/img
 public_folder: /img

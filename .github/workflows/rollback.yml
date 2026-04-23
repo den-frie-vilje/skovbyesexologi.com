@@ -1,0 +1,92 @@
+# Rollback workflow — flip `current` symlink to a previous
+# release. Manual trigger only.
+#
+# Usage: GitHub UI → Actions → Rollback → Run workflow. Pick the
+# environment (staging / production) and paste the release ID
+# (the YYYY-MM-DDTHH-MM-SSZ-<sha8> string used as the
+# `releases/…` subdirectory name on the NAS). The workflow SSHes
+# in and atomically re-points `current` at that release.
+#
+# Listing available release IDs:
+#   ssh deploy@server.denfrievilje.ts.net \
+#     'ls -1t /volume1/web/<domain>/releases | head -20'
+
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        type: choice
+        required: true
+        options:
+          - staging
+          - production
+      release_id:
+        description: 'Release ID to roll back to (e.g. 2026-04-23T14-02-19Z-abc12345)'
+        type: string
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Connect to tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Install deploy SSH key
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -T 10 -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Flip current to target release
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          BASE: ${{ secrets.DEPLOY_PATH }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          SSH="ssh -i $HOME/.ssh/deploy -o BatchMode=yes"
+
+          # Validate the release exists before attempting the flip
+          # — avoids leaving `current` pointed at a non-existent
+          # directory (DSM would 404 the whole site).
+          if ! $SSH "$USER@$HOST" "test -d '$BASE/releases/$RELEASE_ID'"; then
+            echo "::error::Release '$RELEASE_ID' not found at $BASE/releases on $HOST"
+            echo "Listing available releases:"
+            $SSH "$USER@$HOST" "ls -1t '$BASE/releases' | head -20" || true
+            exit 1
+          fi
+
+          $SSH "$USER@$HOST" bash -s <<EOF
+          set -euo pipefail
+          cd '$BASE'
+          ln -sfn 'releases/$RELEASE_ID' current.new
+          mv -Tf current.new current
+          EOF
+
+      - name: Summary
+        run: |
+          {
+            echo "## Rolled back"
+            echo ""
+            echo "- Environment: **${{ inputs.environment }}**"
+            echo "- Now pointing at: \`${{ inputs.release_id }}\`"
+            echo ""
+            echo "No new build was produced — the site at this environment is now serving a previous release directory as-is."
+          } >> "$GITHUB_STEP_SUMMARY"

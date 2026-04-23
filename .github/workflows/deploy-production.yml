@@ -1,0 +1,24 @@
+# Trigger: push to `main`. That happens when `/publish` merges
+# staging → main on Signe's click, or when someone with repo
+# access merges a PR directly. Deploys to skovbyesexologi.com.
+#
+# `environment: production` on the reusable workflow lets you gate
+# the job behind a manual approval in the GitHub UI if you want —
+# configure under Settings → Environments → production → Required
+# reviewers. Currently no reviewer is required (Signe's click is
+# the gate); the environment scope is still useful because
+# per-environment secrets (DEPLOY_PATH) live there.
+
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+    secrets: inherit
