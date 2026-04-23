@@ -1023,9 +1023,14 @@ uniform float uEnvMix;`
       CSS delay won't cut it: setup timing varies by device, so
       the fade would otherwise play on an empty div and finish
       before the canvas paints.
+
+      1400ms duration — roughly matches the settle time of the
+      drops/gem horizontal entry lerp so the opacity ramp and
+      the element slide arrive at 100% together, reading as
+      one coordinated reveal instead of fade-then-settle.
     */
     opacity: 0;
-    transition: opacity 700ms cubic-bezier(0.2, 0.6, 0.2, 1);
+    transition: opacity 1400ms cubic-bezier(0.2, 0.6, 0.2, 1);
   }
   .stage-host.ready {
     opacity: 1;
