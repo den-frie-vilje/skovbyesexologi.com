@@ -26,6 +26,15 @@ services:
     # ./webhook/Dockerfile.
     build:
       context: ./webhook
+      # Synology DSM kernels ship without seccomp support, so
+      # runc fails any RUN step during build with "seccomp:
+      # config provided but seccomp not supported". Tell
+      # buildkit not to apply a seccomp profile for build
+      # layers — safe here, the build only runs `apk add`
+      # which isn't attempting any dodgy syscalls. No effect
+      # on the runtime container, only on build-time layers.
+      security_opt:
+        - seccomp=unconfined
     restart: unless-stopped
     networks: [skovbye-deploy]
     # No host port exposure — only reachable via the Caddy
