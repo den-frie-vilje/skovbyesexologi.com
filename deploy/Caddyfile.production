@@ -27,7 +27,9 @@
         # webhook container, different hook ID per (site, env).
         # No canonicalization applied to this path (deploy hits
         # the .prod.denfrievilje.dk hostname directly).
-        handle_path /hooks/* {
+        # `handle` (not `handle_path`) so adnanh/webhook sees
+        # the full `/hooks/<id>` URL it expects by default.
+        handle /hooks/* {
             reverse_proxy webhook:9000
         }
 

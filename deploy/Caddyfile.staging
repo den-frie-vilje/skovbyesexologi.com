@@ -22,11 +22,12 @@
 
 :80 {
     # Deploy webhook. HMAC verification happens inside the
-    # webhook container; Caddy just routes and rate-limits.
-    # `handle_path` strips the `/hooks` prefix so the webhook
-    # receiver sees its config's native paths
-    # (`/deploy/staging`, `/deploy/production`).
-    handle_path /hooks/* {
+    # webhook container; Caddy just routes. Use `handle` (not
+    # `handle_path`) so the /hooks prefix is preserved —
+    # adnanh/webhook serves its hooks at `/hooks/<id>` by
+    # default, matching the id path verbatim. Stripping
+    # breaks hook lookup.
+    handle /hooks/* {
         reverse_proxy webhook:9000
     }
 
