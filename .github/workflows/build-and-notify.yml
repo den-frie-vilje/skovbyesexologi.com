@@ -116,15 +116,26 @@ jobs:
           cache-to: type=inline
 
       - name: Paranoia — no secrets in the image
-        # Belt-and-braces: scan the final image's filesystem for
-        # strings that shouldn't be there. False-positive cost is
-        # near zero (hits only if "GITHUB_TOKEN=" appears in a
-        # pushed asset, which is never right).
+        # Scan the image filesystem for value-assignment patterns
+        # that look like real leaked secrets (e.g. `SECRET=xxxxx`),
+        # and for private-key headers. Matches the shape, not the
+        # bare string — so comments/docs that mention a variable
+        # name by identifier (like "see OAUTH_CLIENT_SECRET in the
+        # env file") don't trigger false positives.
         run: |
           docker pull ${{ steps.tags.outputs.immutable }}
-          if docker run --rm --entrypoint sh ${{ steps.tags.outputs.immutable }} \
-               -c 'grep -rE "(GITHUB_TOKEN|CLIENT_SECRET|OAUTH_CLIENT_SECRET|BEGIN OPENSSH)" /usr/share/nginx/html/ 2>/dev/null'; then
+          LEAKED=$(docker run --rm --entrypoint sh ${{ steps.tags.outputs.immutable }} -c '
+            # Value-assignment: KEY[=: ]value-with-12+-chars.
+            grep -rEn "(GITHUB_TOKEN|(OAUTH_)?CLIENT_SECRET|API_KEY|WEBHOOK_SECRET)[[:space:]]*[=:][[:space:]]*[A-Za-z0-9_/+=-]{12,}" \
+              /usr/share/nginx/html/ 2>/dev/null
+            # Any private-key header is always a leak.
+            grep -rn "BEGIN OPENSSH PRIVATE KEY\|BEGIN RSA PRIVATE KEY\|BEGIN EC PRIVATE KEY\|BEGIN PRIVATE KEY" \
+              /usr/share/nginx/html/ 2>/dev/null
+            :
+          ')
+          if [ -n "$LEAKED" ]; then
             echo "::error::Possible secret leaked into image"
+            echo "$LEAKED"
             exit 1
           fi
 
