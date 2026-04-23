@@ -804,21 +804,68 @@ Cloudflare's DNS panel for `denfrievilje.dk`, set the
 goes origin-direct, no edge cache, no purge needed. Leave
 `STAGING_CF_*` blank in `webhook.env`.
 
-### 8. First deploy
+### 8. First deploy (chicken-and-egg bootstrap)
 
-```sh
-# On your laptop — push any commit to staging to exercise
-# the whole pipeline.
-git push origin staging
+The automated pipeline flow is:
+```
+push → CI builds image → CI POSTs webhook →
+NAS webhook runs deploy.sh → docker compose pulls + up
 ```
 
-Watch the Actions run; then tail the webhook logs on the NAS:
+**For the VERY FIRST deploy of a new site**, step 4 can't
+succeed yet because Caddy-for-this-site isn't running, so
+DSM's vhost has no upstream to reach on `127.0.0.1:<PORT>`
+and the webhook POST fails with 502. The image push DOES
+succeed though, so we can start everything by hand, once:
+
+```sh
+# On the NAS, as admin. DOMAIN = site's canonical domain.
+DOMAIN=skovbyesexologi.com
+PROJECT="${DOMAIN//./-}-staging"    # skovbyesexologi-com-staging
+
+cd "/volume1/docker/$DOMAIN/staging"
+
+sudo docker compose \
+  -p "$PROJECT" \
+  -f "/volume1/docker/$DOMAIN/repo/deploy/compose.staging.yml" \
+  --env-file ./staging.env \
+  up -d --wait
+```
+
+After `--wait` returns, verify from your laptop:
+```sh
+curl -sI https://<DOMAIN_DASHED>.stage.denfrievilje.dk/
+# expected: HTTP/2 200
+```
+
+Then re-fire the deploy workflow — this time the webhook
+succeeds because Caddy is now listening and /hooks/* routes
+correctly:
+```sh
+gh workflow run "Deploy to staging" \
+  --ref staging \
+  --repo <org>/<repo>
+```
+
+All subsequent `git push origin staging` events flow through
+the full automated pipeline with no manual step.
+
+Repeat the same one-time bring-up pattern for the production
+stack when you're ready for the first production deploy:
+```sh
+PROJECT="${DOMAIN//./-}-production"
+cd "/volume1/docker/$DOMAIN/production"
+sudo docker compose \
+  -p "$PROJECT" \
+  -f "/volume1/docker/$DOMAIN/repo/deploy/compose.production.yml" \
+  --env-file ./production.env \
+  up -d --wait
+```
+
+Watch the webhook logs while deploys fire:
 ```sh
 sudo docker logs -f webhook-webhook-1
 ```
-
-Staging works? Merge to `main` to verify the production path
-the same way.
 
 ### 9. Activate the GitHub backend in Sveltia
 
