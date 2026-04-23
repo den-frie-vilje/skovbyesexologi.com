@@ -26,13 +26,22 @@ html {
   overscroll-behavior-y: none;
   background: var(--color-cream);
 }
-/* Smooth scroll is a motion effect — users who opt out of motion
-   via OS accessibility preferences should get instant jumps. */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
+/*
+  Deliberately NO `scroll-behavior: smooth` on <html>. Rationale:
+  that property applies to every scroll action — including
+  SvelteKit's `scrollTo(0, 0)` on forward nav and the browser's
+  anchor-link fragment jumps — which made navigations to/from
+  service pages feel slow (old content animating upward before
+  the new page snapped into place). Instant wins here.
+
+  Popstate scroll restoration (used by the "← Forsiden" back
+  link via `history.back()` in `$lib/nav/backNav.svelte.ts`)
+  is instant by browser default regardless of CSS, so the
+  scroll-position-preserving navigation keeps working.
+
+  If we ever want smooth in-page anchor scroll selectively,
+  handle it in JS on the specific anchors rather than globally.
+*/
 
 body {
   font-family: var(--font-sans);
