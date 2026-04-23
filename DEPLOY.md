@@ -197,6 +197,22 @@ DSM → Web Station → Web Service Portal:
    - Document root: `/volume1/web/skovbyesexologi.com/current`
    - Back-end: nginx (static serving)
    - HTTPS: Let's Encrypt via DSM cert manager
+   - **Block the editor URLs on production.** `/admin` and
+     `/publish` are editor tooling, not public pages. They ship
+     in the build (same code as staging) but should be
+     unreachable via the production domain so an accidental
+     visit can't confuse Signe or leak the login flow to the
+     public. In DSM → Web Station → this vhost → Advanced
+     settings → Custom location rules, add:
+
+     ```nginx
+     location ^~ /admin { return 404; }
+     location ^~ /publish { return 404; }
+     ```
+
+     `^~` prefix stops any later regex locations from matching
+     these paths. All editing + publishing happens
+     exclusively on `signe.denfrievilje.dk`.
 
 2. **Signe.denfrievilje.dk vhost:**
    - Hostname: `signe.denfrievilje.dk`
