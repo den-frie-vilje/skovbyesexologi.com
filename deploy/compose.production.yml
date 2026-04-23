@@ -1,0 +1,49 @@
+# Production stack — skovbyesexologi.com.
+#
+# Brought up + reconciled by the deploy webhook on every push
+# to the `main` branch. Composition:
+#   caddy   (front-door — routes /hooks, blocks /admin + /publish, /*)
+#   site    (static site, pulled from GHCR)
+#
+# No OAuth proxy: Sveltia admin lives on staging only.
+
+name: skovbyesexologi-production
+
+networks:
+  skovbye-deploy:
+    external: true
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    ports:
+      # Web Station proxies skovbyesexologi.com → 127.0.0.1:8081.
+      - "127.0.0.1:8081:80"
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - site
+
+  site:
+    image: ghcr.io/den-frie-vilje/skovbyesexologi:production-latest
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    pull_policy: always
+    # See compose.staging.yml for rationale — `up -d --wait`
+    # in the deploy script blocks on this healthcheck so the
+    # Cloudflare cache purge fires after the new container is
+    # actually live.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  caddy_data:
+  caddy_config:

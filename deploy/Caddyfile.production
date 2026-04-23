@@ -1,0 +1,67 @@
+# Front-door reverse proxy for production (skovbyesexologi.com).
+#
+# Web Station proxies every production hostname for this site
+# (apex, www, legacy domains…) to 127.0.0.1:8081.
+#
+# Two responsibilities Caddy handles:
+#   1. Path routing — /hooks/*, /admin + /publish blocks, /*
+#   2. Host canonicalization — redirect non-canonical hostnames
+#      (www, legacy brands) to the apex so SEO doesn't see
+#      duplicate content.
+#
+# Adding a new legacy hostname: add its A-record on the client
+# side, add it as a SAN on the DSM vhost (so LE reissues the
+# multi-SAN cert), add it to the @non_canonical matcher below.
+
+{
+    admin off
+    auto_https off
+}
+
+:80 {
+    # Explicit ordering inside `route {}` — hook passes through
+    # first, canonicalization second, editor-tooling block next,
+    # site last.
+    route {
+        # Deploy webhook — same pattern as staging, shared
+        # webhook container, different hook ID per (site, env).
+        # No canonicalization applied to this path (deploy hits
+        # the .prod.denfrievilje.dk hostname directly).
+        handle_path /hooks/* {
+            reverse_proxy webhook:9000
+        }
+
+        # Host canonicalization. List every non-canonical
+        # production hostname here; Caddy 301s them to the
+        # apex. Includes the NAS canonical (.prod.*) so
+        # search engines don't index it either.
+        #
+        # Edit this list when adding a new legacy domain.
+        @non_canonical {
+            host www.skovbyesexologi.com
+            host skovbyesexologi.com.prod.denfrievilje.dk
+            # host legacy-brand.dk
+            # host oldname.com
+        }
+        redir @non_canonical https://skovbyesexologi.com{uri} 301
+
+        # Editor tooling — not for public eyes. /admin and
+        # /publish are staging-only; serve 404 on production.
+        @editor path /admin /admin/* /publish /publish/*
+        handle @editor {
+            respond "Not found" 404
+        }
+
+        # Fallthrough: the static site.
+        handle {
+            reverse_proxy site:80
+        }
+    }
+
+    encode gzip zstd
+
+    log {
+        output stdout
+        format json
+    }
+}
