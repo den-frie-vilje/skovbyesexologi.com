@@ -276,6 +276,32 @@ On DSM:
    cron) read from there — env vars are ONLY consulted on the
    first deploy per domain.
 
+   **If the DSM account has 2FA enabled**, the first deploy
+   will prompt interactively:
+   ```
+   Enter device name or leave empty for default (CertRenewal):
+   Enter OTP code for user 'admin':
+   ```
+   Enter a descriptive name (e.g. `acme-renewal`) and the
+   current OTP code. On success, acme.sh captures a
+   `SYNO_Device_ID` from DSM and saves it to the conf file
+   as `SAVED_SYNO_Device_ID=...`. DSM then treats the renewal
+   script as a trusted device, so the Task Scheduler cron
+   runs non-interactively from then on.
+
+   Verify the device-ID capture worked:
+   ```sh
+   grep SYNO_Device ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
+   ```
+   If `SAVED_SYNO_Device_ID=...` is missing, renewals will
+   fail interactively — redo the deploy with
+   `SYNO_Device_Name=acme-renewal` exported.
+
+   Also check DSM → Control Panel → User & Group → your
+   admin user → 2-Factor Authentication → Trusted Devices:
+   trust must NOT be set to expire, or renewals will start
+   prompting for OTP again when the trust window elapses.
+
    If the first run used wrong values (e.g. you forgot to
    export `SYNO_Port` for a non-default DSM port), re-exporting
    won't help — edit the cached values directly:
