@@ -371,18 +371,41 @@ On DSM:
    - **Schedule**: Daily at 03:00 (or weekly — certs have 30
      days of renewal slack, daily just catches DNS or API
      failures sooner)
-   - **Task Settings → Run command**. Substitute `$HOME` with
-     the install user's actual home directory:
+   - **Task Settings → Run command**. DSM Task Scheduler runs
+     user-defined scripts via `/bin/sh -c` without a login
+     shell, so `$HOME` is NOT expanded — use literal absolute
+     paths. Find the real home first by SSHing in as the
+     install user and running `echo "$HOME"`. On DSM 7.x this
+     is usually `/var/services/homes/<user>`; the historical
+     `/home/<user>` is sometimes a symlink, sometimes absent.
+
+     Concrete example for `admin` on DSM 7.x:
      ```sh
-     "$HOME/.acme.sh/acme.sh" --cron --home "$HOME/.acme.sh" > "$HOME/acme-renewal.log" 2>&1
+     "/var/services/homes/admin/.acme.sh/acme.sh" --cron --home "/var/services/homes/admin/.acme.sh" > "/var/services/homes/admin/acme-renewal.log" 2>&1
      ```
-     Concrete example if installed as `admin` with
-     `/home/admin`:
+
+     **Cleaner alternative** — put the command in a small shell
+     script under the user's home, then call the script from
+     Task Scheduler. The script runs in an environment where
+     `$HOME` IS set, so path references inside survive if the
+     user ever moves:
      ```sh
-     "/home/admin/.acme.sh/acme.sh" --cron --home "/home/admin/.acme.sh" > "/home/admin/acme-renewal.log" 2>&1
+     # SSH in as admin, once:
+     cat > ~/acme-renew.sh <<'EOF'
+     #!/bin/sh
+     exec "$HOME/.acme.sh/acme.sh" --cron --home "$HOME/.acme.sh" \
+       > "$HOME/acme-renewal.log" 2>&1
+     EOF
+     chmod +x ~/acme-renew.sh
      ```
-     Log goes to the user's home rather than `/var/log/` —
-     non-root users generally can't write to `/var/log/`.
+     Then Task Scheduler Run command is just the absolute path
+     to the script:
+     ```sh
+     /var/services/homes/admin/acme-renew.sh
+     ```
+
+     Either way, log goes to the user's home (not `/var/log/`
+     which non-root users generally can't write to).
    - **Task Settings → Notification**: "Send run details by
      email" + enter your email. Silent failure is the worst
      outcome here — TLS expiring mid-quarter is painful.
