@@ -315,8 +315,10 @@ On DSM:
 
    Verify the device-ID capture worked:
    ```sh
-   grep SYNO_Device ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
+   grep -i SYNO_Device ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
    ```
+   (`-i` because acme.sh's newer versions write `SAVED_SYNO_DEVICE_ID`
+   in all-caps; older versions used `SAVED_SYNO_Device_ID`.)
    If `SAVED_SYNO_Device_ID=...` is missing, renewals will
    fail interactively — redo the deploy with
    `SYNO_Device_Name=acme-renewal` exported.
@@ -332,10 +334,14 @@ On DSM:
    ```sh
    # Clear stale SAVED_SYNO_* lines so env vars take over on
    # the next run, then retry the deploy with correct exports.
-   sed -i '/^SAVED_SYNO_/d' ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
-   sed -i '/^SAVED_SYNO_/d' ~/.acme.sh/\*.prod.denfrievilje.dk_ecc/\*.prod.denfrievilje.dk.conf
+   # The -i flag on grep + case-insensitive `SAVED_SYNO_` match
+   # handles both older mixed-case (SAVED_SYNO_Port) and
+   # newer all-caps (SAVED_SYNO_PORT) acme.sh variants.
+   sed -Ei '/^SAVED_SYNO_/Id' ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
+   sed -Ei '/^SAVED_SYNO_/Id' ~/.acme.sh/\*.prod.denfrievilje.dk_ecc/\*.prod.denfrievilje.dk.conf
    ```
-   (Backslashes escape the literal `*` in the directory names.)
+   (Backslashes escape the literal `*` in the directory names.
+   The trailing `I` after `/d` makes the match case-insensitive.)
 
    acme.sh stores `CF_Token` + `CF_Account_ID` into
    `~/.acme.sh/account.conf` (mode 600, root-only) on first
