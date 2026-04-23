@@ -178,31 +178,14 @@ On DSM:
    exists to own the docker directories). Group: default Users,
    no admin.
 
-3. **Create a dedicated DSM admin user for acme.sh cert
-   deploys.** DSM → Control Panel → User & Group → Create.
-   Username `acme`. Set a strong unique password (goes into
-   the acme env file later — do NOT reuse any password used
-   by a human).
-
-   Join it to the `administrators` group: DSM's Certificate
-   management WebAPI requires full admin, there is no
-   finer-grained "Certificate-only admin" permission tier.
-   The blast radius IS equivalent to your primary admin user
-   in terms of what the credential *can* do — but the
-   mitigation is isolation-by-identity:
-   - If the primary admin password leaks, you rotate a password
-     you use daily for your own DSM access.
-   - If the `acme` password leaks, you delete the account and
-     re-bootstrap the container with a new one. Your own
-     daily-use access is untouched.
-
-   Additional hardening:
-   - Keep `acme.env` at `chmod 600` on the NAS.
-   - Never reuse this password anywhere else.
-   - If you enforce 2FA on admin accounts globally, you'll
-     need to capture a `SYNO_DeviceID` during the first
-     interactive login and add it to `acme.env` — see
-     comments in `deploy/acme.env.example`.
+3. **Create a dedicated DSM user for acme.sh cert deploys.**
+   Same path: DSM → Control Panel → User & Group → Create.
+   Username `acme`. Set a strong password (goes into the acme
+   env file later). Grant ONLY the "Certificate" admin right
+   via Control Panel → User & Group → Advanced → Application
+   permissions. DO NOT reuse your primary DSM admin account —
+   this credential lives in a container env file and has a
+   larger-than-zero blast radius on leak.
 
 4. **Create shared docker paths + network.** SSH in as admin:
    ```sh
