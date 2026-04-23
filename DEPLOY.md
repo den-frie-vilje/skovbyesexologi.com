@@ -1034,6 +1034,91 @@ Not everything in this repo is template material:
 The template covers the *deploy* shape. The site's own
 peculiarities stay in the site's own repo.
 
+### synotools hardening (parked — stage 2 optional)
+
+DSM ships a family of `syno*` CLI tools that could reduce
+moving parts vs the current bootstrap. Research summary below;
+none are urgent (everything works without them) but each is
+worth picking up during stage-2 Ansible extraction.
+
+#### `synowebapi` — biggest win: remove acme.sh admin creds
+
+DSM has `/usr/syno/bin/synowebapi` — a root-only CLI that
+invokes WebAPI methods via the internal dispatcher, **without
+HTTP auth**. No username/password/OTP/DeviceID needed. Current
+acme.sh hook (`synology_dsm`) stores all four in
+`~/.acme.sh/<domain>_ecc/<domain>.conf`; a custom hook using
+synowebapi would store none of them.
+
+Sketch of a replacement hook:
+```sh
+# ~/.acme.sh/deploy/synology_dsm_local.sh
+synology_dsm_local_deploy() {
+  local _desc="${SYNO_Certificate:-$1}"
+  local _id
+  _id=$(sudo synowebapi --exec api=SYNO.Core.Certificate method=list \
+    | jq -r ".data.certificates[] | select(.desc == \"$_desc\") | .id" \
+    | head -1)
+  sudo synowebapi --exec api=SYNO.Core.Certificate.CRT method=import version=1 \
+    id="$_id" desc="$_desc" \
+    key_tmp="$2" cert_tmp="$3" inter_cert_tmp="$5" \
+    as_default=false
+  sudo synow3tool --gen-all
+  sudo synosystemctl restart nginx
+}
+```
+
+Blockers:
+- synowebapi requires root; acme.sh installed under `admin`
+  needs either a passwordless-sudo entry for synowebapi or
+  re-install acme.sh as root
+- synowebapi parameter names are undocumented and shift
+  across DSM minor versions (observed 7.1→7.2). Upstream
+  acme.sh has an open community request for a
+  `synology_dsm_local` hook but nothing merged
+- We own the hook; breakages on DSM upgrades are on us
+
+Worth doing when moving to the nas-sites common repo —
+eliminates the biggest remaining credential-in-file concern.
+
+#### `synoshare` + `synoacltool` — automate shared-folder setup
+
+Replace the "create the docker shared folder via DSM GUI +
+add ACL entries via GUI" with scriptable commands. `synoshare
+--add <name> "<desc>" /volume1/<name> "" "" "" 0 0` plus
+`synoacltool -add /path "user:deploy:allow:rwxpdDaARWc--:fd--"`
+covers it. Ace syntax is fiddly; script once, reuse.
+
+#### `synowebapi` for DSM firewall
+
+No clean `synofirewall` exists. Configure the
+"restrict :5000/:5001 to LAN + 127.0.0.1" rule once via GUI,
+then export `/usr/syno/etc/firewall.conf` as an opaque blob
+in the Ansible role and restore via
+`synowebapi api=SYNO.Core.Security.Firewall.Rules method=set`.
+
+#### `synoschedtask` + `synowebapi` for Task Scheduler
+
+The acme.sh renewal Task Scheduler entry can be created
+programmatically via `synowebapi api=SYNO.Core.TaskScheduler
+method=create` rather than through the GUI. Useful for the
+bootstrap-nas Ansible playbook.
+
+#### `synow3tool --gen-all` — regenerate Web Station configs
+
+Call this after any cert change so Web Station picks up the
+new binding without a full nginx restart. Used internally by
+DSM's Certificate UI; available to scripts.
+
+#### Tools that don't help
+
+- **`synocertadm`** — doesn't exist as a standalone. Cert ops
+  go through synowebapi.
+- **`synocrontab`** — doesn't exist. DSM wipes `/etc/crontab`
+  edits on reboot/upgrade. Task Scheduler is the only stable
+  path.
+- **`synoservice`** — renamed `synosystemctl` in DSM 7.x.
+
 ### Traefik alternative (parked — stage 3 or later)
 
 The current architecture keeps DSM Web Station as the :443
