@@ -636,6 +636,35 @@ to another site's deploy path.
 
 ### 6. NAS — Web Station vhosts
 
+**Port allocation.** Each (site, env) publishes its Caddy
+container to a unique loopback port. DSM's vhost reverse-
+proxies the public hostname to that port. `CADDY_PORT=` in
+each env file is the allocation — bump for every new site.
+
+Current live allocation on this NAS (keep this table up to
+date as sites come online):
+
+| Site | Staging port | Production port |
+| --- | --- | --- |
+| skovbyesexologi.com | 8080 | 8081 |
+| *(next site)* | 8082 | 8083 |
+| *(site after that)* | 8084 | 8085 |
+
+For each new site, pick the next free pair of even+odd and
+set `CADDY_PORT=<staging>` in `staging.env` and
+`CADDY_PORT=<production>` in `production.env`.
+
+**GUI option note.** Web Station v4 (DSM 7.2+) added a
+"Container Manager → container → Enable web portal via Web
+Station" checkbox that writes a reverse-proxy vhost
+automatically. It's a GUI shortcut for Container-Manager-
+GUI-owned stacks; for compose-on-SSH containers (which is
+us) the checkbox is unreliable across container recreations.
+Under the hood it's `proxy_pass http://127.0.0.1:<hostport>`
+— identical to what we configure manually via Login Portal /
+Web Service Portal. We use the manual path because it
+survives `docker compose up -d` recreation.
+
 DSM → Web Station → Web Service Portal → **Create**:
 
 1. **Staging vhost:**
@@ -698,11 +727,11 @@ DSM → Web Station → Web Service Portal → **Create**:
      }
      ```
 
-   Pick a unique loopback port per site (8080/8081 for site A,
-   8082/8083 for site B, …). The per-site Caddy containers bind
-   to their assigned port — see the `ports:` line in
-   `compose.staging.yml` / `compose.production.yml`. When adding
-   the second site, edit those files (or parametrize via env).
+   (The `8081` here — and `8080` in the staging vhost above —
+   are the default ports if `CADDY_PORT` is unset in the env
+   file. If you've allocated non-default ports via
+   `CADDY_PORT=` in `staging.env` / `production.env`, match
+   those here.)
 
 3. **Canonicalization + redirect** — each site decides which
    hostname is the "real" one. The repo's

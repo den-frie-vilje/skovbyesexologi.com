@@ -25,10 +25,12 @@ services:
     restart: unless-stopped
     networks: [skovbye-deploy]
     ports:
-      # Bind to loopback only — Web Station (DSM nginx)
-      # terminates TLS on the site's staging hostname and
-      # reverse-proxies to 127.0.0.1:8080.
-      - "127.0.0.1:8080:80"
+      # Bind to loopback only — DSM reverse-proxies the site's
+      # staging hostname to this port on 127.0.0.1. Port comes
+      # from the per-(site, env) .env file so new sites just
+      # bump `CADDY_PORT=` in their own staging.env rather than
+      # editing this compose template.
+      - "127.0.0.1:${CADDY_PORT:-8080}:80"
     volumes:
       - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
