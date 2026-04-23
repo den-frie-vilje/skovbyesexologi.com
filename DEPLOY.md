@@ -644,15 +644,28 @@ each env file is the allocation — bump for every new site.
 Current live allocation on this NAS (keep this table up to
 date as sites come online):
 
-| Site | Staging port | Production port |
-| --- | --- | --- |
-| skovbyesexologi.com | 8080 | 8081 |
-| *(next site)* | 8082 | 8083 |
-| *(site after that)* | 8084 | 8085 |
+| Site | Staging port | Production port | Notes |
+| --- | --- | --- | --- |
+| — | ~~8080~~ | ~~8081~~ | Jitsi Meet on this NAS holds 8080 — skip the 80xx range |
+| skovbyesexologi.com | 18080 | 18081 | first site, using the "shift up by 10000" convention |
+| *(next site)* | 18082 | 18083 | |
+| *(site after that)* | 18084 | 18085 | |
 
-For each new site, pick the next free pair of even+odd and
-set `CADDY_PORT=<staging>` in `staging.env` and
-`CADDY_PORT=<production>` in `production.env`.
+Pick the next free pair for each new site, set
+`CADDY_PORT=<staging>` in `staging.env` and
+`CADDY_PORT=<production>` in `production.env`. Verify
+the pair is unoccupied first:
+
+```sh
+for port in <staging> <production>; do
+  sudo netstat -tln 2>/dev/null | awk -v p=":$port$" '$4 ~ p {print "TAKEN: " $0; f=1} END {if (!f) print "  free: " p}'
+done
+```
+
+The compose files default to `CADDY_PORT=8080` / `8081`
+(`${CADDY_PORT:-8080}`) for the unconfigured case — but on
+this NAS those collide, so explicit `CADDY_PORT=` in each
+env file is mandatory.
 
 **GUI option note.** Web Station v4 (DSM 7.2+) added a
 "Container Manager → container → Enable web portal via Web
