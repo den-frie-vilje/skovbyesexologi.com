@@ -1,0 +1,193 @@
+# Reusable workflow: build the site image, push to GHCR,
+# POST a HMAC-signed trigger to the NAS webhook.
+#
+# Called by deploy-staging.yml and deploy-production.yml.
+#
+# Pipeline:
+#   1. checkout + pkgx + install + typecheck
+#   2. `vite build --mode <env>` (.env.<env> → PUBLIC_* bake-in)
+#   3. docker build + push to GHCR with two tags:
+#        <env>-latest          (moving pointer, what the NAS pulls)
+#        <env>-<timestamp>-<sha8>  (immutable audit trail)
+#   4. POST to https://<host>/hooks/deploy/<env> with HMAC SHA256
+#      over the JSON body, using the repo's <env>_WEBHOOK_SECRET
+#   5. Smoke-check: hit the live URL and log the response code
+#
+# NO inbound NAS access — the NAS pulls the image from GHCR and
+# runs git fetch + docker compose internally. GH Actions never
+# talks to the NAS directly outside of the single POST.
+
+name: Build and notify (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'staging or production — also the Vite build mode.'
+        required: true
+        type: string
+      image-name:
+        description: 'GHCR image name, e.g. ghcr.io/den-frie-vilje/skovbyesexologi'
+        required: true
+        type: string
+      webhook-url:
+        description: 'Full URL to POST the deploy trigger, e.g. https://signe.denfrievilje.dk/hooks/deploy/staging'
+        required: true
+        type: string
+      smoke-check-url:
+        description: 'URL hit after deploy to confirm the site responds. Non-fatal if 200 is not returned.'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      WEBHOOK_SECRET:
+        description: 'HMAC-SHA256 shared secret for the /hooks/deploy/<env> endpoint. Same value lives in webhook.env on the NAS.'
+        required: true
+
+# Don't cancel deploys in flight — better to double-deploy than
+# leave the webhook POSTed but the image half-pushed.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      packages: write   # push to GHCR
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pkgx
+        run: curl -fsSL https://pkgx.sh | sh
+
+      - name: Install dependencies
+        run: pkgx pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pkgx pnpm check
+
+      - name: Build site
+        # `vite build --mode <env>` picks up .env.<env> from the
+        # repo root. PUBLIC_SITE_URL + PUBLIC_ALLOW_INDEXING +
+        # PUBLIC_GITHUB_REPO flow through from there.
+        run: pkgx pnpm build -- --mode ${{ inputs.environment }}
+
+      - name: Generate image tags
+        id: tags
+        run: |
+          TS="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          SHA8="${GITHUB_SHA::8}"
+          IMMUTABLE_TAG="${{ inputs.environment }}-${TS}-${SHA8}"
+          MOVING_TAG="${{ inputs.environment }}-latest"
+          {
+            echo "immutable=${{ inputs.image-name }}:${IMMUTABLE_TAG}"
+            echo "moving=${{ inputs.image-name }}:${MOVING_TAG}"
+            echo "immutable-short=${IMMUTABLE_TAG}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log into GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.tags.outputs.immutable }}
+            ${{ steps.tags.outputs.moving }}
+          # Cache from the previous `<env>-latest` so we're not
+          # re-pushing identical nginx + assets layers every time.
+          cache-from: type=registry,ref=${{ steps.tags.outputs.moving }}
+          cache-to: type=inline
+
+      - name: Paranoia — no secrets in the image
+        # Belt-and-braces: scan the final image's filesystem for
+        # strings that shouldn't be there. False-positive cost is
+        # near zero (hits only if "GITHUB_TOKEN=" appears in a
+        # pushed asset, which is never right).
+        run: |
+          docker pull ${{ steps.tags.outputs.immutable }}
+          if docker run --rm --entrypoint sh ${{ steps.tags.outputs.immutable }} \
+               -c 'grep -rE "(GITHUB_TOKEN|CLIENT_SECRET|OAUTH_CLIENT_SECRET|BEGIN OPENSSH)" /usr/share/nginx/html/ 2>/dev/null'; then
+            echo "::error::Possible secret leaked into image"
+            exit 1
+          fi
+
+      - name: Trigger NAS deploy webhook
+        # HMAC-SHA256 over the JSON body with the shared secret.
+        # Header name matches GitHub's own webhook signing format
+        # (X-Hub-Signature-256) so the receiver can reuse the
+        # same verification logic.
+        env:
+          SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          URL: ${{ inputs.webhook-url }}
+          IMAGE_TAG: ${{ steps.tags.outputs.immutable-short }}
+          COMMIT: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          BODY=$(jq -cn \
+            --arg tag "$IMAGE_TAG" \
+            --arg sha "$COMMIT" \
+            --arg run "$RUN_URL" \
+            '{image_tag: $tag, commit_sha: $sha, run_url: $run}')
+
+          SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')"
+
+          echo "POSTing to $URL"
+          HTTP_CODE=$(curl -sS -o /tmp/resp.txt -w '%{http_code}' \
+            -X POST "$URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: $SIG" \
+            --data "$BODY" \
+            --max-time 30 \
+            --retry 3 --retry-delay 5 --retry-connrefused)
+
+          echo "webhook HTTP $HTTP_CODE"
+          cat /tmp/resp.txt || true
+          [ "$HTTP_CODE" = "200" ] || exit 1
+
+      - name: Smoke check the live URL
+        # Non-fatal — purpose is just to log what the public
+        # endpoint returned after the deploy finished. If the
+        # webhook succeeded, the deploy is live; if this check
+        # fails it usually means Cloudflare is still serving a
+        # stale page (which the NAS side's CF purge should have
+        # prevented, but belt-and-braces).
+        if: inputs.smoke-check-url != ''
+        continue-on-error: true
+        run: |
+          URL="${{ inputs.smoke-check-url }}"
+          # Give the NAS ~20s margin over its own healthcheck
+          # wait before hitting the URL ourselves.
+          sleep 20
+          curl -sS -o /dev/null -w "GET %{url_effective}\n  http %{http_code}\n  time %{time_total}s\n" "$URL"
+
+      - name: Summary
+        run: |
+          {
+            echo "## Deployed"
+            echo ""
+            echo "- Environment: **${{ inputs.environment }}**"
+            echo "- Image tag: \`${{ steps.tags.outputs.immutable-short }}\`"
+            echo "- Commit: \`${GITHUB_SHA::8}\`"
+            echo "- Webhook: \`${{ inputs.webhook-url }}\`"
+            echo ""
+            echo "GHCR: [\`${{ steps.tags.outputs.immutable }}\`](https://ghcr.io/${{ github.repository_owner }}/skovbyesexologi)"
+          } >> "$GITHUB_STEP_SUMMARY"

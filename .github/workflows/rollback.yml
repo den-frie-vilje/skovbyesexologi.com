@@ -1,15 +1,20 @@
-# Rollback workflow — flip `current` symlink to a previous
-# release. Manual trigger only.
+# Rollback workflow — retag an older GHCR image as the env's
+# `-latest` pointer, then POST the deploy webhook so the NAS
+# picks up the change immediately.
 #
-# Usage: GitHub UI → Actions → Rollback → Run workflow. Pick the
-# environment (staging / production) and paste the release ID
-# (the YYYY-MM-DDTHH-MM-SSZ-<sha8> string used as the
-# `releases/…` subdirectory name on the NAS). The workflow SSHes
-# in and atomically re-points `current` at that release.
+# Usage: GitHub UI → Actions → Rollback → Run workflow. Pick
+# the environment and paste the full immutable tag string
+# (e.g. `staging-2026-04-23T14-02-19Z-abc12345`) visible in
+# the original deploy run's summary.
 #
-# Listing available release IDs:
-#   ssh deploy@server.denfrievilje.ts.net \
-#     'ls -1t /volume1/web/<domain>/releases | head -20'
+# Listing available tags from your laptop:
+#   gh api /users/den-frie-vilje/packages/container/skovbyesexologi/versions \
+#     --jq '.[].metadata.container.tags[]' \
+#   | sort -u | head -40
+#
+# Operates purely at the registry manifest layer — no pull/push
+# of image layers — because `buildx imagetools create --tag`
+# just updates the manifest pointer.
 
 name: Rollback
 
@@ -23,8 +28,8 @@ on:
         options:
           - staging
           - production
-      release_id:
-        description: 'Release ID to roll back to (e.g. 2026-04-23T14-02-19Z-abc12345)'
+      image_tag:
+        description: 'Full immutable tag to roll back TO (e.g. staging-2026-04-23T14-02-19Z-abc12345)'
         type: string
         required: true
 
@@ -33,52 +38,73 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/den-frie-vilje/skovbyesexologi
     steps:
-      - name: Connect to tailnet
-        uses: tailscale/github-action@v3
+      - name: Log into GHCR
+        uses: docker/login-action@v3
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install deploy SSH key
-        env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          HOST: ${{ secrets.DEPLOY_HOST }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate source tag exists
+        # Fail fast if the user pasted a tag that's not in GHCR —
+        # otherwise imagetools would create a broken manifest
+        # pointer and the NAS pull would fail mid-deploy.
+        run: docker buildx imagetools inspect "$IMAGE:${{ inputs.image_tag }}"
+
+      - name: Retag <env>-latest → the chosen immutable tag
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
-          chmod 600 ~/.ssh/deploy
-          ssh-keyscan -T 10 -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          chmod 644 ~/.ssh/known_hosts
+          docker buildx imagetools create \
+            --tag "$IMAGE:${{ inputs.environment }}-latest" \
+            "$IMAGE:${{ inputs.image_tag }}"
 
-      - name: Flip current to target release
+      - name: Derive webhook URL + secret
+        id: wh
+        run: |
+          case "${{ inputs.environment }}" in
+            staging)
+              echo "url=https://skovbyesexologi.com.stage.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/staging" >> "$GITHUB_OUTPUT"
+              ;;
+            production)
+              echo "url=https://skovbyesexologi.com.prod.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/production" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - name: Trigger NAS deploy webhook
         env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
-          USER: ${{ secrets.DEPLOY_USER }}
-          BASE: ${{ secrets.DEPLOY_PATH }}
-          RELEASE_ID: ${{ inputs.release_id }}
+          SECRET: ${{ inputs.environment == 'staging' && secrets.STAGING_WEBHOOK_SECRET || secrets.PRODUCTION_WEBHOOK_SECRET }}
+          URL: ${{ steps.wh.outputs.url }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          SSH="ssh -i $HOME/.ssh/deploy -o BatchMode=yes"
 
-          # Validate the release exists before attempting the flip
-          # — avoids leaving `current` pointed at a non-existent
-          # directory (DSM would 404 the whole site).
-          if ! $SSH "$USER@$HOST" "test -d '$BASE/releases/$RELEASE_ID'"; then
-            echo "::error::Release '$RELEASE_ID' not found at $BASE/releases on $HOST"
-            echo "Listing available releases:"
-            $SSH "$USER@$HOST" "ls -1t '$BASE/releases' | head -20" || true
-            exit 1
-          fi
+          BODY=$(jq -cn \
+            --arg tag "$IMAGE_TAG" \
+            --arg run "$RUN_URL" \
+            '{image_tag: $tag, run_url: $run, rollback: true}')
 
-          $SSH "$USER@$HOST" bash -s <<EOF
-          set -euo pipefail
-          cd '$BASE'
-          ln -sfn 'releases/$RELEASE_ID' current.new
-          mv -Tf current.new current
-          EOF
+          SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')"
+
+          HTTP_CODE=$(curl -sS -o /tmp/resp.txt -w '%{http_code}' \
+            -X POST "$URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: $SIG" \
+            --data "$BODY" \
+            --max-time 30 \
+            --retry 3 --retry-delay 5 --retry-connrefused)
+
+          echo "webhook HTTP $HTTP_CODE"
+          cat /tmp/resp.txt || true
+          [ "$HTTP_CODE" = "200" ] || exit 1
 
       - name: Summary
         run: |
@@ -86,7 +112,7 @@ jobs:
             echo "## Rolled back"
             echo ""
             echo "- Environment: **${{ inputs.environment }}**"
-            echo "- Now pointing at: \`${{ inputs.release_id }}\`"
+            echo "- \`${{ inputs.environment }}-latest\` now points at: \`${{ inputs.image_tag }}\`"
             echo ""
-            echo "No new build was produced — the site at this environment is now serving a previous release directory as-is."
+            echo "The NAS has been notified — the old release should be live in ~30s."
           } >> "$GITHUB_STEP_SUMMARY"

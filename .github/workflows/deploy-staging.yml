@@ -1,10 +1,19 @@
-# Trigger: push to the `staging` branch. That's the branch Sveltia
-# writes to when the editor saves, so this workflow fires after
-# every save in /admin. Typical end-to-end latency: ~2 min from
-# save to staging being live at signe.denfrievilje.dk.
+# Trigger: push to the `staging` branch. That's where Sveltia
+# writes on every editor save, so this fires ~after every save.
 #
-# Can also be kicked manually (workflow_dispatch) if something
-# needs a redeploy without a new commit.
+# Pipeline: build → push GHCR → POST webhook to NAS →
+# NAS pulls image + applies compose. Typical e2e latency: 2-3 min
+# from save to staging being live.
+#
+# Webhook URL targets the canonical NAS origin
+# (<domain>.stage.denfrievilje.dk), NOT any client-facing CNAME.
+# Scripting against the stable origin means deploy keeps working
+# even if a client-facing DNS record is detached.
+#
+# Path includes the full domain so the shared webhook container
+# on the NAS can disambiguate multiple sites. HMAC secret is
+# per-(site, env) — SKOVBYESEXOLOGI_COM_STAGING_WEBHOOK_SECRET
+# on the NAS, STAGING_WEBHOOK_SECRET on this repo.
 
 name: Deploy to staging
 
@@ -15,10 +24,11 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/build-and-notify.yml
     with:
       environment: staging
-    # `secrets: inherit` passes through all repo-level secrets AND
-    # the `staging` GH Actions environment's secrets, which is
-    # where DEPLOY_PATH should be scoped per-environment.
-    secrets: inherit
+      image-name: ghcr.io/den-frie-vilje/skovbyesexologi
+      webhook-url: https://skovbyesexologi.com.stage.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/staging
+      smoke-check-url: https://skovbyesexologi.com.stage.denfrievilje.dk/
+    secrets:
+      WEBHOOK_SECRET: ${{ secrets.STAGING_WEBHOOK_SECRET }}
