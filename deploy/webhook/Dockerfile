@@ -1,18 +1,20 @@
 # Webhook receiver image.
 #
-# Base: adnanh/webhook (Go, single static binary, ~5 MB). Adds
-# docker CLI + git so the hook scripts can `git pull` + run
-# `docker compose`.
+# adnanh/webhook's official image (via almir/webhook) is built
+# FROM scratch — no shell, no utilities — so we can't install
+# packages on top of it directly. Multi-stage build: grab just
+# the webhook binary from that image, then COPY it into an
+# alpine base that has the docker-cli + git + curl + bash we
+# need for the deploy hook scripts.
 #
-# Why not just bind-mount docker CLI from the host? The DSM
-# host's `docker` binary isn't in a stable location we can
-# count on across DSM versions. Installing the official
-# docker-cli inside this tiny image is simpler and portable.
+# Built in CI (not on NAS — see webhook-image.yml) because
+# Synology's kernel ships without seccomp support, breaking
+# any RUN step during an in-place docker build on DSM.
 
-FROM almir/webhook:2.8.1
+FROM almir/webhook:2.8.1 AS webhook-binary
 
-# --no-cache keeps the final image slim; we don't need the apk
-# package index lingering after install.
+FROM alpine:3.20
+
 RUN apk add --no-cache \
     docker-cli \
     docker-cli-compose \
@@ -20,5 +22,6 @@ RUN apk add --no-cache \
     bash \
     curl
 
-# Entrypoint/command inherited from the base image and set in
-# compose.webhook.yml.
+COPY --from=webhook-binary /usr/local/bin/webhook /usr/local/bin/webhook
+
+ENTRYPOINT ["/usr/local/bin/webhook"]
