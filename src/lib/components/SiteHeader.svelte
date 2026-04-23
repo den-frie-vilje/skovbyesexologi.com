@@ -129,17 +129,41 @@
     City label sits immediately after the brand mark — reads as
     part of the address line "Skovbye Sexologi, København". Not
     clickable (intentionally separate from `.top-link`); the city
-    is metadata, not a destination. `margin-right: auto` pushes
-    the locale switcher + burger group to the far right.
+    is metadata, not a destination.
+
+    Hidden below 720px — the brand mark, city, DA|EN toggle, and
+    burger together crowd the mobile header, and the city is the
+    weakest information of the four (people landing on a Danish
+    site in Copenhagen have already intuited the city). Dropping
+    it reclaims enough horizontal space for the name + toggle +
+    burger to breathe at 375px-wide viewports.
   */
   .mark-meta {
-    margin-right: auto;
     color: var(--text-muted);
+    display: none;
+  }
+
+  /*
+    The right-side group (locale switcher + burger) pushes itself
+    to the far edge regardless of whether `.mark-meta` is visible.
+    Auto-margin on the first right-group child is independent of
+    the city's display state, so showing / hiding the city doesn't
+    shift the burger's resting position.
+
+    `:global()` is required because `<LocaleSwitcher>` is an
+    imported component; its `.locale-switch` root carries its own
+    scope class, not ours.
+  */
+  .top :global(.locale-switch) {
+    margin-left: auto;
   }
 
   @media (min-width: 720px) {
     .top {
       padding: 1rem 2rem;
+    }
+    .mark-meta {
+      display: inline;
     }
   }
 </style>
