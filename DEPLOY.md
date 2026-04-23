@@ -353,15 +353,36 @@ On DSM:
    DSM → Control Panel → Task Scheduler → Create →
    **Scheduled Task** → **User-defined script**:
 
-   - **General**: Task name `acme.sh renewal`, User `root`,
-     Enabled ✓
+   - **General**:
+     - Task name: `acme.sh renewal`
+     - **User**: the SAME user that ran
+       `curl https://get.acme.sh | sh` above. acme.sh's
+       install put its files under that user's `$HOME/.acme.sh/`,
+       and the deploy-hook config (including 2FA Device_ID)
+       lives there too. Running the renewal as a different
+       user would miss all of it.
+     - Typical choices:
+       - Installed as admin (e.g. `admin`): run as that user.
+         Home is usually `/home/<user>` or
+         `/var/services/homes/<user>` (DSM symlinks between
+         the two).
+       - Installed as root: run as `root`, home is `/root`.
+     - Enabled ✓
    - **Schedule**: Daily at 03:00 (or weekly — certs have 30
      days of renewal slack, daily just catches DNS or API
      failures sooner)
-   - **Task Settings → Run command**:
+   - **Task Settings → Run command**. Substitute `$HOME` with
+     the install user's actual home directory:
      ```sh
-     "/root/.acme.sh/acme.sh" --cron --home "/root/.acme.sh" > /var/log/acme-renewal.log 2>&1
+     "$HOME/.acme.sh/acme.sh" --cron --home "$HOME/.acme.sh" > "$HOME/acme-renewal.log" 2>&1
      ```
+     Concrete example if installed as `admin` with
+     `/home/admin`:
+     ```sh
+     "/home/admin/.acme.sh/acme.sh" --cron --home "/home/admin/.acme.sh" > "/home/admin/acme-renewal.log" 2>&1
+     ```
+     Log goes to the user's home rather than `/var/log/` —
+     non-root users generally can't write to `/var/log/`.
    - **Task Settings → Notification**: "Send run details by
      email" + enter your email. Silent failure is the worst
      outcome here — TLS expiring mid-quarter is painful.
