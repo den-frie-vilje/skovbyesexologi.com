@@ -1034,6 +1034,38 @@ Not everything in this repo is template material:
 The template covers the *deploy* shape. The site's own
 peculiarities stay in the site's own repo.
 
+### Naming cleanup during extraction
+
+Because this infra was bootstrapped inside a single site's
+repo, several shared identifiers have accidentally inherited
+the site's name:
+
+| Thing | Current (site-scoped) | Client-neutral target |
+| --- | --- | --- |
+| Webhook image | `ghcr.io/den-frie-vilje/skovbyesexologi-webhook:latest` | `ghcr.io/den-frie-vilje/nas-webhook:latest` |
+| Webhook compose project | `skovbyesexologi-webhook` | `nas-webhook` |
+| Shared docker network | `skovbye-deploy` | `nas-deploy` |
+| HMAC secret prefix convention | `SKOVBYESEXOLOGI_COM_…` | unchanged — site-scoped is correct for secrets |
+
+None of this is urgent — it's all cosmetic/taxonomic. But
+when extracting to `nas-sites`, rename in one atomic pass so
+new sites onboarded against the repo don't inherit the
+historical names. Migration on the NAS side:
+
+1. Build new image at target name via a workflow in `nas-sites`
+2. Flip `/volume1/docker/webhook/compose.yml` to the new
+   image + new `name:` + new external network reference
+3. Create the renamed docker network, join the webhook to it
+4. `docker compose down && docker compose up -d`
+5. Per-site compose files all switch their `networks:` entry
+   to the new name in the same pass (otherwise they lose
+   reachability to the webhook)
+6. Retire the old image from GHCR when nothing references it
+
+Best done at the same moment as the Ansible-ification, so
+all the per-host state gets built from templates with the
+new names rather than sed'd in place.
+
 ### synotools hardening (parked — stage 2 optional)
 
 DSM ships a family of `syno*` CLI tools that could reduce
