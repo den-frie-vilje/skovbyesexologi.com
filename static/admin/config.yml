@@ -23,7 +23,7 @@
 #        Application name: Skovbye Sexologi CMS
 #        Homepage URL:     https://skovbyesexologi.com
 #        Authorization callback URL:
-#          https://skovbyesexologi.com.stage.denfrievilje.dk/auth/callback
+#          https://skovbyesexologi-com.stage.denfrievilje.dk/auth/callback
 #      Copy the generated Client ID + Client Secret.
 #
 #   2. Bring up the staging compose stack on the NAS with
@@ -148,8 +148,8 @@ backend:
 #   # base_url is the OAuth proxy's root. Sveltia appends /auth
 #   # and /callback, which Caddy strips the /auth prefix from
 #   # and forwards to the sveltia-auth container internally.
-#   base_url: https://skovbyesexologi.com.stage.denfrievilje.dk/auth
-#   site_domain: skovbyesexologi.com.stage.denfrievilje.dk
+#   base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
+#   site_domain: skovbyesexologi-com.stage.denfrievilje.dk
 
 media_folder: static/img
 public_folder: /img

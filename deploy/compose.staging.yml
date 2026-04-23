@@ -83,10 +83,12 @@ services:
       OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-}
       OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET:-}
       # CSRF guard — only accept auth initiations from this
-      # site's staging URL. `${DOMAIN}` comes from staging.env
-      # on the NAS; the "localhost" fallback is only hit during
-      # local dev where the service isn't running anyway.
-      ORIGIN: ${DOMAIN:-localhost}.stage.denfrievilje.dk
+      # site's staging URL. Uses ${STAGE_ORIGIN} which each
+      # site sets explicitly in staging.env (format:
+      # <domain-dashed>.stage.denfrievilje.dk, dashed because
+      # LE wildcards match one label only, and raw $DOMAIN
+      # contains dots that'd break the cert chain).
+      ORIGIN: ${STAGE_ORIGIN:-localhost}
       # Where the auth success page redirects to. Empty → the
       # provider renders a tiny self-closing postMessage page,
       # which is what Sveltia expects.

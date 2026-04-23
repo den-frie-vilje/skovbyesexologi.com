@@ -28,7 +28,7 @@ jobs:
     with:
       environment: staging
       image-name: ghcr.io/den-frie-vilje/skovbyesexologi
-      webhook-url: https://skovbyesexologi.com.stage.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/staging
-      smoke-check-url: https://skovbyesexologi.com.stage.denfrievilje.dk/
+      webhook-url: https://skovbyesexologi-com.stage.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/staging
+      smoke-check-url: https://skovbyesexologi-com.stage.denfrievilje.dk/
     secrets:
       WEBHOOK_SECRET: ${{ secrets.STAGING_WEBHOOK_SECRET }}

@@ -21,22 +21,37 @@ Every site has three hostnames:
 
 | Role | Shape | Example |
 | --- | --- | --- |
-| Staging canonical origin | `$DOMAIN.stage.denfrievilje.dk` | `skovbyesexologi.com.stage.denfrievilje.dk` |
-| Production canonical origin | `$DOMAIN.prod.denfrievilje.dk` | `skovbyesexologi.com.prod.denfrievilje.dk` |
+| Staging canonical origin | `$DOMAIN_DASHED.stage.denfrievilje.dk` | `skovbyesexologi-com.stage.denfrievilje.dk` |
+| Production canonical origin | `$DOMAIN_DASHED.prod.denfrievilje.dk` | `skovbyesexologi-com.prod.denfrievilje.dk` |
 | Client-facing (production) | `$DOMAIN` | `skovbyesexologi.com` |
 
 `$DOMAIN` = the site's real, customer-owned domain (what end
-users type). The staging + production origins are deterministic
-from `$DOMAIN` — no per-site DNS config needed once the two
-wildcards are in place (§1 below).
+users type). `$DOMAIN_DASHED` = `$DOMAIN` with every `.` replaced
+by `-`:
+
+```
+skovbyesexologi.com     → skovbyesexologi-com
+app.client.com          → app-client-com
+foo-bar.dk              → foo-bar-dk
+```
+
+**Why dashes?** Let's Encrypt wildcard certs match exactly ONE
+DNS label — `*.stage.denfrievilje.dk` covers
+`foo.stage.denfrievilje.dk` but NOT
+`foo.com.stage.denfrievilje.dk` (that's two labels under
+`.stage`). Using dots would force a per-site cert (defeating
+the wildcard). Dots-to-dashes collapses the raw domain into a
+single DNS label, and the existing wildcard cert covers all
+sites for free.
 
 **Clients who want a vanity domain** CNAME their apex to
-`$DOMAIN.prod.denfrievilje.dk`. They can change providers, add
-Cloudflare, migrate registrars freely — nothing on your side
-moves.
+`$DOMAIN_DASHED.prod.denfrievilje.dk`. They can change
+providers, add Cloudflare, migrate registrars freely — nothing
+on your side moves.
 
-**Scripts only need `$DOMAIN`** to derive everything else:
-webhook URLs, stack paths, compose project names, auth origins.
+**Scripts + config files need both `$DOMAIN` (the raw domain)
+and `$DOMAIN_DASHED` (for URL construction)**. See the
+`STAGE_ORIGIN=` field in `staging.env` as the typical shape.
 
 ---
 
@@ -510,7 +525,7 @@ On DSM:
    - Application name: `<site> CMS`
    - Homepage URL: `https://<DOMAIN>` (e.g. `https://skovbyesexologi.com`)
    - Authorization callback URL:
-     `https://<DOMAIN>.stage.denfrievilje.dk/auth/callback`
+     `https://<DOMAIN_DASHED>.stage.denfrievilje.dk/auth/callback`
 
    Copy the generated **Client ID** + **Client Secret**.
 
@@ -681,8 +696,8 @@ survives `docker compose up -d` recreation.
 DSM → Web Station → Web Service Portal → **Create**:
 
 1. **Staging vhost:**
-   - Hostname: `<DOMAIN>.stage.denfrievilje.dk`
-     (e.g. `skovbyesexologi.com.stage.denfrievilje.dk`)
+   - Hostname: `<DOMAIN_DASHED>.stage.denfrievilje.dk`
+     (e.g. `skovbyesexologi-com.stage.denfrievilje.dk`)
    - Back-end: nginx
    - HTTPS: select the `*.stage.denfrievilje.dk` wildcard cert
      from §2.2
@@ -707,7 +722,7 @@ DSM → Web Station → Web Service Portal → **Create**:
    Host header.
 
    **Hostname list** (all as SANs on one vhost):
-   - `<DOMAIN>.prod.denfrievilje.dk` (canonical NAS origin)
+   - `<DOMAIN_DASHED>.prod.denfrievilje.dk` (canonical NAS origin)
    - `<DOMAIN>` (the client-facing apex)
    - `www.<DOMAIN>` (if used)
    - Any legacy domains that should redirect or serve here
@@ -716,7 +731,7 @@ DSM → Web Station → Web Service Portal → **Create**:
 
    - **Client fronts with CF / other CDN**: CDN terminates TLS
      for the client-facing hostnames. Only add
-     `<DOMAIN>.prod.denfrievilje.dk` to this vhost and bind it
+     `<DOMAIN_DASHED>.prod.denfrievilje.dk` to this vhost and bind it
      to the `*.prod.denfrievilje.dk` wildcard cert. The client
      domains arrive at the NAS with their host header intact
      (via CDN origin-pull) but TLS is already handled.
@@ -754,7 +769,7 @@ DSM → Web Station → Web Service Portal → **Create**:
    ```caddy
    @non_canonical {
        host www.skovbyesexologi.com
-       host skovbyesexologi.com.prod.denfrievilje.dk
+       host skovbyesexologi-com.prod.denfrievilje.dk
        # host legacy-brand.dk     ← new entries here
    }
    redir @non_canonical https://skovbyesexologi.com{uri} 301
@@ -764,8 +779,8 @@ DSM → Web Station → Web Service Portal → **Create**:
    above.
 
 4. **Ask the site owner to CNAME their apex** to
-   `<DOMAIN>.prod.denfrievilje.dk`. For a CF-proxied domain:
-   - `<DOMAIN>` CNAME → `<DOMAIN>.prod.denfrievilje.dk`, orange cloud on
+   `<DOMAIN_DASHED>.prod.denfrievilje.dk`. For a CF-proxied domain:
+   - `<DOMAIN>` CNAME → `<DOMAIN_DASHED>.prod.denfrievilje.dk`, orange cloud on
    - CF issues the cert for `<DOMAIN>` automatically
    - NAS only needs the wildcard cert for `.prod.*`
 
@@ -807,7 +822,7 @@ the same way.
 
 ### 9. Activate the GitHub backend in Sveltia
 
-Once the OAuth flow at `https://<DOMAIN>.stage.denfrievilje.dk/auth/*`
+Once the OAuth flow at `https://<DOMAIN_DASHED>.stage.denfrievilje.dk/auth/*`
 is reachable (after the first staging deploy lands), switch
 `static/admin/config.yml`:
 - Comment out the `backend: name: test-repo` block
@@ -823,10 +838,10 @@ branch.
 
 ### Editor flow (Signe)
 
-1. Visit `https://<DOMAIN>.stage.denfrievilje.dk/admin`. Sign in
+1. Visit `https://<DOMAIN_DASHED>.stage.denfrievilje.dk/admin`. Sign in
    with GitHub on first visit.
 2. Edit content → Save → commits to `staging`.
-3. Wait ~2 min; refresh `<DOMAIN>.stage.denfrievilje.dk`.
+3. Wait ~2 min; refresh `<DOMAIN_DASHED>.stage.denfrievilje.dk`.
 4. Happy? Visit `.../publish` on the same domain → click
    **Publish to production** → merges `staging → main`.
 5. Wait ~2 min. `<DOMAIN>` is live, CF cache purged.
@@ -893,7 +908,7 @@ Public).
 
 **`/admin` loops on sign-in.** OAuth callback URL mismatch. GH
 OAuth App's callback must be **exactly**
-`https://<DOMAIN>.stage.denfrievilje.dk/auth/callback` — check
+`https://<DOMAIN_DASHED>.stage.denfrievilje.dk/auth/callback` — check
 for typos and trailing slash.
 
 **Site stays stale after production deploy.** CF purge failed.

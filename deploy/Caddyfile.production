@@ -39,7 +39,7 @@
         # Edit this list when adding a new legacy domain.
         @non_canonical {
             host www.skovbyesexologi.com
-            host skovbyesexologi.com.prod.denfrievilje.dk
+            host skovbyesexologi-com.prod.denfrievilje.dk
             # host legacy-brand.dk
             # host oldname.com
         }
