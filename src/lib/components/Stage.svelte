@@ -477,22 +477,46 @@ uniform float uEnvMix;`
       };
 
       type Live = { x: number; y: number; scale: number };
-      // Initialise live state at the FIRST anchor's positions so elements
-      // appear at their hero resting poses immediately — no visible lerp
-      // from centre on load.
+      /*
+        First-mount entry choreography. Seed each live position
+        with an x-offset from its anchor target so the first tick
+        catches it offscreen and the existing per-frame lerp
+        (see `lerpLive` below) carries it in horizontally. Scale
+        and y stay at anchor values from the start — elements
+        enter at full target size, no growth. Only x animates.
+
+        Arrival order: main → gold → gem. Because the lerp is
+        exponential at a fixed rate per frame, a larger initial
+        offset takes proportionally longer to close — so "first
+        to arrive" gets the SMALLEST offset, "last to arrive"
+        gets the LARGEST. Directions alternate sides so the
+        entries read as spreading, not racing:
+          • main   (orb)        → enters from the RIGHT, small
+                                    offset; lands first — reads
+                                    as the hero element settling.
+          • drip1  (gold balls) → enters from the LEFT, medium
+                                    offset; arrives second.
+          • drip2  (gem)        → enters from the RIGHT, largest
+                                    offset; arrives last.
+
+        With the opacity fade layered on top (700ms), the canvas
+        comes in while the elements are still mid-slide, so the
+        end state feels like a coordinated reveal rather than
+        three independent pop-ins.
+      */
       const firstAnchor = anchors[0];
       const liveMain: Live = {
-        x: firstAnchor.main.x,
+        x: firstAnchor.main.x + 1.8,
         y: firstAnchor.main.y,
         scale: firstAnchor.main.scale
       };
       const liveDrip1: Live = {
-        x: firstAnchor.drip1.x,
+        x: firstAnchor.drip1.x - 2.8,
         y: firstAnchor.drip1.y,
         scale: firstAnchor.drip1.scale
       };
       const liveDrip2: Live = {
-        x: firstAnchor.drip2.x,
+        x: firstAnchor.drip2.x + 3.6,
         y: firstAnchor.drip2.y,
         scale: firstAnchor.drip2.scale
       };
