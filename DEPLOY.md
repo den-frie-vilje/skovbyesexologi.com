@@ -180,67 +180,29 @@ On DSM:
 
 3. **Create a dedicated DSM admin user for acme.sh cert
    deploys.** DSM → Control Panel → User & Group → Create.
-   Username `acme`. Strong unique password. Group:
-   `administrators`.
+   Username `acme`. Set a strong unique password (goes into
+   the acme env file later — do NOT reuse any password used
+   by a human).
 
-   **Why admin, and why that's more bearable than it looks.**
-   DSM's Certificate WebAPI requires admin-group membership —
-   there's no finer-grained tier exposed. The credential
-   therefore technically CAN do anything an admin can. What
-   keeps the effective risk bounded is the combination of:
+   Join it to the `administrators` group: DSM's Certificate
+   management WebAPI requires full admin, there is no
+   finer-grained "Certificate-only admin" permission tier.
+   The blast radius IS equivalent to your primary admin user
+   in terms of what the credential *can* do — but the
+   mitigation is isolation-by-identity:
+   - If the primary admin password leaks, you rotate a password
+     you use daily for your own DSM access.
+   - If the `acme` password leaks, you delete the account and
+     re-bootstrap the container with a new one. Your own
+     daily-use access is untouched.
 
-   - **The DSM admin port (:5000/:5001) is LAN-only by
-     default.** In a normal home/office setup, you haven't
-     port-forwarded it, so a leaked `acme.env` is useless
-     from the open internet. Verify in DSM → Control Panel
-     → External Access → Router Configuration: :5000 and
-     :5001 should NOT appear in the forwarded list.
-
-   - **The credential never leaves the NAS.** It lives in
-     `acme.env` (chmod 600, owned by `deploy`) and is only
-     sent over a loopback connection to `localhost:5000`.
-
-   - **DSM Auto-Block** throttles brute-force attempts. On
-     by default; check DSM → Control Panel → Security →
-     Protection → Auto Block is enabled.
-
-   So the realistic threat model is "attacker with LAN-level
-   access escalates via the leaked creds" — which is roughly
-   the same threat model as "attacker with LAN-level access
-   reads your NAS shares directly." They're already inside.
-
-   **Belt-and-braces mitigations** (do at least the firewall
-   rule):
-
-   - **DSM Firewall** restricting :5000/:5001 to your LAN
-     subnet + 127.0.0.1 explicitly. DSM → Control Panel →
-     Security → Firewall → Edit Rules → add rule: Ports
-     `5000,5001` / Source IP `<your LAN range>, 127.0.0.1` /
-     Allow; default policy deny for those ports.
-   - **Login notifications** for the `acme` user: DSM →
-     Control Panel → Notification → Advanced → enable
-     "Successful login" alerts. A normal day sees zero
-     `acme` logins (acme.sh only authenticates when pushing
-     a renewed cert, every ~60 days). Any unexpected alert
-     is a meaningful signal.
-   - **Quarterly password rotation**. Generate a new strong
-     password, update `acme.env`, restart the acme container.
-     Takes 30 seconds.
-   - **2FA + SYNO_DeviceID**: enable 2FA on the `acme`
-     account, do one interactive login to capture the
-     `SYNO_DeviceID` acme.sh prints, paste it into `acme.env`.
-     This blocks remote use of leaked password alone —
-     attacker also needs the DeviceID from the env file. See
+   Additional hardening:
+   - Keep `acme.env` at `chmod 600` on the NAS.
+   - Never reuse this password anywhere else.
+   - If you enforce 2FA on admin accounts globally, you'll
+     need to capture a `SYNO_DeviceID` during the first
+     interactive login and add it to `acme.env` — see
      comments in `deploy/acme.env.example`.
-
-   **The structural fix (when ready)**: the admin creds only
-   exist because DSM Web Station handles TLS termination. If
-   you migrate TLS termination to a Caddy/Traefik container
-   that reads certs directly from the acme.sh volume, the
-   synology_dsm deploy hook disappears entirely — and with
-   it the admin credential. See "Traefik alternative" in
-   the Future generalisation chapter; it's parked because
-   taking :443 from DSM affects existing client services.
 
 4. **Create shared docker paths + network.** SSH in as admin:
    ```sh
