@@ -214,10 +214,20 @@
     for assistive-tech attention.
   -->
   <section class="hero" data-stage-anchor="hero">
-    <p class="name-card reveal-slide">
-      {hero.name}<br />
-      <span>{hero.city}</span>
-    </p>
+    <!--
+      Hero previously showed `{hero.name} / {hero.city}` as an
+      eyebrow above the statement. Dropped — the sticky top bar
+      already has the brand mark + city at every scroll depth,
+      so repeating it here was visual duplication.
+
+      `.hero-spacer` reserves the vertical slot that eyebrow used
+      to occupy (matched to its old height + padding-bottom) so
+      the statement + attribution + scroll-cue group keeps its
+      previous visual centre of mass. Without it, the flex
+      `justify-content: center` would pull the group upward by
+      roughly half the eyebrow's former height.
+    -->
+    <div class="hero-spacer" aria-hidden="true"></div>
     <h1 class="statement">
       <span class="line reveal-soft"><span class="ink">{hero.statementStart}</span></span>
       <span class="line reveal-soft em">
@@ -564,17 +574,19 @@
      statement's `.ink` spans. Normal flow stacks above the fixed stage
      canvas (z-index: 0) naturally. */
 
-  .name-card {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--text);
+  /*
+    Top spacer — reserves the vertical slot the old `name-card`
+    eyebrow used to occupy, so removing the eyebrow doesn't pull
+    the statement + attribution + scroll cue group upward. Height
+    tracks the eyebrow's former footprint (two lines of 0.72rem
+    mono + 4rem padding-bottom). `margin-bottom: auto` mirrors
+    the old eyebrow's behaviour: pins the spacer to the top of
+    the flex column and lets the remaining items centre in the
+    space below.
+  */
+  .hero-spacer {
     margin: 0 0 auto;
-    padding-bottom: 4rem;
-  }
-  .name-card span {
-    color: var(--text-muted);
+    min-height: calc(0.72rem * 1.2 * 2 + 4rem);
   }
 
   .statement {

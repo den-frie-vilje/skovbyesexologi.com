@@ -67,6 +67,17 @@
 
   let host: HTMLDivElement;
   let cleanup: (() => void) | null = null;
+  /*
+    Drives the first-mount fade-in. Flipped to `true` after the
+    first `renderer.render(scene, camera)` has committed pixels —
+    the class is added to `.stage-host`, which triggers a CSS
+    opacity transition from 0→1. JS owns the trigger (only it
+    knows when the async three.js setup has actually painted);
+    CSS owns the animation. Stage mounts once per SPA session
+    (lives in the persistent `(app)` layout shell), so this
+    fires exactly once — no re-fade on client-side nav.
+  */
+  let ready = $state(false);
 
   onMount(() => {
     if (!browser) return;
@@ -895,6 +906,18 @@ uniform float uEnvMix;`
 
       tick();
 
+      /*
+        Signal "first render committed" on the next frame. `tick()`
+        above runs the first `renderer.render`, but those pixels
+        aren't actually on screen until the browser's next paint —
+        one rAF guarantees we're past that. Flipping `ready` adds
+        `.ready` to `.stage-host`, which triggers the CSS opacity
+        transition defined below.
+      */
+      requestAnimationFrame(() => {
+        if (!disposed) ready = true;
+      });
+
       cleanup = () => {
         disposed = true;
         window.removeEventListener('resize', onResize);
@@ -920,7 +943,7 @@ uniform float uEnvMix;`
   });
 </script>
 
-<div bind:this={host} class="stage-host" aria-hidden="true"></div>
+<div bind:this={host} class="stage-host" class:ready aria-hidden="true"></div>
 
 <style>
   .stage-host {
@@ -940,5 +963,37 @@ uniform float uEnvMix;`
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+
+    /*
+      First-mount fade-in. The WebGL canvas is appended inside
+      an async three.js setup chain — dynamic imports + shader
+      compile + first `renderer.render`. We transition opacity
+      0→1 only once the first render has committed pixels (JS
+      flips the `.ready` class at that moment; see the
+      `requestAnimationFrame` in the script above). A fixed
+      CSS delay won't cut it: setup timing varies by device, so
+      the fade would otherwise play on an empty div and finish
+      before the canvas paints.
+    */
+    opacity: 0;
+    transition: opacity 700ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  .stage-host.ready {
+    opacity: 1;
+  }
+
+  /*
+    Reduced motion: skip the fade, canvas is visible from the
+    first paint. The scroll-choreography motion inside the canvas
+    is already gated on reduced-motion (see the onMount check in
+    the script above — returns early and never mounts the scene),
+    so on those devices this rule just keeps the empty
+    .stage-host neutral.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .stage-host {
+      opacity: 1;
+      transition: none;
+    }
   }
 </style>
