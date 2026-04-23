@@ -69,6 +69,15 @@
   label to behave differently from the brand mark.
 -->
 <header class="top">
+  <!--
+    Plain <a href> — brand-mark clicks scroll to the top of
+    home. That matches the standard site-logo convention:
+    users expect the logo to mean "return to the top of the
+    front page," not "restore a scroll position from earlier in
+    the session." The service-page "← Forsiden" back link is
+    the affordance that restores scroll (see
+    `$lib/nav/backNav.svelte.ts`).
+  -->
   <a class="top-link" href={homeHref}>{name}</a>
   <span class="mark-meta">{city}</span>
   {#if currentLocale && altLocale && altHref}

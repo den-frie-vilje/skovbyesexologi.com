@@ -22,6 +22,7 @@
   } from '$lib/content';
   import { mainPoses, goldPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
+  import { handleBackToHome } from '$lib/nav/backNav.svelte';
   import Testimonials from './Testimonials.svelte';
   import StickyCta from './StickyCta.svelte';
   import ManifestSection from './ManifestSection.svelte';
@@ -269,7 +270,16 @@
 
       <!-- ============== BACK LINK ============== -->
       <nav class="s-back">
-        <a href={backHref}>← {backLabel}</a>
+        <!--
+          `handleBackToHome` checks whether the previous history
+          entry is the homepage; if so, `preventDefault()` +
+          `history.back()` so the browser restores scroll
+          natively. Otherwise the `<a>` acts as a normal
+          forward nav (→ scroll to top). See
+          `$lib/nav/backNav.svelte.ts` for why this is preferred
+          over SvelteKit's snapshot / a custom scroll store.
+        -->
+        <a href={backHref} onclick={handleBackToHome}>← {backLabel}</a>
       </nav>
   </article>
 </div>

@@ -85,6 +85,16 @@
   let chapterMode = $state(0);
   let konsulentY = $state<number | null>(null);
 
+  /*
+    Scroll-position restoration lives in `$lib/nav/backNav.svelte.ts`
+    and the service-page back link's `onclick`. No per-page state
+    or hooks needed here: when the user clicks "← Forsiden" on a
+    service page after coming from home, the handler calls
+    `history.back()`, which triggers popstate + native browser
+    scroll restoration. Direct visits to `/` (first load, bookmark,
+    external link, logo-click) correctly scroll to top.
+  */
+
   onMount(() => {
     if (!browser) return;
     // `.app-shell` is rendered by the (app) layout. The chapter-II

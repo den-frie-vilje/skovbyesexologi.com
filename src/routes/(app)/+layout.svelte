@@ -23,6 +23,7 @@
 -->
 <script lang="ts">
   import { page } from '$app/stores';
+  import { beforeNavigate } from '$app/navigation';
   import {
     contentFor,
     primaryNav,
@@ -34,8 +35,22 @@
   import SiteFooter from '$lib/components/SiteFooter.svelte';
   import SiteHeader from '$lib/components/SiteHeader.svelte';
   import { stage } from '$lib/stage/store.svelte';
+  import { navState } from '$lib/nav/backNav.svelte';
 
   let { children } = $props();
+
+  /*
+    Record the path we're navigating AWAY from on every nav —
+    used by the service-page "← Forsiden" back link to decide
+    whether clicking it should trigger `history.back()` (when
+    previousPath is the homepage, the browser restores scroll
+    natively) or fall through to a normal forward nav (when
+    it's not, e.g. a deep-linked service page). See
+    `$lib/nav/backNav.svelte.ts`.
+  */
+  beforeNavigate(({ from }) => {
+    navState.previousPath = from?.url?.pathname ?? '';
+  });
 
   /*
     Read locale from the active page's data. Every content route
