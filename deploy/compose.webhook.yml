@@ -21,20 +21,18 @@ networks:
 
 services:
   webhook:
-    # Custom image: adnanh/webhook (Go, tiny) + docker CLI so
-    # the hook scripts can run `docker compose`. Built from
-    # ./webhook/Dockerfile.
-    build:
-      context: ./webhook
-      # Synology DSM kernels ship without seccomp support, so
-      # runc fails any RUN step during build with "seccomp:
-      # config provided but seccomp not supported". Tell
-      # buildkit not to apply a seccomp profile for build
-      # layers — safe here, the build only runs `apk add`
-      # which isn't attempting any dodgy syscalls. No effect
-      # on the runtime container, only on build-time layers.
-      security_opt:
-        - seccomp=unconfined
+    # Built by .github/workflows/webhook-image.yml in CI,
+    # pushed to GHCR. Pulled here (not built on the NAS)
+    # because Synology's kernel ships without seccomp support,
+    # and any RUN step in a build fails with "seccomp: config
+    # provided but seccomp not supported".
+    #
+    # Rebuilds whenever deploy/webhook/** changes. Image is
+    # meant to be public — make sure the GHCR package
+    # visibility for skovbyesexologi-webhook is set to Public,
+    # otherwise the NAS needs a PAT to pull.
+    image: ghcr.io/den-frie-vilje/skovbyesexologi-webhook:latest
+    pull_policy: always
     restart: unless-stopped
     networks: [skovbye-deploy]
     # No host port exposure — only reachable via the Caddy

@@ -451,14 +451,23 @@ On DSM:
    # look for `inherit` flags on the allow entries
    ```
 
-5. **Bootstrap the webhook container.** This step is done
-   **once per NAS**, not once per site.
+5. **Bootstrap the webhook container.** Done once per NAS.
 
+   The webhook image is built in CI
+   (`.github/workflows/webhook-image.yml`) and pushed to
+   `ghcr.io/den-frie-vilje/skovbyesexologi-webhook:latest` —
+   the NAS never builds it locally. This sidesteps Synology's
+   kernel missing seccomp support, which breaks any `RUN`
+   step during an in-place docker build on DSM.
+
+   After the webhook-image workflow's first successful run,
+   visit
+   <https://github.com/den-frie-vilje/skovbyesexologi.com/pkgs/container/skovbyesexologi-webhook>
+   → Package settings → **Change visibility** → **Public**,
+   so the NAS can pull without authentication.
+
+   On the NAS:
    ```sh
-   # Pull the webhook compose file + image build context.
-   # Easiest: copy from the first site's cloned repo, but any
-   # repo with deploy/compose.webhook.yml + deploy/webhook/
-   # works — they're identical across sites.
    REPO=/tmp/skovbye-bootstrap
    git clone --depth 1 \
      https://github.com/den-frie-vilje/skovbyesexologi.com.git \
@@ -466,17 +475,29 @@ On DSM:
 
    sudo cp "$REPO/deploy/compose.webhook.yml" \
            /volume1/docker/webhook/compose.yml
-   sudo cp -r "$REPO/deploy/webhook/"* \
-              /volume1/docker/webhook/webhook/
-   sudo chown -R deploy:users /volume1/docker/webhook
+   sudo cp "$REPO/deploy/webhook/hooks.yaml" \
+           /volume1/docker/webhook/webhook/hooks.yaml
+   sudo cp -r "$REPO/deploy/webhook/scripts/"* \
+              /volume1/docker/webhook/webhook/scripts/
+   sudo cp "$REPO/deploy/webhook.env.example" \
+           /volume1/docker/webhook/webhook.env
+   sudo chmod 600 /volume1/docker/webhook/webhook.env
    rm -rf "$REPO"
+
+   cd /volume1/docker/webhook
+   sudo docker compose up -d
+   sudo docker logs -f webhook-webhook-1
    ```
 
+   No `--build` — the image comes from GHCR. Future updates:
+   `docker compose pull && up -d` on the NAS whenever the
+   webhook-image workflow ships a new version.
+
    The webhook is **bootstrapped once and updated manually** —
-   it does NOT self-update via the pipeline. This avoids the
-   chicken-and-egg failure mode where a broken webhook upgrade
-   leaves you unable to deploy anything including a webhook
-   fix.
+   the image pull is still manual, not auto-triggered by a
+   per-site deploy pipeline. This avoids the chicken-and-egg
+   failure mode where a broken webhook upgrade leaves you
+   unable to deploy anything including a webhook fix.
 
 ---
 
