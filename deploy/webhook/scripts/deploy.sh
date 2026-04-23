@@ -53,10 +53,14 @@ ENV_UP="$(echo "$ENV_NAME" | tr '[:lower:]' '[:upper:]')"
 
 echo "[$(date -Iseconds)] [$PROJECT] deploy starting"
 
-# Idempotent fast-forward. `reset --hard` beats `pull --ff-only`
-# so automation wins even if someone hand-edited the clone.
+# Idempotent fast-forward. Reset to FETCH_HEAD rather than
+# `origin/$BRANCH` so this works even when the initial clone
+# was shallow + single-branch (which pins the remote's fetch
+# refspec to one branch and never creates tracking refs for
+# others). `reset --hard` beats `pull --ff-only` — automation
+# wins even if someone hand-edited the clone.
 git -C "$REPO" fetch --depth 1 origin "$BRANCH"
-git -C "$REPO" reset --hard "origin/$BRANCH"
+git -C "$REPO" reset --hard FETCH_HEAD
 
 cd "$STACK_DIR"
 
