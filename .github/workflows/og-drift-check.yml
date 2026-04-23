@@ -1,0 +1,206 @@
+# OG-image drift watcher.
+#
+# The OG regen script (`pkgx pnpm og`) uses Playwright + real
+# Chromium in HEADED mode because the Three.js MeshPhysicalMaterial
+# + iridescence shader path requires a real GPU — SwiftShader
+# (what headless / CPU-only runners fall back to) produces a
+# transparent canvas for those materials. GH Actions
+# `ubuntu-latest` runners are GPU-less, so we can't regenerate
+# the JPEGs in CI.
+#
+# Instead: detect when OG-relevant inputs change without the
+# JPEGs also being updated, and OPEN (or comment on) a GitHub
+# issue labelled `og-drift` reminding whoever has the GPU-
+# equipped machine to run the regen locally and push. The workflow
+# is non-blocking — it never fails a build, just surfaces the
+# stale state as a visible, actionable task.
+#
+# Self-resolves: when a subsequent push actually updates the
+# JPEGs, the workflow closes any open `og-drift` issue.
+#
+# If/when a self-hosted GPU runner is available, swap this guard
+# for an auto-regen workflow and this file can go.
+
+name: OG drift check
+
+on:
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: og-drift-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (need full history for diff)
+        uses: actions/checkout@v4
+        with:
+          # Two commits deep so the `git diff HEAD~1..HEAD` below
+          # works even on the first push to a branch.
+          fetch-depth: 2
+
+      - name: Inspect changed files
+        id: inspect
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+
+          # `github.event.before` is the all-zeros SHA on a new
+          # branch's first push — fall back to HEAD~1 then to
+          # empty-tree for diffing.
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="$(git rev-parse HEAD~1 2>/dev/null || git hash-object -t tree /dev/null)"
+          fi
+
+          # Full list of changed files in this push. Newline-
+          # separated so grep works below.
+          git diff --name-only "$BEFORE" "$AFTER" > /tmp/changed.txt
+          echo "== changed files =="
+          cat /tmp/changed.txt
+          echo "===================="
+
+          # OG-input paths: anything that measurably affects what
+          # the OG screenshot captures. Deliberately broad — false
+          # positives (opening an issue when a pose tweak is
+          # cosmetic-only) are cheap; false negatives (not noticing
+          # a title change) ship stale previews to Slack/LinkedIn.
+          OG_INPUTS='^(src/routes/og/|src/content/|src/lib/stage/|src/lib/components/Stage\.svelte|src/lib/three/|scripts/gen-og-images\.ts|src/app\.css|\.env\.(production|staging))'
+
+          # OG outputs: the committed JPEGs.
+          OG_OUTPUTS='^static/img/og/.*\.jpg$'
+
+          changed_inputs=$(grep -E "$OG_INPUTS" /tmp/changed.txt || true)
+          changed_outputs=$(grep -E "$OG_OUTPUTS" /tmp/changed.txt || true)
+
+          if [ -z "$changed_inputs" ]; then
+            echo "status=clean-no-og-inputs" >> "$GITHUB_OUTPUT"
+            echo "No OG-input files changed in this push — nothing to check."
+            exit 0
+          fi
+
+          if [ -n "$changed_outputs" ]; then
+            echo "status=clean-outputs-updated" >> "$GITHUB_OUTPUT"
+            echo "OG inputs changed AND OG jpegs were updated in the same push — clean."
+            echo "Updated jpegs:"
+            echo "$changed_outputs"
+            exit 0
+          fi
+
+          # Drift: inputs changed, no corresponding jpeg update.
+          echo "status=drift" >> "$GITHUB_OUTPUT"
+          {
+            echo 'drift-inputs<<EOF'
+            echo "$changed_inputs"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Find existing open `og-drift` issue
+        id: find-issue
+        if: steps.inspect.outputs.status == 'drift' || steps.inspect.outputs.status == 'clean-outputs-updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Newest first; we only care about one.
+          NUMBER=$(gh issue list \
+            --label og-drift \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number // empty')
+          echo "number=${NUMBER:-}" >> "$GITHUB_OUTPUT"
+          if [ -n "${NUMBER:-}" ]; then
+            echo "Found existing open og-drift issue #$NUMBER"
+          else
+            echo "No existing open og-drift issue."
+          fi
+
+      - name: Auto-close drift issue (outputs updated this push)
+        if: steps.inspect.outputs.status == 'clean-outputs-updated' && steps.find-issue.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ steps.find-issue.outputs.number }}
+          SHA: ${{ github.sha }}
+        run: |
+          gh issue comment "$ISSUE" --body \
+            "OG images regenerated in ${SHA:0:8}. Auto-closing this drift issue."
+          gh issue close "$ISSUE" --reason completed
+
+      - name: Ensure the `og-drift` label exists
+        if: steps.inspect.outputs.status == 'drift'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # `gh label create` errors if the label already exists;
+          # `|| true` keeps the step green on that case.
+          gh label create og-drift \
+            --color D4C5F9 \
+            --description "OG preview images may be stale and need regeneration." \
+            2>/dev/null || true
+
+      - name: Open or update drift issue
+        if: steps.inspect.outputs.status == 'drift'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.find-issue.outputs.number }}
+          DRIFT_INPUTS: ${{ steps.inspect.outputs.drift-inputs }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          # File list, one per line, as a markdown bullet list.
+          FILES_LIST=$(printf '%s\n' "$DRIFT_INPUTS" | sed 's/^/- /')
+          SHORT_SHA="${SHA:0:8}"
+
+          BODY=$(cat <<MD
+          OG-input files changed on \`$BRANCH\` (commit [\`$SHORT_SHA\`]($GITHUB_SERVER_URL/${{ github.repository }}/commit/$SHA)) but \`static/img/og/*.jpg\` wasn't updated in the same push. The OG previews on \`skovbyesexologi.com\` may now be out of date for Slack, LinkedIn, Facebook, and other platforms that cache them.
+
+          ### Changed inputs
+
+          $FILES_LIST
+
+          ### How to fix
+
+          Run the regen on a machine with a real GPU (Playwright headed Chrome needs it — CI runners don't qualify):
+
+          \`\`\`sh
+          git pull
+          pkgx pnpm og
+          git add static/img/og
+          git commit -m "regen OG images"
+          git push
+          \`\`\`
+
+          This issue will auto-close when the next push updates the JPEGs.
+
+          ---
+
+          <sub>Triggered by [run #${{ github.run_id }}]($RUN_URL). See \`.github/workflows/og-drift-check.yml\` for how this check works.</sub>
+          MD
+          )
+
+          TITLE="OG images may be stale — regen needed on \`$BRANCH\`"
+
+          if [ -n "$ISSUE_NUMBER" ]; then
+            # Comment on the existing issue rather than opening a
+            # duplicate — keeps the history of drift in one place.
+            gh issue comment "$ISSUE_NUMBER" --body "$BODY"
+            echo "Commented on existing issue #$ISSUE_NUMBER"
+          else
+            gh issue create \
+              --title "$TITLE" \
+              --label og-drift \
+              --body "$BODY"
+          fi
