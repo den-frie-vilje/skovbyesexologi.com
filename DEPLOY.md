@@ -270,10 +270,22 @@ On DSM:
      -d '*.prod.denfrievilje.dk'
    ```
 
-   The deploy hook caches these values into
-   `~/.acme.sh/account.conf`, so the Task Scheduler renewal
-   cron (step (c) below) picks them up automatically without
-   re-exporting.
+   The deploy hook caches these values as `SAVED_SYNO_*`
+   entries in `~/.acme.sh/<domain>_ecc/<domain>.conf` on first
+   run. Subsequent runs (including Task Scheduler's renewal
+   cron) read from there — env vars are ONLY consulted on the
+   first deploy per domain.
+
+   If the first run used wrong values (e.g. you forgot to
+   export `SYNO_Port` for a non-default DSM port), re-exporting
+   won't help — edit the cached values directly:
+   ```sh
+   # Clear stale SAVED_SYNO_* lines so env vars take over on
+   # the next run, then retry the deploy with correct exports.
+   sed -i '/^SAVED_SYNO_/d' ~/.acme.sh/\*.stage.denfrievilje.dk_ecc/\*.stage.denfrievilje.dk.conf
+   sed -i '/^SAVED_SYNO_/d' ~/.acme.sh/\*.prod.denfrievilje.dk_ecc/\*.prod.denfrievilje.dk.conf
+   ```
+   (Backslashes escape the literal `*` in the directory names.)
 
    acme.sh stores `CF_Token` + `CF_Account_ID` into
    `~/.acme.sh/account.conf` (mode 600, root-only) on first
