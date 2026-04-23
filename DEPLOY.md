@@ -189,18 +189,54 @@ On DSM:
    *populate* the DSM cert store with the two wildcards, not
    to manage bindings.
 
-   SSH into the NAS as admin:
+   **(a) Get your Cloudflare API credentials.** acme.sh needs
+   two values to complete the DNS-01 challenge against
+   Cloudflare. Do this BEFORE starting the SSH session below so
+   you can paste them into the shell directly.
+
+   - **API token** with `Zone:DNS:Edit` on the specific zone
+     `denfrievilje.dk`. Create at:
+     <https://dash.cloudflare.com/profile/api-tokens> →
+     **Create Token** → pick the **Edit zone DNS** template
+     (or use "Create Custom Token" with the same permission).
+     - Permissions: `Zone` · `DNS` · `Edit`
+     - Zone Resources: Include · Specific zone ·
+       `denfrievilje.dk`
+     - (Optional but recommended) IP Address Filtering: add
+       your NAS's outbound IP so the token only works from the
+       NAS.
+     - (Optional) TTL: leave blank for long-lived, or set an
+       annual expiry if you want a rotation reminder.
+     - Click **Continue to summary** → **Create Token** →
+       **COPY THE TOKEN NOW** (CF shows it exactly once).
+       Save it in your password manager immediately.
+
+   - **Account ID**. CF dashboard → click the zone
+     (`denfrievilje.dk`) → scroll the right sidebar to the
+     **API** section → the "Account ID" value shown there.
+     (Also visible at <https://dash.cloudflare.com> as part
+     of the URL once you've clicked into an account.)
+
+   **Principle**: create a separate narrow-scoped token per
+   purpose. The CF cache-purge tokens used later by the deploy
+   webhook (§5 of per-site setup) should NOT reuse this
+   DNS-Edit token — issue new ones with `Zone:Cache Purge`
+   permission only, scoped to the purge target zone.
+
+   **(b) Install acme.sh + issue the wildcards.** SSH into the
+   NAS as admin:
    ```sh
    # Install acme.sh. DSM doesn't ship cron (it has Task
    # Scheduler instead, see step (c) below), so acme.sh's
    # install check will bail unless we pass `--force`.
    curl https://get.acme.sh | sh -s email=<your-email> -- --force
 
-   # Issue the wildcards via your DNS provider's API. Example
-   # below is for Cloudflare — see the acme.sh dnsapi wiki for
-   # other providers.
-   export CF_Token="<CF API token with Zone:DNS:Edit on denfrievilje.dk>"
-   export CF_Account_ID="<CF account ID>"
+   # Paste the CF values from step (a).
+   export CF_Token="<the token you just created>"
+   export CF_Account_ID="<CF account ID from the right sidebar>"
+
+   # Issue the wildcards via Cloudflare DNS-01.
+   # For other DNS providers: https://github.com/acmesh-official/acme.sh/wiki/dnsapi
    ~/.acme.sh/acme.sh --issue --dns dns_cf \
      -d '*.stage.denfrievilje.dk' -d 'stage.denfrievilje.dk'
    ~/.acme.sh/acme.sh --issue --dns dns_cf \
@@ -218,6 +254,10 @@ On DSM:
    ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
      -d '*.prod.denfrievilje.dk'
    ```
+
+   acme.sh stores `CF_Token` + `CF_Account_ID` into
+   `~/.acme.sh/account.conf` (mode 600, root-only) on first
+   use, so subsequent renewals don't need them re-exported.
 
    **(c) Schedule auto-renewal via DSM Task Scheduler.** DSM
    doesn't have `cron`, so acme.sh can't install its normal
@@ -315,7 +355,23 @@ On DSM:
 
 3. **(Optional) Cloudflare cache-purge tokens.** See the
    zone-sharing gotcha in §7 below before deciding whether to
-   set these up for this site.
+   set these up for this site. If you do:
+
+   - **API token** with `Zone:Cache Purge:Purge` on the target
+     zone ONLY. Create at
+     <https://dash.cloudflare.com/profile/api-tokens> →
+     **Create Token** → Create Custom Token.
+     - Permissions: `Zone` · `Cache Purge` · `Purge`
+     - Zone Resources: Include · Specific zone · `<zone>`
+     - Do NOT reuse the DNS-Edit token from §2 of the
+       one-time NAS setup — a cache-purge leak should not
+       give DNS-write access, and vice versa.
+     - Copy the token once; CF won't show it again.
+   - **Zone ID** from the zone overview page in the CF
+     dashboard (right sidebar → "API" section).
+
+   Feed both into `webhook.env` on the NAS under the
+   DOMAIN-prefixed names (§5 below).
 
 4. **On GitHub** → the repo → Settings → Secrets and variables →
    Actions → **New repository secret**:
