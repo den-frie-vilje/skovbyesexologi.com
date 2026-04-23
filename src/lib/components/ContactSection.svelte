@@ -7,7 +7,7 @@
   Renders a landmark `<section id="kontakt">` so in-page anchor
   links like `#kontakt` resolve the same on every page.
 
-  Expects `.flod` design tokens (`--bone`, `--tangerine`) available
+  Expects `.app-shell` design tokens (`--surface`, `--highlight`) available
   from an ancestor. The phone link assumes a pre-formatted value
   suitable for both display and `tel:` — the formatted `contact.phone`
   is used verbatim in the visible text, while the `tel:` URI
@@ -53,9 +53,9 @@
 <style>
   .contact {
     position: relative;
-    /* Muted sage — a warmer green companion to the cool bone bg up top */
+    /* Muted sage — a warmer green companion to the cool surface bg up top */
     background: oklch(0.48 0.09 152);
-    color: var(--bone);
+    color: var(--surface);
     padding: clamp(5rem, 12vw, 10rem) 1.25rem;
     overflow: hidden;
     /* Sits above the fixed stage canvas so the sage is solid, not
@@ -74,7 +74,7 @@
     margin: 0 0 3rem;
     /* 90% bone on sage-green bg — 4.5:1+ per WCAG AA for this 11pt
        label. 70% (3.63:1) was failing pre-a11y sweep. */
-    color: color-mix(in oklch, var(--bone) 90%, transparent);
+    color: color-mix(in oklch, var(--surface) 90%, transparent);
   }
   .contact h2 {
     font-family: var(--font-serif);
@@ -83,10 +83,10 @@
     letter-spacing: -0.045em;
     font-weight: 400;
     margin: 0 0 2rem;
-    color: var(--bone);
+    color: var(--surface);
   }
   .contact h2 .dot {
-    color: var(--tangerine);
+    color: var(--highlight);
   }
   /*
     `.contact p` below sets mono font + `margin: 0` on every
@@ -128,8 +128,8 @@
     min-height: 44px;
   }
   .contact a:hover {
-    color: var(--tangerine);
-    border-color: var(--tangerine);
+    color: var(--highlight);
+    border-color: var(--highlight);
   }
   .label {
     font-size: 0.66rem;
@@ -137,7 +137,7 @@
     text-transform: uppercase;
     /* 85% bone on sage — 4.5:1 on small text. Was 55% (2.85:1)
        before the a11y sweep. */
-    color: color-mix(in oklch, var(--bone) 85%, transparent);
+    color: color-mix(in oklch, var(--surface) 85%, transparent);
     margin: 0 0 0.35rem;
     border: none;
   }

@@ -105,8 +105,8 @@ export type Testimonial = { quote: string; source: string };
 
 /** Which narrative chapter a service belongs to. Maps 1:1 to the
  *  homepage's chapterMode (therapy = 0, konsulent = 1) and drives
- *  the service detail page's palette: cool bone + iridescent in
- *  terapi, warm bone + chrome in konsulent. */
+ *  the service detail page's palette: cool surface + iridescent in
+ *  terapi, warm surface + chrome in konsulent. */
 export type ServiceChapter = 'terapi' | 'konsulent';
 
 export type Service = {
@@ -140,7 +140,7 @@ export type Service = {
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */
   chapter: ServiceChapter;
-  /** FlodStage configuration for the service detail page. Typically
+  /** Stage configuration for the service detail page. Typically
    *  one of the three elements uses the `fullBleed` pose as a
    *  background wash, with the others `offstage`. */
   stage: StageConfig;

@@ -8,7 +8,7 @@
   site; deep-linking happens via URL, not an in-page menu). Using
   `<nav>` with no links confused assistive tech in a prior axe run.
 
-  Relies on the design tokens declared on `.flod` — the root wrapper
+  Relies on the design tokens declared on `.app-shell` — the root wrapper
   of every page that consumes this component.
 -->
 <script lang="ts">
@@ -96,13 +96,13 @@
     font-size: 0.68rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     position: sticky;
     top: 0;
     /* Solid fill — `backdrop-filter: blur()` on a sticky header kills
        scroll perf in Safari, particularly compounding with the WebGL
        canvas underneath. Pay the opacity trick in plain RGBA instead. */
-    background: var(--bone);
+    background: var(--surface);
     /*
       Must sit above the sticky CTA (z-index: 50) so the burger
       menu's backdrop + panel — rendered inside this header —
@@ -122,7 +122,7 @@
   */
   .top-link {
     text-decoration: none;
-    color: var(--graphite);
+    color: var(--text);
     font-weight: 500;
   }
   /*
@@ -134,7 +134,7 @@
   */
   .mark-meta {
     margin-right: auto;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
 
   @media (min-width: 720px) {

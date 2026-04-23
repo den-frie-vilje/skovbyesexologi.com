@@ -1,11 +1,11 @@
 /**
- * Stage pose palette for the Flod WebGL stage.
+ * Pose palette for the WebGL `<Stage>` component.
  *
  * Editors (via Sveltia) and the homepage section registry reference poses by
  * name. Raw NDC numbers live here and here only — never in content files.
  *
  * NDC convention: +x right, +y up, -1 to 1. Scale is a multiplier on each
- * element's base size; the FlodStage per-frame perf gate skips work when
+ * element's base size; the Stage per-frame perf gate skips work when
  * `scale <= 0.02`, so `offstage` uses `scale: 0.01` to guarantee the skip.
  *
  * When adding a pose: pick a name that describes *position*, not narrative
@@ -102,7 +102,7 @@ export type SectionStage = {
   stage: StageConfig;
 };
 
-/** Runtime shape consumed by FlodStage. */
+/** Runtime shape consumed by Stage. */
 export type ResolvedAnchor = {
   selector: string;
   main: Pose;
@@ -113,7 +113,7 @@ export type ResolvedAnchor = {
 
 /**
  * Resolve a section's named poses into concrete NDC coordinates and the
- * selector FlodStage uses to query the DOM.
+ * selector Stage uses to query the DOM.
  */
 export function resolveAnchor(section: SectionStage): ResolvedAnchor {
   return {

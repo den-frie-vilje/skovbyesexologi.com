@@ -4,7 +4,7 @@
   `routes/(app)/en/services/[slug]/+page.svelte` (EN); each route
   handles URL resolution, hreflang, and canonical tags.
 
-  The `.flod` shell, FlodStage, SiteHeader, ContactSection, and
+  The `.app-shell` wrapper, Stage, SiteHeader, ContactSection, and
   SiteFooter all live in `(app)/+layout.svelte` — they mount once
   and persist across client-side navigation, so switching from
   one service page to another (or home → service) keeps the same
@@ -86,9 +86,9 @@
 
   /*
     Publish this service's stage config to the shared store. The
-    layout's persistent FlodStage consumes it; when navigating
+    layout's persistent Stage consumes it; when navigating
     between services (or home → service), the new anchors +
-    chapterMode land on the same FlodStage instance and it lerps
+    chapterMode land on the same Stage instance and it lerps
     to the new pose.
 
     `.service-stage-zone` (rendered below as a fixed full-viewport
@@ -120,7 +120,7 @@
 </script>
 
 <!--
-  Invisible full-viewport anchor span — FlodStage reads its
+  Invisible full-viewport anchor span — Stage reads its
   bounding rect for visibility weighting, so a fixed-inset span
   keeps the weight at 1.0 regardless of scroll position. Lives
   outside the article's flow via `position: fixed`, takes no
@@ -276,7 +276,7 @@
 
 <style>
   /*
-    `.flod` design tokens, gradient bg, and stacking context all
+    `.app-shell` design tokens, gradient bg, and stacking context all
     live in `(app)/+layout.svelte` — this component inherits them
     via normal CSS cascade. The terapi/konsulent palette branch
     happens through the shared store's `konsulentY` (see the
@@ -285,7 +285,7 @@
     fallback of 200vh = whole viewport cool.
   */
 
-  /* Full-viewport invisible anchor — FlodStage uses its bounding
+  /* Full-viewport invisible anchor — Stage uses its bounding
      rect to compute visibility weighting. Fixed so it stays in
      view regardless of scroll, keeping the stage settled on the
      service's configured pose. */
@@ -351,7 +351,7 @@
     margin: 0 0 1.5rem;
   }
   .s-kicker {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
   .s-title {
     font-family: var(--font-serif);
@@ -366,7 +366,7 @@
     font-family: var(--font-serif);
     font-size: clamp(1.15rem, 2vw, 1.4rem);
     line-height: 1.5;
-    color: color-mix(in oklch, var(--graphite) 88%, transparent);
+    color: color-mix(in oklch, var(--text) 88%, transparent);
     max-width: 42ch;
     margin: 0;
   }
@@ -380,7 +380,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 1.5rem;
   }
 
@@ -411,7 +411,7 @@
     font-family: var(--font-mono);
     font-size: 0.75rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
     padding-top: 0.2rem;
   }
   .b-text {
@@ -428,7 +428,7 @@
     line-height: 1.5;
     margin: 0;
     max-width: 52ch;
-    color: color-mix(in oklch, var(--graphite) 88%, transparent);
+    color: color-mix(in oklch, var(--text) 88%, transparent);
   }
 
   /* Manifest / ritual / for-personal blocks render via the
@@ -477,7 +477,7 @@
     font-size: 0.8rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     text-decoration: none;
     border-bottom: 1px solid transparent;
     padding-bottom: 0.2rem;
@@ -485,8 +485,8 @@
   }
   .s-back a:hover,
   .s-back a:focus-visible {
-    color: var(--graphite);
-    border-bottom-color: var(--graphite);
+    color: var(--text);
+    border-bottom-color: var(--text);
   }
 
   /* ============== RESPONSIVE ============== */

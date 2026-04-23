@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { contentFor } from '$lib/content';
-  import FlodStage from '$lib/components/FlodStage.svelte';
+  import Stage from '$lib/components/Stage.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -40,7 +40,7 @@
     Single stage anchor pinned to `.og-stage-zone` (full-area span
     inside the 780×630 text column wrapper — portrait column is
     excluded so Signe never covers the gem). With no scroll activity
-    the FlodStage settles on this target in the first few frames.
+    the Stage settles on this target in the first few frames.
     Poses — main mirrors home.json's hero section; gold is
     nudged upper-centre so it sits clear of both the mercury orb
     (whose visible edge sweeps up to y≈0.9 on the right) and the
@@ -66,7 +66,7 @@
 
   /*
     Stage render area: the 780×630 left column only. Passing these
-    dimensions as props makes FlodStage size its WebGL buffer and
+    dimensions as props makes Stage size its WebGL buffer and
     camera aspect to the text column, so the heroBRhuge gem at
     NDC (0.9, -0.9) lands inside the text column rather than under
     the portrait (which would hide it entirely).
@@ -88,10 +88,10 @@
   data-chapter={data.chapter}
 >
   <!--
-    Real FlodStage, constrained to the 780×630 text column so the
+    Real Stage, constrained to the 780×630 text column so the
     hero pose's bottom-right gem stays visible (the 420px portrait
     column would otherwise cover it). The wrapper's translateZ(0)
-    creates a containing block so FlodStage's position:fixed canvas
+    creates a containing block so Stage's position:fixed canvas
     is clipped to the wrapper rather than the full 1200×630 card.
 
     Headed Chromium (via `pnpm og`) has ~6s after load to let the
@@ -99,7 +99,7 @@
     before the screenshot fires — see scripts/gen-og-images.ts.
   -->
   <div class="og-stage-wrap">
-    <FlodStage
+    <Stage
       anchors={ogAnchors}
       chapterMode={data.chapter === 'konsulent' ? 1 : 0}
       width={STAGE_W}
@@ -169,7 +169,7 @@
   /* ============================================================
      Root override — this is the ONLY content on the page. The OG
      page is designed for screenshotting at a fixed 1200×630 so we
-     bypass .flod's gradient bg and fonts-link in +layout.svelte.
+     bypass .app-shell's gradient bg and fonts-link in +layout.svelte.
      ============================================================ */
   :global(html),
   :global(body) {
@@ -178,51 +178,51 @@
     overflow: hidden;
   }
   :global(body) {
-    background: oklch(0.96 0.009 215); /* --bone, matches live site */
+    background: oklch(0.96 0.009 215); /* --surface, matches live site */
   }
 
   .og {
     width: 1200px;
     height: 630px;
-    color: oklch(0.17 0.012 240); /* --graphite */
+    color: oklch(0.17 0.012 240); /* --text */
     font-family: 'Instrument Serif', 'Fraunces', serif;
     display: flex;
     align-items: stretch;
     box-sizing: border-box;
     overflow: hidden;
     position: relative;
-    /* Contain FlodStage's fixed-position canvas to this 1200×630 card */
+    /* Contain Stage's fixed-position canvas to this 1200×630 card */
     isolation: isolate;
     /* Scoped CSS custom properties */
-    --og-violet: oklch(0.48 0.09 152);
-    --og-tangerine: oklch(0.94 0.26 120);
-    --og-graphite: oklch(0.17 0.012 240);
-    --og-bone: oklch(0.96 0.009 215);
-    --og-bone-warm: oklch(0.94 0.03 72);
-    --og-graphite-soft: color-mix(in oklch, var(--og-graphite) 70%, transparent);
+    --og-accent: oklch(0.48 0.09 152);
+    --og-highlight: oklch(0.94 0.26 120);
+    --og-text: oklch(0.17 0.012 240);
+    --og-surface: oklch(0.96 0.009 215);
+    --og-surface-warm: oklch(0.94 0.03 72);
+    --og-text-muted: color-mix(in oklch, var(--og-text) 70%, transparent);
   }
   /*
     Chapter palette — matches the live site's terapi vs konsulent
-    scheme: terapi is cool bone (with a warm-tint radial hint on
+    scheme: terapi is cool surface (with a warm-tint radial hint on
     the right so the iridescent orb sits in a warm glow), konsulent
-    is warm bone (with a cool-tint radial hint on the right where
+    is warm surface (with a cool-tint radial hint on the right where
     the chrome elements catch the blue cast). Home OG is terapi.
   */
   .og[data-chapter='terapi'] {
     background:
-      radial-gradient(ellipse at 85% 50%, var(--og-bone-warm) 0%, transparent 60%),
-      var(--og-bone);
+      radial-gradient(ellipse at 85% 50%, var(--og-surface-warm) 0%, transparent 60%),
+      var(--og-surface);
   }
   .og[data-chapter='konsulent'] {
     background:
-      radial-gradient(ellipse at 85% 50%, var(--og-bone) 0%, transparent 60%),
-      var(--og-bone-warm);
+      radial-gradient(ellipse at 85% 50%, var(--og-surface) 0%, transparent 60%),
+      var(--og-surface-warm);
   }
 
   /*
-    Stage wrapper — constrains FlodStage to the 780×630 left column.
+    Stage wrapper — constrains Stage to the 780×630 left column.
     `transform: translateZ(0)` promotes this to a containing block
-    for fixed descendants, so FlodStage's position:fixed canvas is
+    for fixed descendants, so Stage's position:fixed canvas is
     captured inside this box rather than filling the 1200×630 card
     (which would extend it behind the portrait and hide the gem).
   */
@@ -235,7 +235,7 @@
     transform: translateZ(0);
     pointer-events: none;
     /* Sits in the default (auto) layer, below .og-inner (z-index:1)
-       but above .og's background. FlodStage's own canvas sets
+       but above .og's background. Stage's own canvas sets
        z-index:-1 within this scope, which with isolation here lifts
        to paint above .og's gradient background. */
     isolation: isolate;
@@ -243,14 +243,14 @@
   }
 
   /*
-    Override FlodStage's default full-viewport sizing inside the OG
-    card. Without this, `.flod-stage` stays at `position: fixed;
+    Override Stage's default full-viewport sizing inside the OG
+    card. Without this, `.stage-host` stays at `position: fixed;
     inset: 0; width: 100vw; height: 100vh`, which escapes the
     .og-stage-wrap containing block (100vw/100vh are viewport units,
     not container-relative). Scoped with :global() because
-    .flod-stage is defined inside the FlodStage component.
+    .stage-host is defined inside the Stage component.
   */
-  :global(.og-stage-wrap .flod-stage) {
+  :global(.og-stage-wrap .stage-host) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -258,7 +258,7 @@
   }
 
   /*
-    Invisible anchor span — FlodStage reads its bounding rect to
+    Invisible anchor span — Stage reads its bounding rect to
     compute the visibility weight for ogAnchors[0]. Full-wrap
     inset:0 means weight stays at 1.0, so the stage settles on the
     configured pose in the first few frames.
@@ -275,7 +275,7 @@
     width: 100%;
     height: 100%;
     position: relative;
-    z-index: 1; /* paint above the FlodStage canvas */
+    z-index: 1; /* paint above the Stage canvas */
   }
 
   /* ============================================================
@@ -306,7 +306,7 @@
     font-size: 30px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--og-graphite-soft);
+    color: var(--og-text-muted);
     margin: 0 0 48px;
   }
   /* Service OGs keep the default eyebrow→title gap. The byline
@@ -333,7 +333,7 @@
        visually dense enough that a 28px gap felt like the bullets
        were pinned to the baseline of the name. */
     margin: 0 0 52px;
-    color: var(--og-graphite);
+    color: var(--og-text);
   }
   .og-name em {
     font-style: italic;
@@ -342,8 +342,8 @@
     background:
       linear-gradient(
         to top,
-        var(--og-tangerine) 10%,
-        var(--og-tangerine) 35%,
+        var(--og-highlight) 10%,
+        var(--og-highlight) 35%,
         transparent 35%
       );
     padding: 0 0.04em;
@@ -363,7 +363,7 @@
     font-family: 'Fraunces', 'Instrument Serif', serif;
     font-size: 38px;
     line-height: 1.2;
-    color: color-mix(in oklch, var(--og-graphite) 88%, transparent);
+    color: color-mix(in oklch, var(--og-text) 88%, transparent);
   }
   .og-roles li {
     display: grid;
@@ -372,7 +372,7 @@
   }
   .og-roles li::before {
     content: '—';
-    color: var(--og-violet);
+    color: var(--og-accent);
   }
   /*
     Force a capital first letter on each role — a formatting
@@ -409,13 +409,13 @@
     font-weight: 400;
     line-height: 0.95;
     letter-spacing: -0.02em;
-    color: var(--og-graphite);
+    color: var(--og-text);
     margin: 0 0 32px;
   }
   /*
     Kicker — short service tagline beneath the title. Middot-
     separated audiences ("solo · par · poly" / "film · tv ·
-    teater"). Italic serif in dark green (the `--og-violet`
+    teater"). Italic serif in dark green (the `--og-accent`
     accent) so it reads as a branded subheading rather than
     body prose.
   */
@@ -424,7 +424,7 @@
     font-style: italic;
     font-size: 32px;
     line-height: 1.25;
-    color: var(--og-violet);
+    color: var(--og-accent);
     margin: 0 0 36px;
     max-width: 22ch;
   }
@@ -444,7 +444,7 @@
     font-size: 28px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--og-graphite-soft);
+    color: var(--og-text-muted);
   }
 
   /* ============================================================
@@ -473,7 +473,7 @@
     bottom: 44px;
     width: 64px;
     height: 8px;
-    background: var(--og-tangerine);
+    background: var(--og-highlight);
     border-radius: 1px;
   }
 </style>

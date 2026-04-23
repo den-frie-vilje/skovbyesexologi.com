@@ -77,7 +77,7 @@
       timelines that CSS `@media (prefers-reduced-motion)` can
       suppress. When the OS preference is `reduce`, skip the entire
       WebGL pipeline (no three.js import, no shader compile, no
-      canvas at all). `.flod`'s gradient background already provides
+      canvas at all). `.app-shell`'s gradient background already provides
       a readable static fallback; the OG still PNGs are a richer
       alternative if we ever want to swap them in here.
 
@@ -171,7 +171,7 @@
       // `uEnvMapB`, mixed by `uEnvMix`. We can't do this per-material in
       // onBeforeCompile because the `#include` directives haven't been
       // resolved yet at that point.
-      const chunkPatchFlag = '_flodEnvCrossfadePatched';
+      const chunkPatchFlag = '_stageEnvCrossfadePatched';
       // Wide cast — THREE.ShaderChunk's official type is a map of
       // string chunks, but we stash a non-chunk boolean under our
       // private key to track whether the patch already ran. Treat
@@ -920,10 +920,10 @@ uniform float uEnvMix;`
   });
 </script>
 
-<div bind:this={host} class="flod-stage" aria-hidden="true"></div>
+<div bind:this={host} class="stage-host" aria-hidden="true"></div>
 
 <style>
-  .flod-stage {
+  .stage-host {
     position: fixed;
     inset: 0;
     pointer-events: none;

@@ -98,28 +98,28 @@
     font-size: 0.68rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
   .locale-current {
-    color: var(--graphite);
+    color: var(--text);
     /* Slightly heavier weight to read as "active" without needing
        a background fill or underline that would fight with the
        header's minimal typography. */
     font-weight: 500;
   }
   .locale-sep {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     /* Faint separator — enough to be read as a divider, muted
        enough not to compete with the two labels. */
     opacity: 0.4;
   }
   .locale-alt {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     text-decoration: none;
     transition: color 0.15s;
   }
   .locale-alt:hover,
   .locale-alt:focus-visible {
-    color: var(--violet);
+    color: var(--accent);
   }
 </style>

@@ -53,7 +53,7 @@ type OgData =
       /** Family name — italic + chartreuse highlight, echoing the
        *  live hero's em. */
       em: string;
-      /** Palette chapter — home leans terapi (cool bone + iridescent). */
+      /** Palette chapter — home leans terapi (cool surface + iridescent). */
       chapter: ServiceChapter;
     }
   | {

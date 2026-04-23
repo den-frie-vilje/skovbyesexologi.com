@@ -5,9 +5,9 @@
   homepage uses; this component lets other pages render the
   same content with a slightly quieter type scale.
 
-  Presentational only — relies on `.flod` palette tokens from
-  the page root (`--font-serif`, `--font-mono`, `--graphite`,
-  `--rule`, `--tangerine`).
+  Presentational only — relies on `.app-shell` palette tokens from
+  the page root (`--font-serif`, `--font-mono`, `--text`,
+  `--rule`, `--highlight`).
 
   The `scale` prop switches between the homepage's bold
   multi-line display treatment and a detail-page prose scale.
@@ -53,7 +53,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 2rem;
   }
 
@@ -79,7 +79,7 @@
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
     padding-top: 0.4em;
   }
 
@@ -89,7 +89,7 @@
     letter-spacing: -0.01em;
     font-weight: 400;
     margin: 0;
-    color: var(--graphite);
+    color: var(--text);
   }
 
   /* Chartreuse highlighter under the italicised keyword —
@@ -101,7 +101,7 @@
     background: linear-gradient(
       180deg,
       transparent 68%,
-      color-mix(in oklch, var(--tangerine) 55%, transparent) 68%
+      color-mix(in oklch, var(--highlight) 55%, transparent) 68%
     );
     padding: 0 0.04em;
   }

@@ -11,11 +11,11 @@
   import type { PageProps } from './$types';
 
   /*
-    `.flod`, `<FlodStage>`, `<SiteHeader>`, `<ContactSection>`,
+    `.app-shell`, `<Stage>`, `<SiteHeader>`, `<ContactSection>`,
     `<SiteFooter>` — all now live in the shared `(app)/+layout.svelte`
     shell. This page contributes only the homepage's own content:
     chapter wraps, sections, testimonials. Stage state is published
-    through the `stage` store so the layout's persistent FlodStage
+    through the `stage` store so the layout's persistent Stage
     picks it up.
   */
 
@@ -69,10 +69,10 @@
   );
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
-  // into the upper half of the viewport. Drives the FlodStage material
-  // cross-fade. The bg is a hard-stop linear gradient on `.flod` whose
+  // into the upper half of the viewport. Drives the Stage material
+  // cross-fade. The bg is a hard-stop linear gradient on `.app-shell` whose
   // split-line (`--konsulent-y`) is the pixel position of the chapter
-  // divider within `.flod`, so the warm paper bg behaves as if it's
+  // divider within `.app-shell`, so the warm paper bg behaves as if it's
   // scrolling up behind the 3D stage from the chapter-II line.
   //
   // Sticky CTAs (Book en tid / Kom i kontakt) are CSS-driven —
@@ -87,24 +87,24 @@
 
   onMount(() => {
     if (!browser) return;
-    // `.flod` is rendered by the (app) layout. The chapter-II
+    // `.app-shell` is rendered by the (app) layout. The chapter-II
     // divider is measured at the TOP of chapter-wrap-konsulent
     // (the konsulent wrap's border-box top sits exactly at the
     // chapter boundary), so the bg gradient hard-stop stays in
     // step with where the user actually sees the text change.
-    const flodEl = document.querySelector('.flod') as HTMLElement | null;
+    const shellEl = document.querySelector('.app-shell') as HTMLElement | null;
     const konsulentWrapEl = document.querySelector('.chapter-wrap-konsulent');
-    if (!flodEl || !konsulentWrapEl) return;
+    if (!shellEl || !konsulentWrapEl) return;
     let raf = 0;
     const measure = () => {
-      const flodRect = flodEl.getBoundingClientRect();
+      const shellRect = shellEl.getBoundingClientRect();
       const wrapRect = konsulentWrapEl.getBoundingClientRect();
-      // Divider-top relative to .flod's top — feeds the bg
+      // Divider-top relative to .app-shell's top — feeds the bg
       // gradient's hard-stop via the shared store.
-      konsulentY = wrapRect.top - flodRect.top;
+      konsulentY = wrapRect.top - shellRect.top;
       // Smooth chapter progression (continuous, not binary): 0
       // when the divider is well below the fold, 1 when it has
-      // scrolled past the upper band. FlodStage lerps materials
+      // scrolled past the upper band. Stage lerps materials
       // along this value for a scroll-driven palette transition.
       const vh = window.innerHeight;
       const startY = vh * 0.75; // begin crossfade at 75% of viewport
@@ -134,7 +134,7 @@
 
   /*
     Publish this page's stage state to the shared store. The
-    layout's single FlodStage mount consumes it and lerps
+    layout's single Stage mount consumes it and lerps
     internally between publishes — so scroll updates on this
     page animate smoothly, and client-side navigation to a
     service page sees the store mutate to the new anchors and
@@ -159,7 +159,7 @@
   // Each section declares named poses from $lib/stage/poses for the three
   // WebGL elements (mercury orb, gold metaballs, faceted gem). Poses resolve
   // to NDC coordinates at runtime. Section ids become `data-stage-anchor`
-  // attributes on the corresponding section roots; FlodStage queries by that
+  // attributes on the corresponding section roots; Stage queries by that
   // attribute rather than brittle positional CSS selectors.
   // Per-section home content — each grouped under its section name in
   // home.json, so the destructuring here mirrors the site structure
@@ -531,9 +531,9 @@
 
 <style>
   /*
-    Shell styles — `.flod` design tokens + gradient bg, sticky
+    Shell styles — `.app-shell` design tokens + gradient bg, sticky
     header, site footer — all moved to `(app)/+layout.svelte`.
-    This page inherits every `--bone`/`--graphite`/`--cta-*`
+    This page inherits every `--surface`/`--text`/`--cta-*`
     custom property from the layout via normal CSS cascade.
     Below are only the homepage's section-specific rules.
   */
@@ -559,12 +559,12 @@
     font-size: 0.72rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--graphite);
+    color: var(--text);
     margin: 0 0 auto;
     padding-bottom: 4rem;
   }
   .name-card span {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
 
   .statement {
@@ -580,7 +580,7 @@
      participate in CSS mix-blend-mode compositing, so the "dynamic
      inversion over 3D" effect isn't achievable without moving off WebGL. */
   .statement .ink {
-    color: var(--graphite);
+    color: var(--text);
   }
   .statement .line {
     display: block;
@@ -588,7 +588,7 @@
   .statement em {
     font-style: italic;
     font-weight: 500;
-    background: linear-gradient(180deg, transparent 66%, var(--tangerine) 66%);
+    background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
     padding: 0 0.08em;
   }
   .dot {
@@ -603,7 +603,7 @@
     font-size: clamp(0.78rem, 1.2vw, 0.92rem);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     max-width: 54ch;
     margin: 0 0 4rem;
   }
@@ -617,7 +617,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin-top: auto;
   }
   .arrow {
@@ -645,7 +645,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 1rem;
   }
   .name-section h2 {
@@ -664,10 +664,10 @@
     font-family: var(--font-mono);
     font-size: 0.78rem;
     letter-spacing: 0.1em;
-    color: var(--graphite);
+    color: var(--text);
     margin: 0;
     padding: 0.4rem 0.7rem;
-    border: 1px solid var(--graphite);
+    border: 1px solid var(--text);
     display: inline-block;
   }
   .role-line {
@@ -682,7 +682,7 @@
     font-size: 1rem;
     line-height: 1.65;
     max-width: 48ch;
-    color: color-mix(in oklch, var(--graphite) 85%, transparent);
+    color: color-mix(in oklch, var(--text) 85%, transparent);
     margin: 0;
   }
 
@@ -691,14 +691,14 @@
     max-width: 1320px;
     margin: 0 auto;
     padding: clamp(4rem, 9vw, 8rem) 1.25rem;
-    border-top: 1px solid var(--graphite);
+    border-top: 1px solid var(--text);
   }
   .section-label {
     font-family: var(--font-mono);
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 3rem;
   }
   .manifest ul {
@@ -722,7 +722,7 @@
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
     padding-top: 0.4em;
   }
   .manifest p {
@@ -737,7 +737,7 @@
   .manifest em {
     font-style: italic;
     font-weight: 500;
-    background: linear-gradient(180deg, transparent 68%, color-mix(in oklch, var(--tangerine) 55%, transparent) 68%);
+    background: linear-gradient(180deg, transparent 68%, color-mix(in oklch, var(--highlight) 55%, transparent) 68%);
     padding: 0 0.04em;
   }
 
@@ -746,17 +746,17 @@
     max-width: 1320px;
     margin: 0 auto;
     padding: clamp(3rem, 8vw, 7rem) 1.25rem;
-    border-block: 1px solid var(--graphite);
+    border-block: 1px solid var(--text);
     position: relative;
   }
   /* Ritual's tinted bg sits on a pseudo-element with z-index:-2 so it
      paints BEHIND the fixed 3D canvas (z-index:-1) but still above the
-     .flod gradient bg. The canvas thus stays visible across the section. */
+     .app-shell gradient bg. The canvas thus stays visible across the section. */
   .ritual::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--bone-2);
+    background: var(--surface-alt);
     z-index: -2;
     pointer-events: none;
   }
@@ -794,7 +794,7 @@
     font-family: var(--font-mono);
     font-size: 0.8rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
   }
   .ritual h3 {
     font-family: var(--font-serif);
@@ -809,7 +809,7 @@
     line-height: 1.65;
     margin: 0;
     max-width: 60ch;
-    color: color-mix(in oklch, var(--graphite) 85%, transparent);
+    color: color-mix(in oklch, var(--text) 85%, transparent);
   }
 
   /* ============== CHAPTER DIVIDERS ============== */
@@ -817,7 +817,7 @@
     max-width: 1320px;
     margin: 0 auto;
     padding: clamp(6rem, 14vw, 11rem) 1.25rem clamp(3rem, 7vw, 5rem);
-    border-top: 1px solid var(--graphite);
+    border-top: 1px solid var(--text);
   }
   .chapter-inner {
     display: grid;
@@ -830,7 +830,7 @@
     font-size: clamp(4rem, 12vw, 8rem);
     line-height: 1;
     margin: 0;
-    color: var(--violet);
+    color: var(--accent);
   }
   .chapter-title {
     font-family: var(--font-serif);
@@ -846,7 +846,7 @@
     line-height: 1.5;
     max-width: 48ch;
     margin: 0;
-    color: color-mix(in oklch, var(--graphite) 88%, transparent);
+    color: color-mix(in oklch, var(--text) 88%, transparent);
   }
 
   /* ============== SERVICE SECTIONS ============== */
@@ -868,11 +868,11 @@
     max-width: 70ch;
   }
   .s-num {
-    color: var(--violet);
+    color: var(--accent);
     font-size: 0.92rem;
   }
   .s-kicker {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
   .service-title {
     font-family: var(--font-serif);
@@ -887,7 +887,7 @@
     Title is an anchor to the service detail page. Strip anchor
     chrome (underline, blue) so the heading still reads as pure
     editorial typography at rest, and hint the affordance only on
-    hover/focus with a violet wash — matches the rest of the
+    hover/focus with a accent wash — matches the rest of the
     site's interactive colour register (CTA fills, list hover
     state, back-link arrow). Focus ring comes from the global
     `:focus-visible` rule in app.css.
@@ -904,7 +904,7 @@
   }
   .service-title-link:hover,
   .service-title-link:focus-visible {
-    color: var(--violet);
+    color: var(--accent);
   }
   @media (prefers-reduced-motion: reduce) {
     .service-title-link {
@@ -917,7 +917,7 @@
     line-height: 1.45;
     max-width: 48ch;
     margin: 0 0 1.5rem;
-    color: color-mix(in oklch, var(--graphite) 90%, transparent);
+    color: color-mix(in oklch, var(--text) 90%, transparent);
   }
   .s-bullets {
     list-style: none;
@@ -925,12 +925,12 @@
     margin: 0 0 1rem;
     font-size: 1rem;
     line-height: 1.85;
-    color: color-mix(in oklch, var(--graphite) 82%, transparent);
+    color: color-mix(in oklch, var(--text) 82%, transparent);
     max-width: 60ch;
   }
   .s-bullets li::before {
     content: '— ';
-    color: var(--violet);
+    color: var(--accent);
   }
   .s-supports-block {
     margin-top: 1.25rem;
@@ -944,7 +944,7 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     margin: 0 0 0.5rem;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
   }
   .s-supports {
     font-family: var(--font-serif);
@@ -952,7 +952,7 @@
     font-size: clamp(1.1rem, 2vw, 1.25rem);
     line-height: 1.5;
     margin: 0;
-    color: color-mix(in oklch, var(--graphite) 88%, transparent);
+    color: color-mix(in oklch, var(--text) 88%, transparent);
   }
 
   /* ============== SERVICE READ-MORE LINK ============== */
@@ -961,7 +961,7 @@
     discrete editorial mark, not a button. Mono-caps register
     matches the section kicker / eyebrow, so the link reads as
     "navigation metadata" rather than a heavy CTA and doesn't
-    fight the sticky violet CTA pinned to the wrap. The arrow
+    fight the sticky accent-filled CTA pinned to the wrap. The arrow
     slides on hover (same gesture as the burger-nav rows + back
     link on service pages) so the affordance is consistent
     site-wide.
@@ -975,7 +975,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--violet);
+    color: var(--accent);
     text-decoration: none;
     /* Tap-target padding — 0.55em top/bottom with 0.75rem
        font-size yields >= 44px tall on touch devices. */
@@ -988,7 +988,7 @@
   }
   .service-read-more:hover,
   .service-read-more:focus-visible {
-    color: var(--graphite);
+    color: var(--text);
   }
   .service-read-more:hover span,
   .service-read-more:focus-visible span {
@@ -1004,7 +1004,7 @@
   .service-intimacy .inline-quote {
     margin: 2rem 0 0;
     padding: 1.5rem 0 0;
-    border-top: 2px solid var(--graphite);
+    border-top: 2px solid var(--text);
     max-width: 32ch;
   }
   .service-intimacy .inline-quote p {
@@ -1015,7 +1015,7 @@
     letter-spacing: -0.015em;
     font-weight: 400;
     margin: 0;
-    color: var(--graphite);
+    color: var(--text);
   }
   /* `.s-testimonial` was the inline pullquote under the intimacy
      service card — removed in favour of the bottom `Stemmer`
@@ -1124,7 +1124,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 1.1rem;
   }
   /* Single row, scrolls sideways when more logos are added. */
@@ -1139,13 +1139,13 @@
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklch, var(--graphite) 25%, transparent) transparent;
+    scrollbar-color: color-mix(in oklch, var(--text) 25%, transparent) transparent;
   }
   .studios-list::-webkit-scrollbar {
     height: 3px;
   }
   .studios-list::-webkit-scrollbar-thumb {
-    background: color-mix(in oklch, var(--graphite) 25%, transparent);
+    background: color-mix(in oklch, var(--text) 25%, transparent);
     border-radius: 2px;
   }
   .studios-list li {
@@ -1160,7 +1160,7 @@
        to derive aspect-ratio-based width from). */
     height: 40px;
     width: auto;
-    color: var(--graphite);
+    color: var(--text);
     opacity: 0.65;
     transition: opacity 0.2s ease;
   }
@@ -1178,7 +1178,7 @@
     max-width: 1320px;
     margin: 0 auto;
     padding: clamp(4rem, 9vw, 7rem) 1.25rem;
-    border-top: 1px solid var(--graphite);
+    border-top: 1px solid var(--text);
   }
   .for-personal ul,
   .for-work ul {
@@ -1208,7 +1208,7 @@
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
   }
 
   /* ============== BIO ============== */
@@ -1236,8 +1236,8 @@
     object-fit: cover;
     /* Subtle warm tint border echoes the konsulent paper */
     box-shadow:
-      0 1px 0 color-mix(in oklch, var(--graphite) 10%, transparent),
-      0 24px 48px -24px color-mix(in oklch, var(--graphite) 45%, transparent);
+      0 1px 0 color-mix(in oklch, var(--text) 10%, transparent),
+      0 24px 48px -24px color-mix(in oklch, var(--text) 45%, transparent);
     filter: saturate(0.92) contrast(1.02);
   }
   .bio-portrait figcaption {
@@ -1251,11 +1251,11 @@
     text-transform: uppercase;
   }
   .bio-portrait .bio-name {
-    color: var(--graphite);
+    color: var(--text);
     font-weight: 500;
   }
   .bio-portrait .bio-pronouns {
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     letter-spacing: 0.08em;
     text-transform: none;
     font-style: italic;
@@ -1290,7 +1290,7 @@
      $lib/components/SiteFooter.svelte. */
 
   /* ============== HOME TESTIMONIALS ============== */
-  /* Carries the same horizontal gutter as the other bone-background
+  /* Carries the same horizontal gutter as the other surface-colored background
      sections (hero, manifest, ritual, etc.) so the testimonial
      cards align with the article column above. The Testimonials
      component handles its own internal scroll bleed on mobile. */

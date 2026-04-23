@@ -169,7 +169,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--graphite);
+    color: var(--text);
     transition: color 0.2s ease;
   }
   /*
@@ -206,7 +206,7 @@
   }
   .burger:hover .bars span,
   .burger:focus-visible .bars span {
-    background: var(--violet);
+    background: var(--accent);
   }
 
   /* ============== OPEN STATE — BARS → X ============== */
@@ -236,11 +236,11 @@
   /* When open, keep the bars in the hover colour regardless of
      pointer state — signals that the control is "active". */
   .burger.open .bars span {
-    background: var(--graphite);
+    background: var(--text);
   }
   .burger.open:hover .bars span,
   .burger.open:focus-visible .bars span {
-    background: var(--violet);
+    background: var(--accent);
   }
 
   /* ============== BACKDROP ============== */
@@ -253,7 +253,7 @@
        leaves a whisper of the stage visible at the edges while
        fully covering the CTA. No `backdrop-filter: blur()` per
        project guideline. */
-    background: color-mix(in oklch, var(--bone) 98%, transparent);
+    background: color-mix(in oklch, var(--surface) 98%, transparent);
     z-index: 100;
     cursor: pointer;
   }
@@ -311,7 +311,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 2rem;
   }
   ul {
@@ -349,7 +349,7 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: baseline;
     gap: 0.75em;
-    color: var(--graphite);
+    color: var(--text);
     text-decoration: none;
     /*
       Generous vertical padding so each nav row is ≥44px tall
@@ -366,7 +366,7 @@
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
     /* Fixed width so numbered rows (01 / 02 / …) and the
        unnumbered Contact row share a column alignment — without
        min-width, the `&nbsp;` placeholder collapses narrower
@@ -394,7 +394,7 @@
     font-family: var(--font-mono);
     font-size: 1.25rem;
     line-height: 1;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     /* Arrow slides in from the left on hover/focus — same
        gesture as the back link's `← Forsiden`. */
     transform: translateX(-0.4em);
@@ -406,13 +406,13 @@
   }
   li a:hover .l,
   li a:focus-visible .l {
-    color: var(--violet);
+    color: var(--accent);
   }
   li a:hover .arrow,
   li a:focus-visible .arrow {
     transform: translateX(0);
     opacity: 1;
-    color: var(--violet);
+    color: var(--accent);
   }
 
   /* Reduced motion — skip the per-link stagger + arrow slide +

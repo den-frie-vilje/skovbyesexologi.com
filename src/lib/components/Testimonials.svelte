@@ -297,8 +297,8 @@
 {/if}
 
 <style>
-  /* `.testimonials` relies on `.flod` design tokens (`--graphite`,
-     `--rule`, `--violet`, `--font-serif`, `--font-mono`) from the
+  /* `.testimonials` relies on `.app-shell` design tokens (`--text`,
+     `--rule`, `--accent`, `--font-serif`, `--font-mono`) from the
      page root — no own-rules needed on the wrapper itself. */
 
   .t-label {
@@ -306,7 +306,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 1.5rem;
   }
 
@@ -329,14 +329,14 @@
     line-height: 1.4;
     letter-spacing: -0.005em;
     margin: 0 0 1rem;
-    color: var(--graphite);
+    color: var(--text);
   }
   .t-source {
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     font-style: normal;
   }
 
@@ -433,7 +433,7 @@
   }
 
   /* Typographic arrows — same mono glyph/weight as the
-     `← Forsiden` back link. Dark green (--violet) for
+     `← Forsiden` back link. Dark green (--accent) for
      accessible contrast on the cream bg; chartreuse reads
      too soft there. 44px min-height preserved for tap
      accuracy without visual bulk. */
@@ -441,7 +441,7 @@
     font-family: var(--font-mono);
     font-size: 1rem;
     line-height: 1;
-    color: var(--violet);
+    color: var(--accent);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -458,7 +458,7 @@
     justify-self: end;
   }
   .t-arrow:hover {
-    color: var(--graphite);
+    color: var(--text);
   }
   .t-arrow:active {
     transform: translateX(var(--t-arrow-nudge, 0));
@@ -492,14 +492,14 @@
       transform 0.2s;
   }
   .t-dot.active {
-    /* Dark green (--violet) — visible on the cream bg, unlike
+    /* Dark green (--accent) — visible on the cream bg, unlike
        chartreuse which disappears at small sizes. */
-    background: var(--violet);
-    border-color: var(--violet);
+    background: var(--accent);
+    border-color: var(--accent);
     transform: scale(1.1);
   }
   .t-dot:hover:not(.active) {
-    border-color: var(--graphite-soft);
+    border-color: var(--text-muted);
   }
 
   @media (min-width: 720px) {

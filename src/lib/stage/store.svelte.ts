@@ -1,7 +1,7 @@
 /**
- * Shared stage state — lets the FlodStage mount persist in the
+ * Shared stage state — lets the Stage mount persist in the
  * root layout while pages publish their own anchors + chapter
- * palette through this store. Because the same FlodStage instance
+ * palette through this store. Because the same Stage instance
  * renders across client-side navigation, its internal tween-state
  * (orb rotation, material cross-fade, anchor lerp) carries over
  * — the stage eases from the old page's pose to the new page's
@@ -19,13 +19,13 @@
  *   });
  *
  * Consumer (the root layout):
- *   <FlodStage anchors={stage.anchors} chapterMode={stage.chapterMode} />
+ *   <Stage anchors={stage.anchors} chapterMode={stage.chapterMode} />
  */
 
 import type { ResolvedAnchor } from './poses';
 
 export const stage = $state({
-  /** FlodStage anchor set — one entry per `data-stage-anchor`
+  /** Stage anchor set — one entry per `data-stage-anchor`
    *  element on the current page. Empty on routes without a stage. */
   anchors: [] as ResolvedAnchor[],
   /** 0 = terapi / iridescent palette; 1 = konsulent / chrome.
@@ -33,7 +33,7 @@ export const stage = $state({
    *  the chapter-II divider; fixed at 0 or 1 on service pages. */
   chapterMode: 0,
   /**
-   * Pixel Y-position of the chapter-II divider within `.flod`,
+   * Pixel Y-position of the chapter-II divider within `.app-shell`,
    * used to hard-stop the bg gradient at the divider line so the
    * cool→warm paper transition aligns with the text change.
    *   • Homepage scroll listener updates this live.

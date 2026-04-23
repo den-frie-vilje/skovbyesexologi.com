@@ -7,7 +7,7 @@
   pattern so the therapy detail page can use the same component
   without new styles.
 
-  Presentational only — relies on `.flod` tokens from the page
+  Presentational only — relies on `.app-shell` tokens from the page
   root.
 -->
 <script lang="ts">
@@ -40,7 +40,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 2rem;
   }
 
@@ -70,6 +70,6 @@
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
   }
 </style>

@@ -5,7 +5,7 @@
   component so the therapy detail page renders the same pattern
   without duplicating markup + CSS.
 
-  Presentational only — relies on `.flod` tokens.
+  Presentational only — relies on `.app-shell` tokens.
 -->
 <script lang="ts">
   import type { HomeRitual } from '$lib/content';
@@ -49,7 +49,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--graphite-soft);
+    color: var(--text-muted);
     margin: 0 0 1rem;
   }
   .head h2 {
@@ -84,7 +84,7 @@
     font-family: var(--font-mono);
     font-size: 0.8rem;
     letter-spacing: 0.14em;
-    color: var(--violet);
+    color: var(--accent);
   }
   h3 {
     font-family: var(--font-serif);
@@ -93,13 +93,13 @@
     font-style: italic;
     letter-spacing: -0.01em;
     margin: 0 0 0.5rem;
-    color: var(--graphite);
+    color: var(--text);
   }
   p {
     font-size: 1.02rem;
     line-height: 1.6;
     margin: 0;
     max-width: 60ch;
-    color: color-mix(in oklch, var(--graphite) 85%, transparent);
+    color: color-mix(in oklch, var(--text) 85%, transparent);
   }
 </style>

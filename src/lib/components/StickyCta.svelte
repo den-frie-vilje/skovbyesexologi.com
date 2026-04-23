@@ -68,7 +68,7 @@
   .sticky-cta {
     /*
       Horizontal + vertical gutters are inherited from an
-      ancestor (typically `.flod`), which lets each page type set
+      ancestor (typically `.app-shell`), which lets each page type set
       its own content max-width via `--cta-h` — homepage uses the
       1320px frame, service detail pages use the 1100px article
       column. The fallback here matches the homepage frame so
@@ -127,11 +127,11 @@
     font-weight: 400;
     letter-spacing: 0.02em;
     text-decoration: none;
-    color: var(--bone);
+    color: var(--surface);
     border: none;
     border-radius: 2px;
-    background: var(--violet);
-    box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--violet) 60%, transparent);
+    background: var(--accent);
+    box-shadow: 0 8px 20px -12px color-mix(in oklch, var(--accent) 60%, transparent);
 
     /*
       Clip the expanding chartreuse dot to the button's shape — on
@@ -171,7 +171,7 @@
     height: 0.45em;
     margin-left: 0.22em;
     border-radius: 50%;
-    background: var(--tangerine);
+    background: var(--highlight);
     vertical-align: baseline;
     z-index: 0;
     /* Optical correction — with pure `vertical-align: baseline`
@@ -217,18 +217,18 @@
   }
   .sticky-cta:hover,
   .sticky-cta:active {
-    color: var(--violet);
+    color: var(--accent);
   }
 
   /*
     Secondary variant — same mechanic, but the base is transparent
-    rather than filled violet. At rest: just the chartreuse dot
-    next to violet text. On hover: dot expands, button "fills" to
+    rather than filled with the accent colour. At rest: just the chartreuse dot
+    next to accent-coloured text. On hover: dot expands, button "fills" to
     chartreuse.
   */
   .sticky-cta.secondary {
     background: transparent;
-    color: var(--violet);
+    color: var(--accent);
   }
   .sticky-cta.secondary:hover .cta-dot,
   .sticky-cta.secondary:active .cta-dot {
@@ -236,6 +236,6 @@
   }
   .sticky-cta.secondary:hover,
   .sticky-cta.secondary:active {
-    color: var(--violet);
+    color: var(--accent);
   }
 </style>
