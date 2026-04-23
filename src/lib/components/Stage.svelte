@@ -536,12 +536,12 @@ uniform float uEnvMix;`
         scale: firstAnchor.bubble.scale
       };
       const liveDrops: Live = {
-        x: firstAnchor.drops.x - 1.0,
+        x: firstAnchor.drops.x - 0.85,
         y: firstAnchor.drops.y,
         scale: firstAnchor.drops.scale
       };
       const liveGem: Live = {
-        x: firstAnchor.gem.x + 0.6,
+        x: firstAnchor.gem.x + 0.75,
         y: firstAnchor.gem.y,
         scale: firstAnchor.gem.scale
       };
