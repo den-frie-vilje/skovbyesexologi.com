@@ -253,6 +253,14 @@ On DSM:
    # appears in DSM → Control Panel → Security → Certificate
    # alongside whatever DSM already issued, and you can bind
    # it to vhosts through the usual DSM UI.
+   #
+   # ⚠️  CRITICAL: set SYNO_Certificate (unique description per
+   #     wildcard) + SYNO_Create=1 on every deploy. Without
+   #     these, the hook REPLACES DSM's default-cert slot —
+   #     clobbering whatever cert is already there (likely
+   #     DSM's own admin UI cert or your prior default). The
+   #     two deploys below would also overwrite each other
+   #     into the same default slot.
    export SYNO_Username=<DSM admin user>
    export SYNO_Password=<DSM admin password>
 
@@ -264,11 +272,27 @@ On DSM:
    # export SYNO_Scheme=https       # if you moved to HTTPS-only
    # export SYNO_INSECURE=1         # if DSM serves a self-signed cert
 
+   # Give each wildcard its own slot in DSM's cert store.
+   # SYNO_Create=1 makes a NEW slot when the description
+   # doesn't match an existing cert. Without these, the hook
+   # overwrites the "default" slot on every call.
+   export SYNO_Create=1
+
+   export SYNO_Certificate='*.stage.denfrievilje.dk'
    ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
      -d '*.stage.denfrievilje.dk'
+
+   export SYNO_Certificate='*.prod.denfrievilje.dk'
    ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
      -d '*.prod.denfrievilje.dk'
    ```
+
+   After both succeed, DSM → Control Panel → Security →
+   Certificate should show two new entries
+   (`*.stage.denfrievilje.dk` and `*.prod.denfrievilje.dk`)
+   with distinct descriptions, alongside whatever DSM already
+   managed. Each future renewal updates the entry whose
+   description matches its cert — no more collisions.
 
    The deploy hook caches these values as `SAVED_SYNO_*`
    entries in `~/.acme.sh/<domain>_ecc/<domain>.conf` on first
