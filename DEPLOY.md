@@ -191,8 +191,10 @@ On DSM:
 
    SSH into the NAS as admin:
    ```sh
-   # Install acme.sh.
-   curl https://get.acme.sh | sh -s email=<your-email>
+   # Install acme.sh. DSM doesn't ship cron (it has Task
+   # Scheduler instead, see step (c) below), so acme.sh's
+   # install check will bail unless we pass `--force`.
+   curl https://get.acme.sh | sh -s email=<your-email> -- --force
 
    # Issue the wildcards via your DNS provider's API. Example
    # below is for Cloudflare — see the acme.sh dnsapi wiki for
@@ -217,9 +219,29 @@ On DSM:
      -d '*.prod.denfrievilje.dk'
    ```
 
-   acme.sh auto-installs a cron entry that renews every 60
-   days and re-runs the deploy hook, so the DSM cert store
-   stays fresh without manual work.
+   **(c) Schedule auto-renewal via DSM Task Scheduler.** DSM
+   doesn't have `cron`, so acme.sh can't install its normal
+   renewal cron entry — we use DSM's Task Scheduler instead.
+   DSM → Control Panel → Task Scheduler → Create →
+   **Scheduled Task** → **User-defined script**:
+
+   - **General**: Task name `acme.sh renewal`, User `root`,
+     Enabled ✓
+   - **Schedule**: Daily at 03:00 (or weekly — certs have 30
+     days of renewal slack, daily just catches DNS or API
+     failures sooner)
+   - **Task Settings → Run command**:
+     ```sh
+     "/root/.acme.sh/acme.sh" --cron --home "/root/.acme.sh" > /var/log/acme-renewal.log 2>&1
+     ```
+   - **Task Settings → Notification**: "Send run details by
+     email" + enter your email. Silent failure is the worst
+     outcome here — TLS expiring mid-quarter is painful.
+
+   Click OK, then hit **Run** on the task once to verify it
+   executes without errors. `acme.sh --cron` is idempotent and
+   a no-op if no certs need renewal, so running it ad-hoc is
+   safe — it just confirms the setup works.
 
    In DSM → Control Panel → Security → Certificate you should
    now see two new entries (`*.stage.denfrievilje.dk` and
