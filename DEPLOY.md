@@ -255,11 +255,25 @@ On DSM:
    # it to vhosts through the usual DSM UI.
    export SYNO_Username=<DSM admin user>
    export SYNO_Password=<DSM admin password>
+
+   # ONLY if your DSM is on non-default ports or HTTPS, also set
+   # these — otherwise skip, defaults are Hostname=localhost,
+   # Port=5000, Scheme=http.
+   # export SYNO_Hostname=localhost
+   # export SYNO_Port=<your DSM port>
+   # export SYNO_Scheme=https       # if you moved to HTTPS-only
+   # export SYNO_INSECURE=1         # if DSM serves a self-signed cert
+
    ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
      -d '*.stage.denfrievilje.dk'
    ~/.acme.sh/acme.sh --deploy --deploy-hook synology_dsm \
      -d '*.prod.denfrievilje.dk'
    ```
+
+   The deploy hook caches these values into
+   `~/.acme.sh/account.conf`, so the Task Scheduler renewal
+   cron (step (c) below) picks them up automatically without
+   re-exporting.
 
    acme.sh stores `CF_Token` + `CF_Account_ID` into
    `~/.acme.sh/account.conf` (mode 600, root-only) on first
