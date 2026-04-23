@@ -69,6 +69,20 @@ function personName(bioHeading: string): string {
   return bioHeading.split(',')[0].trim();
 }
 
+/** Extract the public URLs from a `contact.socials` list, ready
+ *  for a schema.org `sameAs` property. Entries without a URL are
+ *  filtered so empty placeholders in the content JSON don't emit
+ *  broken `sameAs` references. Returns `undefined` when there's
+ *  nothing to emit — caller should spread-conditionally so the
+ *  key is omitted rather than present as an empty array (Google's
+ *  rich-results tester flags empty arrays as suspicious). */
+function sameAsUrls(contact: Contact): string[] | undefined {
+  const urls = (contact.socials ?? [])
+    .map((s) => s.url?.trim())
+    .filter((u): u is string => typeof u === 'string' && u.length > 0);
+  return urls.length > 0 ? urls : undefined;
+}
+
 /** Shared business + person nodes, emitted on both the homepage
  *  and each service detail page so every crawlable URL in the
  *  graph has the full business info. */
@@ -80,6 +94,12 @@ function businessAndPerson(
 ): { business: object; person: object; businessId: string; personId: string } {
   const businessId = `${SITE_URL}/#business`;
   const personId = `${SITE_URL}/#signe`;
+
+  // `sameAs` signals entity consolidation to search engines: same
+  // URLs emitted on both the LocalBusiness and the Person nodes
+  // because the practice and the practitioner share these
+  // profiles (single-practitioner business).
+  const sameAs = sameAsUrls(contact);
 
   const business = {
     '@type': ['LocalBusiness', 'ProfessionalService'],
@@ -108,7 +128,8 @@ function businessAndPerson(
     employee: { '@id': personId },
     inLanguage: site.lang,
     description: site.tagline,
-    areaServed: { '@type': 'Country', name: 'Denmark' }
+    areaServed: { '@type': 'Country', name: 'Denmark' },
+    ...(sameAs && { sameAs })
   };
 
   const person = {
@@ -122,7 +143,8 @@ function businessAndPerson(
     // Both locales declared up front so a DA-page graph also
     // surfaces EN capability (and vice versa). Update this if
     // the list of spoken languages changes.
-    knowsLanguage: ['da', 'en']
+    knowsLanguage: ['da', 'en'],
+    ...(sameAs && { sameAs })
   };
 
   return { business, person, businessId, personId };

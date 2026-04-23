@@ -57,6 +57,30 @@ export type Site = {
   footerCopyright: string;
 };
 
+/** Identifier for a supported social platform. Extending this
+ *  union requires matching updates in two places:
+ *    • `src/lib/components/SocialLinks.svelte` — add an SVG glyph
+ *    • `static/admin/config.yml` — add the platform to the
+ *      contact.socials options list
+ *  Keep the set curated — a footer row of 30 platforms reads as
+ *  SEO spam rather than a real presence. */
+export type SocialPlatform =
+  | 'linkedin'
+  | 'instagram'
+  | 'facebook'
+  | 'bluesky'
+  | 'x'
+  | 'youtube';
+
+/** One social profile link. URL is optional so editors can stub
+ *  out platforms they plan to add later without breaking the
+ *  schema; the renderer + JSON-LD emitter skip entries with
+ *  empty / missing URLs. */
+export type SocialLink = {
+  platform: SocialPlatform;
+  url?: string;
+};
+
 /** Everything in the contact section: the structural data (email, phone…)
  *  plus the labels, heading, and lede that wrap it. */
 export type Contact = {
@@ -75,6 +99,11 @@ export type Contact = {
     address: string;
     hours: string;
   };
+  /** Optional social-profile links, shown in the footer as
+   *  monochrome icons and emitted as `sameAs` on the Business +
+   *  Person nodes in JSON-LD (signals same-entity consolidation
+   *  to search engines). Entries without a URL are skipped. */
+  socials?: SocialLink[];
 };
 
 /** Everything in the bio section. `body` stays a string[] until a

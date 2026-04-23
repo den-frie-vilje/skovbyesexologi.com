@@ -111,7 +111,13 @@
     <ContactSection {contact} />
   </main>
 
-  <SiteFooter text={footerCopyright} />
+  <SiteFooter
+    text={footerCopyright}
+    socials={contact.socials}
+    subject={site.name}
+    findLabel={locale === 'en' ? 'Find' : 'Find'}
+    onLabel={locale === 'en' ? 'on' : 'på'}
+  />
 </div>
 
 <style>

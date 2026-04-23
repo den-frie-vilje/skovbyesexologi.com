@@ -200,6 +200,33 @@ collections:
               - { name: phone, widget: string }
               - { name: address, widget: string }
               - { name: hours, widget: string }
+          - name: socials
+            label: Social profiles (optional)
+            widget: list
+            required: false
+            i18n: duplicate
+            hint: >-
+              Listed in the footer as monochrome icons AND emitted
+              in JSON-LD as `sameAs` on the business + person nodes
+              (signals entity consolidation to search engines).
+              Leave a URL blank to keep the platform on the list
+              but hidden. Same URLs across locales — edit in DA
+              and EN auto-syncs.
+            summary: '{{fields.platform}} · {{fields.url}}'
+            fields:
+              - name: platform
+                widget: select
+                options:
+                  - { label: LinkedIn, value: linkedin }
+                  - { label: Instagram, value: instagram }
+                  - { label: Facebook, value: facebook }
+                  - { label: Bluesky, value: bluesky }
+                  - { label: 'X (Twitter)', value: x }
+                  - { label: YouTube, value: youtube }
+              - name: url
+                widget: string
+                required: false
+                hint: Full https:// URL to the profile. Blank to hide.
 
   # ---- Bio ----
   - name: bio

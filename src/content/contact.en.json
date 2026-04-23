@@ -13,5 +13,6 @@
     "phone": "Phone",
     "address": "City",
     "hours": "Open"
-  }
+  },
+  "socials": []
 }
