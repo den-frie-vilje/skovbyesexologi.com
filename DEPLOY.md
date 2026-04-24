@@ -1001,6 +1001,28 @@ for typos and trailing slash.
 Check webhook logs for `warn: CF purge failed`; verify CF token
 scope (Zone → Cache Purge → Purge) and zone ID.
 
+**Admin UI shows different content than the site container's
+actual file has.** Symptom: `docker exec … grep backend
+/admin/config.yml` shows the correct value, but the browser (and
+`curl` against the public URL) shows an older one. Almost
+always CF caching, even if you think the subdomain isn't
+orange-clouded. Check in order:
+
+1. CF Dashboard → DNS for the zone → confirm the relevant
+   record (e.g. `*.stage` wildcard) is **DNS only** (grey
+   cloud). If orange, either flip to grey for staging, or
+   `purge_everything` on the zone once.
+2. Force-bypass CF to confirm:
+   ```sh
+   curl --resolve <hostname>:443:<NAS-public-IP> \
+     https://<hostname>/admin/config.yml | head
+   ```
+   If this returns the right content but a normal curl
+   doesn't, CF is definitively caching.
+3. Staging deploys with the 4a7bbca no-cache Caddy headers
+   should already prevent CF from caching anything — but that
+   kicks in only from the next Caddy-restart onward.
+
 **TLS handshake fails on a new site's client domain.** Either
 the CF-proxy cert isn't provisioned yet (takes ~15 min), or the
 DSM LE cert for the client domain couldn't issue (HTTP-01 needs
