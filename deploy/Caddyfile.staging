@@ -27,6 +27,14 @@
     # adnanh/webhook serves its hooks at `/hooks/<id>` by
     # default, matching the id path verbatim. Stripping
     # breaks hook lookup.
+    #
+    # `webhook` resolves over the shared nas-deploy network.
+    # Invariant: that network MUST only contain (a) the
+    # singleton webhook container, and (b) each site's Caddy.
+    # Adding any other service there (especially with a common
+    # name) risks DNS collisions across sites. Site-scoped
+    # services (site, sveltia-auth) stay on the per-project
+    # `internal` network.
     handle /hooks/* {
         reverse_proxy webhook:9000
     }
