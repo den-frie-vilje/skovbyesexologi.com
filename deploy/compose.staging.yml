@@ -16,14 +16,27 @@
 name: skovbyesexologi-staging
 
 networks:
+  # External shared network — lets Caddy reach the shared
+  # webhook container (which lives in a separate compose
+  # project) without exposing site/sveltia-auth DNS
+  # cross-project.
   skovbye-deploy:
     external: true
+  # Per-project internal network — Caddy talks to site and
+  # sveltia-auth here. Because each site's compose has its
+  # OWN internal network, service names like `site` are
+  # unique per-project and can't collide with other sites'
+  # containers on the shared network. (Earlier bug: both
+  # staging and production had `site` on skovbye-deploy,
+  # Docker DNS resolved to whichever randomly and Caddy
+  # ended up reverse-proxying to the wrong site's image.)
+  internal:
 
 services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
-    networks: [skovbye-deploy]
+    networks: [skovbye-deploy, internal]
     ports:
       # Bind to loopback only — DSM reverse-proxies the site's
       # staging hostname to this port on 127.0.0.1. Port comes
@@ -50,7 +63,7 @@ services:
   site:
     image: ghcr.io/den-frie-vilje/skovbyesexologi:staging-latest
     restart: unless-stopped
-    networks: [skovbye-deploy]
+    networks: [internal]
     pull_policy: always
     # No ports published on the host — only reachable via caddy.
     # Healthcheck lets `docker compose up -d --wait` block the
@@ -80,7 +93,7 @@ services:
     # sveltia-cms-auth itself targets Cloudflare Workers only.
     image: vencax/netlify-cms-github-oauth-provider:master
     restart: unless-stopped
-    networks: [skovbye-deploy]
+    networks: [internal]
     environment:
       # `:-` defaults silence var-not-set warnings during local
       # dev (compose.local.yml profile-gates this service off

@@ -10,14 +10,19 @@
 name: skovbyesexologi-production
 
 networks:
+  # External shared network — lets Caddy reach the shared
+  # webhook container. See compose.staging.yml for the
+  # per-project internal network rationale (avoids the
+  # `site` DNS-collision bug across sites).
   skovbye-deploy:
     external: true
+  internal:
 
 services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
-    networks: [skovbye-deploy]
+    networks: [skovbye-deploy, internal]
     ports:
       # Bind to loopback only — DSM reverse-proxies the site's
       # production hostnames (apex + www + legacy) to this port
@@ -35,7 +40,7 @@ services:
   site:
     image: ghcr.io/den-frie-vilje/skovbyesexologi:production-latest
     restart: unless-stopped
-    networks: [skovbye-deploy]
+    networks: [internal]
     pull_policy: always
     # See compose.staging.yml for rationale — `up -d --wait`
     # in the deploy script blocks on this healthcheck so the
