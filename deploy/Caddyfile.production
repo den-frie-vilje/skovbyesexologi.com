@@ -29,6 +29,12 @@
         # the .prod.denfrievilje.dk hostname directly).
         # `handle` (not `handle_path`) so adnanh/webhook sees
         # the full `/hooks/<id>` URL it expects by default.
+        #
+        # Invariant: the shared nas-deploy network MUST only
+        # contain (a) the singleton webhook container and (b)
+        # each site's Caddy. Adding any other service there
+        # risks cross-site DNS collisions on service names.
+        # Site-scoped services live on per-project `internal`.
         handle /hooks/* {
             reverse_proxy webhook:9000
         }
@@ -62,9 +68,11 @@
             respond "Not found" 404
         }
 
-        # Fallthrough: the static site.
+        # Fallthrough: the static site. Upstream port 8080
+        # because the site container runs rootless (nginx user,
+        # can't bind <1024).
         handle {
-            reverse_proxy site:80
+            reverse_proxy site:8080
         }
     }
 

@@ -1,25 +1,10 @@
-# Trigger: push to `main`. Happens when Signe clicks "Publish"
-# on /publish (staging → main merge via API) or when a PR lands
-# on main via normal dev flow.
+# Trigger: push to `main`. Fires via Signe's /publish page
+# (which does a GitHub API merge of staging → main) or via a
+# normal PR merge on the developer side.
 #
 # Gatable: enable required reviewers on the `production`
-# environment (Settings → Environments) to require manual
-# approval before the webhook fires.
-#
-# Webhook URL targets the canonical NAS origin
-# (skovbyesexologi-com.prod.denfrievilje.dk), NOT the client
-# domain (skovbyesexologi.com). The client domain CNAMEs to
-# the origin and can be reconfigured freely without touching
-# the deploy pipeline.
-#
-# Path includes the full domain so the shared webhook container
-# on the NAS can disambiguate multiple sites. HMAC secret is
-# per-(site, env) — SKOVBYESEXOLOGI_COM_PRODUCTION_WEBHOOK_SECRET
-# on the NAS, PRODUCTION_WEBHOOK_SECRET on this repo.
-#
-# Smoke-check URL, however, targets the client-facing domain —
-# that's what real users see, and what we want to confirm is
-# actually responding after a deploy.
+# environment (repo Settings → Environments) to require
+# manual approval before the webhook fires.
 
 name: Deploy to production
 
@@ -30,11 +15,18 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/build-and-notify.yml
+    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-notify.yml@main
     with:
       environment: production
+      dockerfile: deploy/Dockerfile
       image-name: ghcr.io/den-frie-vilje/skovbyesexologi
+      build-args: |
+        VITE_MODE=production
+        PUBLIC_GIT_SHA=${{ github.sha }}
+        PUBLIC_BUILD_TIME=${{ github.event.head_commit.timestamp }}
       webhook-url: https://skovbyesexologi-com.prod.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/production
+      # Smoke check against the client-facing apex — that's the
+      # URL real users hit, not the internal .prod.* origin.
       smoke-check-url: https://skovbyesexologi.com/
     secrets:
       WEBHOOK_SECRET: ${{ secrets.PRODUCTION_WEBHOOK_SECRET }}
