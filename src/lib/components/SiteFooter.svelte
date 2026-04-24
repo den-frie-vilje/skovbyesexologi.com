@@ -14,6 +14,11 @@
 <script lang="ts">
   import type { SocialLink } from '$lib/content';
   import SocialLinks from './SocialLinks.svelte';
+  import {
+    PUBLIC_GIT_SHA,
+    PUBLIC_BUILD_TIME,
+    PUBLIC_GITHUB_REPO
+  } from '$env/static/public';
 
   interface Props {
     /** Rendered copyright string — already expanded from the
@@ -40,6 +45,25 @@
     findLabel,
     onLabel
   }: Props = $props();
+
+  // Build marker — tiny link to the commit this bundle was built
+  // from. CI populates these (see .github/workflows/build-and-notify.yml).
+  // Local dev builds have all three empty → marker renders nothing.
+  const shortSha = PUBLIC_GIT_SHA ? PUBLIC_GIT_SHA.slice(0, 7) : '';
+  const commitUrl =
+    PUBLIC_GIT_SHA && PUBLIC_GITHUB_REPO
+      ? `https://github.com/${PUBLIC_GITHUB_REPO}/commit/${PUBLIC_GIT_SHA}`
+      : '';
+  // Render build time as a "DD MMM YYYY" label in a stable locale
+  // (so the footer string is deterministic across locales + the
+  // prerender vs client-hydrate doesn't hydration-mismatch).
+  const buildLabel = PUBLIC_BUILD_TIME
+    ? new Date(PUBLIC_BUILD_TIME).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      })
+    : '';
 </script>
 
 <footer class="foot">
@@ -49,6 +73,13 @@
       <SocialLinks {socials} {subject} {findLabel} {onLabel} />
     {/if}
   </div>
+  {#if shortSha}
+    <p class="build-marker">
+      <a href={commitUrl} target="_blank" rel="noopener" title="View commit on GitHub">
+        build {shortSha}{#if buildLabel} · {buildLabel}{/if}
+      </a>
+    </p>
+  {/if}
 </footer>
 
 <style>
@@ -84,6 +115,42 @@
   }
   .copyright {
     margin: 0;
+  }
+
+  /* Build marker — deliberately very muted. ~28% opacity on the
+     already-muted foot color, sub-pixel letter spacing, tiny size.
+     Visible on hover (opacity bumps to parity with the copyright
+     line) but invisible during normal reading. */
+  .build-marker {
+    max-width: 1320px;
+    margin: 0.75rem auto 0;
+    padding: 0 1.25rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+  }
+  .build-marker:hover {
+    opacity: 0.75;
+  }
+  .build-marker a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .build-marker a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 720px) {
+    .build-marker {
+      padding: 0 2rem;
+      text-align: right;
+    }
+  }
+  @media (min-width: 1024px) {
+    .build-marker {
+      padding: 0 3rem;
+    }
   }
 
   @media (min-width: 720px) {
