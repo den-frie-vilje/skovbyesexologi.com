@@ -51,8 +51,12 @@ services:
       # file are picked up live without a restart.
       - ./webhook/hooks.yaml:/etc/webhook/hooks.yaml:ro
 
-      # Deploy scripts run by the hooks.
-      - ./webhook/scripts:/scripts:ro
+      # Deploy scripts run by the hooks. Writable (not :ro) so
+      # the scripts can self-update from the per-site repo
+      # clone on each fire — see deploy.sh's self-update block.
+      # Fixes to deploy.sh in the repo then propagate to the
+      # webhook without a manual `sudo cp` bootstrap step.
+      - ./webhook/scripts:/scripts
 
       # The deploy-repo clone + compose/data directories. Same
       # path inside the container as on the host so

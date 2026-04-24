@@ -51,6 +51,19 @@
     # Gzip + zstd on responses that aren't already compressed.
     encode gzip zstd
 
+    # Staging = never cache anything, anywhere. Overrides
+    # whatever Cache-Control the site container's nginx set
+    # (e.g. the 1-year immutable on /_app/immutable/*), so
+    # every deploy's changes are instantly visible on next
+    # navigation — no stale admin configs, no hard-refresh
+    # ritual, no "did the container actually update?"
+    # debugging. Production keeps the image's native cache
+    # policy (long cache on hashed immutables, no-cache on
+    # HTML) for real-user performance.
+    header Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    header Pragma "no-cache"
+    header Expires "0"
+
     # Structured JSON access log to stdout — Docker / Container
     # Manager picks it up. Easy to grep or pipe into a log
     # collector later.

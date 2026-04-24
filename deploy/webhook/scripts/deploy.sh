@@ -62,6 +62,26 @@ echo "[$(date -Iseconds)] [$PROJECT] deploy starting"
 git -C "$REPO" fetch --depth 1 origin "$BRANCH"
 git -C "$REPO" reset --hard FETCH_HEAD
 
+# Self-update the webhook's copy of deploy.sh from whatever
+# version was just pulled. Without this, fixes to the script
+# require a manual `sudo cp` bootstrap step per update, which
+# is easy to forget and leads to "the old deploy.sh is
+# silently breaking things" debugging sessions. With this
+# block, any deploy.sh push lands on the NEXT webhook fire
+# automatically.
+#
+# The volume mount at /scripts is read-write (see compose.webhook.yml)
+# so the script CAN overwrite itself. After overwriting we
+# re-exec so the current deploy runs under the new logic, not
+# the old one that started this process.
+NEW_SELF="$REPO/deploy/webhook/scripts/deploy.sh"
+if [ -f "$NEW_SELF" ] && ! cmp -s "$NEW_SELF" "$0"; then
+    echo "[$(date -Iseconds)] deploy.sh updated in repo; self-replacing + re-exec"
+    cp "$NEW_SELF" "$0"
+    chmod +x "$0"
+    exec "$0" "$@"
+fi
+
 cd "$STACK_DIR"
 
 COMPOSE_ARGS=(-p "$PROJECT" -f "$COMPOSE_FILE")
