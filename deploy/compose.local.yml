@@ -17,12 +17,12 @@
 #   • `sveltia-auth` is off (profile gating) — /admin works
 #     against `test-repo` backend without OAuth for local work
 #   • `restart: no` so Ctrl-C actually kills everything
-#   • `skovbye-deploy` network is created locally, not external
+#   • `nas-deploy` network is created locally, not external
 
 name: skovbyesexologi-local
 
 networks:
-  skovbye-deploy:
+  nas-deploy:
     external: false
 
 services:

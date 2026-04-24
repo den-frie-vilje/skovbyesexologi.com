@@ -62,9 +62,11 @@
             respond "Not found" 404
         }
 
-        # Fallthrough: the static site.
+        # Fallthrough: the static site. Upstream port 8080
+        # because the site container runs rootless (nginx user,
+        # can't bind <1024).
         handle {
-            reverse_proxy site:80
+            reverse_proxy site:8080
         }
     }
 

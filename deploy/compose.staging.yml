@@ -9,7 +9,7 @@
 # Env file (./staging.env) on the NAS holds the OAuth secrets.
 # NOT committed — see deploy/staging.env.example for the shape.
 #
-# Joins the `skovbye-deploy` external network so it can reach
+# Joins the `nas-deploy` external network so it can reach
 # the shared `webhook` container (which lives in its own
 # compose project — see compose.webhook.yml).
 
@@ -20,14 +20,14 @@ networks:
   # webhook container (which lives in a separate compose
   # project) without exposing site/sveltia-auth DNS
   # cross-project.
-  skovbye-deploy:
+  nas-deploy:
     external: true
   # Per-project internal network — Caddy talks to site and
   # sveltia-auth here. Because each site's compose has its
   # OWN internal network, service names like `site` are
   # unique per-project and can't collide with other sites'
   # containers on the shared network. (Earlier bug: both
-  # staging and production had `site` on skovbye-deploy,
+  # staging and production had `site` on nas-deploy,
   # Docker DNS resolved to whichever randomly and Caddy
   # ended up reverse-proxying to the wrong site's image.)
   internal:
@@ -36,7 +36,7 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
-    networks: [skovbye-deploy, internal]
+    networks: [nas-deploy, internal]
     ports:
       # Bind to loopback only — DSM reverse-proxies the site's
       # staging hostname to this port on 127.0.0.1. Port comes
@@ -72,7 +72,7 @@ services:
     # otherwise the edge can refill with old content during the
     # rolling replace window.
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
       interval: 10s
       timeout: 3s
       retries: 3

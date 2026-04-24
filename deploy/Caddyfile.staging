@@ -43,9 +43,11 @@
         reverse_proxy sveltia-auth:3000
     }
 
-    # Everything else: the static site.
+    # Everything else: the static site. Upstream port 8080
+    # because the site container runs rootless (nginx user,
+    # can't bind <1024).
     handle {
-        reverse_proxy site:80
+        reverse_proxy site:8080
     }
 
     # Gzip + zstd on responses that aren't already compressed.
