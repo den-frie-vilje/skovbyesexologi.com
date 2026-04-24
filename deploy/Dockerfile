@@ -54,10 +54,12 @@ RUN pnpm build -- --mode $VITE_MODE
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 # Drop the distro's default config so our server block is the
-# only one. `wget` for the compose healthcheck (busybox wget is
-# already in the base image, just pinning availability).
+# only one. Install wget — nginxinc/nginx-unprivileged is slim
+# and doesn't ship it by default; the compose healthcheck
+# (`wget --spider http://localhost:8080/`) needs it.
 USER root
-RUN rm /etc/nginx/conf.d/default.conf
+RUN rm /etc/nginx/conf.d/default.conf \
+    && apk add --no-cache wget
 USER nginx
 
 # Site nginx config. Listens on 8080 — update the Caddyfile
