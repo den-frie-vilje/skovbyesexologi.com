@@ -35,13 +35,21 @@
 
         # Host canonicalization. List every non-canonical
         # production hostname here; Caddy 301s them to the
-        # apex. Includes the NAS canonical (.prod.*) so
-        # search engines don't index it either.
+        # canonical apex (skovbyesexologi.com).
         #
-        # Edit this list when adding a new legacy domain.
+        # The `.prod.denfrievilje.dk` internal origin is
+        # COMMENTED OUT by default — uncomment AFTER the
+        # client apex DNS is CNAME'd to .prod.denfrievilje.dk.
+        # Otherwise the redirect points users at a hostname
+        # that isn't yet resolving (during initial testing +
+        # cert provisioning you want to be able to hit the
+        # internal origin directly without chasing a 301 to
+        # a dead name).
+        #
+        # Edit this list when adding a new legacy domain too.
         @non_canonical {
             host www.skovbyesexologi.com
-            host skovbyesexologi-com.prod.denfrievilje.dk
+            # host skovbyesexologi-com.prod.denfrievilje.dk   ← uncomment after DNS delegated
             # host legacy-brand.dk
             # host oldname.com
         }
