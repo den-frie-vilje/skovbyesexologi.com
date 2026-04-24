@@ -180,7 +180,12 @@ collections:
             label: Language code
             widget: string
             i18n: duplicate
-            hint: ISO 639-1 code — must match the locale suffix on the file.
+            readonly: true
+            hint: >-
+              ISO 639-1 code — bound to the filename locale
+              suffix (site.da.json → `da`, site.en.json → `en`).
+              Read-only to prevent accidental mismatches that
+              would break the JSON-LD `inLanguage` generation.
           - { name: tagline, label: Tagline, widget: string, i18n: true }
           - { name: leadIn, label: Lead-in paragraph, widget: text, i18n: true }
           - name: footerCopyright
