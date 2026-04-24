@@ -294,33 +294,33 @@ collections:
             widget: list
             i18n: true
             fields:
-              - { name: label, widget: string }
-              - { name: href, widget: string, hint: 'Use #anchor for in-page links.' }
+              - { name: label, widget: string, i18n: true }
+              - { name: href, widget: string, i18n: true, hint: 'Use #anchor for in-page links.' }
 
           - name: hero
             widget: object
             i18n: true
             fields:
-              - { name: name, label: Brand name (hero), widget: string }
-              - { name: city, widget: string }
-              - { name: statementStart, label: Statement (start), widget: text, hint: 'First line of the three-piece hero statement.' }
-              - { name: statementEnd, label: Statement (end before em), widget: text }
-              - { name: statementEm, label: Statement (emphasised tail), widget: string }
-              - { name: attribution, widget: text, hint: 'Role line under the hero statement.' }
-              - { name: scrollLabel, label: Scroll-cue label, widget: string }
+              - { name: name, label: Brand name (hero), widget: string, i18n: true }
+              - { name: city, widget: string, i18n: true }
+              - { name: statementStart, label: Statement (start), widget: text, i18n: true, hint: 'First line of the three-piece hero statement.' }
+              - { name: statementEnd, label: Statement (end before em), widget: text, i18n: true }
+              - { name: statementEm, label: Statement (emphasised tail), widget: string, i18n: true }
+              - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
+              - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
 
           - name: nameSection
             label: 'Who: name + role block'
             widget: object
             i18n: true
             fields:
-              - { name: eyebrow, widget: string }
+              - { name: eyebrow, widget: string, i18n: true }
               # firstName + lastName: structurally shared — DA edits copy to EN
               - { name: firstName, widget: string, i18n: duplicate }
               - { name: lastName, widget: string, i18n: duplicate }
-              - { name: pronouns, widget: string }
-              - { name: roleLine, widget: text }
-              - { name: roleSub, widget: text }
+              - { name: pronouns, widget: string, i18n: true }
+              - { name: roleLine, widget: text, i18n: true }
+              - { name: roleSub, widget: text, i18n: true }
 
           - name: chapter1
             label: Chapter I header (Terapi)
@@ -328,50 +328,53 @@ collections:
             i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
+              - { name: title, widget: string, i18n: true }
+              - { name: lede, widget: text, i18n: true }
           - name: chapter2
             label: Chapter II header (Konsulentydelser)
             widget: object
             i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
+              - { name: title, widget: string, i18n: true }
+              - { name: lede, widget: text, i18n: true }
 
           - name: manifest
             label: Manifest (Chapter I)
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
+                i18n: true
                 fields:
-                  - { name: word, widget: string }
-                  - { name: text, widget: text }
+                  - { name: word, widget: string, i18n: true }
+                  - { name: text, widget: text, i18n: true }
           - name: ritual
             label: Ritual (Chapter I)
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string }
-              - { name: subtitle, widget: string }
+              - { name: label, widget: string, i18n: true }
+              - { name: subtitle, widget: string, i18n: true }
               - name: steps
                 widget: list
+                i18n: true
                 fields:
                   - { name: n, widget: string, i18n: duplicate }
-                  - { name: title, widget: string }
-                  - { name: body, widget: text }
+                  - { name: title, widget: string, i18n: true }
+                  - { name: body, widget: text, i18n: true }
           - name: forPersonal
             label: 'Kom forbi hvis du — personal'
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
-                field: { name: line, widget: string }
+                i18n: true
+                field: { name: line, widget: string, i18n: true }
 
           - { name: pillQuote, label: Pull-quote (intimacy section), widget: text, i18n: true }
           - name: forWork
@@ -379,10 +382,11 @@ collections:
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
-                field: { name: line, widget: string }
+                i18n: true
+                field: { name: line, widget: string, i18n: true }
 
           - name: testimonials
             label: Featured testimonials (between bio + contact)
@@ -390,13 +394,14 @@ collections:
             required: false
             i18n: true
             fields:
-              - { name: label, label: Section label, widget: string }
+              - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
                 widget: list
+                i18n: true
                 summary: '{{fields.source}}'
                 fields:
-                  - { name: quote, widget: text }
-                  - { name: source, widget: string }
+                  - { name: quote, widget: text, i18n: true }
+                  - { name: source, widget: string, i18n: true }
 
           # Stage choreography is part of the page's STRUCTURE,
           # not its copy — `i18n: duplicate` keeps DA + EN on
@@ -475,14 +480,14 @@ collections:
         label: Feature bullets
         widget: list
         i18n: true
-        field: { name: bullet, widget: string }
+        field: { name: bullet, widget: string, i18n: true }
       - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
       - name: supports
         label: Supporting keywords (optional)
         widget: list
         required: false
         i18n: true
-        field: { name: keyword, widget: string }
+        field: { name: keyword, widget: string, i18n: true }
       - name: testimonials
         label: Testimonials (optional)
         widget: list
@@ -490,15 +495,15 @@ collections:
         i18n: true
         summary: '{{fields.source}}'
         fields:
-          - { name: quote, widget: text }
-          - { name: source, widget: string }
+          - { name: quote, widget: text, i18n: true }
+          - { name: source, widget: string, i18n: true }
       - name: cta
         label: Call-to-action button (optional)
         widget: object
         required: false
         i18n: true
         fields:
-          - { name: label, widget: string }
+          - { name: label, widget: string, i18n: true }
           - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
           - name: kind
             widget: select
