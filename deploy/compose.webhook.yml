@@ -48,8 +48,12 @@ services:
 
       # Hooks config: HMAC-verified endpoint definitions. With
       # `-hotreload` on the webhook command, edits to this
-      # file are picked up live without a restart.
-      - ./webhook/hooks.yaml:/etc/webhook/hooks.yaml:ro
+      # file are picked up live without a restart. Writable so
+      # deploy.sh can self-sync it from the repo on each fire
+      # (same pattern as the scripts mount) — changes to
+      # hooks.yaml in a commit then auto-land on the next
+      # webhook fire.
+      - ./webhook/hooks.yaml:/etc/webhook/hooks.yaml
 
       # Deploy scripts run by the hooks. Writable (not :ro) so
       # the scripts can self-update from the per-site repo

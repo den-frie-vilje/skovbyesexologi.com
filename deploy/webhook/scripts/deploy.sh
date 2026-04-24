@@ -91,6 +91,16 @@ if [ -f "$NEW_SELF" ] && ! cmp -s "$NEW_SELF" "$0"; then
     exec "$0" "$@"
 fi
 
+# Also self-sync hooks.yaml. Bind-mounted to /etc/webhook/hooks.yaml
+# (writable); webhook's -hotreload flag picks up any change within
+# a second. So hooks-yaml changes in a commit propagate on the NEXT
+# webhook fire without a manual `sudo cp`.
+NEW_HOOKS="$REPO/deploy/webhook/hooks.yaml"
+if [ -f "$NEW_HOOKS" ] && ! cmp -s "$NEW_HOOKS" /etc/webhook/hooks.yaml; then
+    echo "[$(date -Iseconds)] hooks.yaml updated in repo; copying"
+    cp "$NEW_HOOKS" /etc/webhook/hooks.yaml
+fi
+
 cd "$STACK_DIR"
 
 COMPOSE_ARGS=(-p "$PROJECT" -f "$COMPOSE_FILE")
