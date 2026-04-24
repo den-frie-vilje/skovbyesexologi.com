@@ -30,7 +30,14 @@
       name: skovbyesexologi.com
     - source: string
       name: staging
-  response-message: "skovbyesexologi.com staging deploy triggered."
+  # Wait for deploy.sh to complete and reflect its exit code
+  # in the HTTP response. Without this, the webhook returns
+  # 200 on rule-match alone and the actual deploy failure
+  # (e.g. git fetch exit 128, docker pull error) never
+  # propagates to GitHub Actions — the workflow marks the
+  # whole step green while the NAS is silently broken.
+  include-command-output-in-response: true
+  include-command-output-in-response-on-error: true
   trigger-rule:
     match:
       type: payload-hmac-sha256
@@ -47,7 +54,8 @@
       name: skovbyesexologi.com
     - source: string
       name: production
-  response-message: "skovbyesexologi.com production deploy triggered."
+  include-command-output-in-response: true
+  include-command-output-in-response-on-error: true
   trigger-rule:
     match:
       type: payload-hmac-sha256
