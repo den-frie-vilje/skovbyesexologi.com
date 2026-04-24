@@ -53,6 +53,15 @@ ENV_UP="$(echo "$ENV_NAME" | tr '[:lower:]' '[:upper:]')"
 
 echo "[$(date -Iseconds)] [$PROJECT] deploy starting"
 
+# Per-site repo clones are owned by the `deploy:users` user on
+# the NAS, but the webhook container runs as root. Git 2.35+
+# refuses to operate on repos owned by a different user
+# (CVE-2022-24765 hardening), erroring out with "detected
+# dubious ownership". Trust all directories — this container's
+# only job is deploy automation on paths we provisioned, so
+# it's not actually untrusted territory.
+git config --global --add safe.directory '*' 2>/dev/null || true
+
 # Idempotent fast-forward. Reset to FETCH_HEAD rather than
 # `origin/$BRANCH` so this works even when the initial clone
 # was shallow + single-branch (which pins the remote's fetch
