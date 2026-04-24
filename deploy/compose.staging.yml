@@ -1,0 +1,107 @@
+# Staging stack — signe.denfrievilje.dk.
+#
+# Brought up + reconciled by the deploy webhook on every push
+# to the `staging` branch. Composition:
+#   caddy         (front-door — routes /hooks, /auth, /*)
+#   site          (static site, pulled from GHCR)
+#   sveltia-auth  (GitHub OAuth proxy for /admin)
+#
+# Env file (./staging.env) on the NAS holds the OAuth secrets.
+# NOT committed — see deploy/staging.env.example for the shape.
+#
+# Joins the `skovbye-deploy` external network so it can reach
+# the shared `webhook` container (which lives in its own
+# compose project — see compose.webhook.yml).
+
+name: skovbyesexologi-staging
+
+networks:
+  skovbye-deploy:
+    external: true
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    ports:
+      # Bind to loopback only — DSM reverse-proxies the site's
+      # staging hostname to this port on 127.0.0.1. Port comes
+      # from the per-(site, env) .env file so new sites just
+      # bump `CADDY_PORT=` in their own staging.env rather than
+      # editing this compose template.
+      - "127.0.0.1:${CADDY_PORT:-8080}:80"
+    volumes:
+      - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      site:
+        condition: service_started
+      # `required: false` keeps this dep optional — if the
+      # sveltia-auth service is profile-excluded (as in local
+      # dev via compose.local.yml) or simply crashes, caddy
+      # still starts. /auth/* routes 502 in that case, which
+      # is the observable failure mode for missing OAuth.
+      sveltia-auth:
+        condition: service_started
+        required: false
+
+  site:
+    image: ghcr.io/den-frie-vilje/skovbyesexologi:staging-latest
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    pull_policy: always
+    # No ports published on the host — only reachable via caddy.
+    # Healthcheck lets `docker compose up -d --wait` block the
+    # deploy script until the new container is actually serving.
+    # That in turn is the signal to purge Cloudflare cache —
+    # otherwise the edge can refill with old content during the
+    # rolling replace window.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  sveltia-auth:
+    # GitHub OAuth proxy. vencax's image is battle-tested with
+    # Decap/Netlify CMS; Sveltia is protocol-compatible.
+    #
+    # Tag note: this image was only ever published under `:master`
+    # — no `:latest` tag exists. Using `:master` works and is the
+    # upstream-documented default. The image is ~14 months stale
+    # but the GitHub OAuth token-exchange API it implements hasn't
+    # changed; "unmaintained" here means "done."
+    #
+    # If we ever need something newer: igk1972/netlify-cms-oauth-
+    # provider-go is a Go binary (source-only, no published image);
+    # sveltia-cms-auth itself targets Cloudflare Workers only.
+    image: vencax/netlify-cms-github-oauth-provider:master
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    environment:
+      # `:-` defaults silence var-not-set warnings during local
+      # dev (compose.local.yml profile-gates this service off
+      # but compose still parses env blocks at load time). In
+      # production these MUST be set via staging.env — empty
+      # values will cause the auth container to fail its own
+      # startup, which is the observable failure mode we want.
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET:-}
+      # CSRF guard — only accept auth initiations from this
+      # site's staging URL. Uses ${STAGE_ORIGIN} which each
+      # site sets explicitly in staging.env (format:
+      # <domain-dashed>.stage.denfrievilje.dk, dashed because
+      # LE wildcards match one label only, and raw $DOMAIN
+      # contains dots that'd break the cert chain).
+      ORIGIN: ${STAGE_ORIGIN:-localhost}
+      # Where the auth success page redirects to. Empty → the
+      # provider renders a tiny self-closing postMessage page,
+      # which is what Sveltia expects.
+      REDIRECT_URL: ""
+
+volumes:
+  caddy_data:
+  caddy_config:

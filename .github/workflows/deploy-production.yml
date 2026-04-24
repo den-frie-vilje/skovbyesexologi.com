@@ -1,13 +1,25 @@
-# Trigger: push to `main`. That happens when `/publish` merges
-# staging → main on Signe's click, or when someone with repo
-# access merges a PR directly. Deploys to skovbyesexologi.com.
+# Trigger: push to `main`. Happens when Signe clicks "Publish"
+# on /publish (staging → main merge via API) or when a PR lands
+# on main via normal dev flow.
 #
-# `environment: production` on the reusable workflow lets you gate
-# the job behind a manual approval in the GitHub UI if you want —
-# configure under Settings → Environments → production → Required
-# reviewers. Currently no reviewer is required (Signe's click is
-# the gate); the environment scope is still useful because
-# per-environment secrets (DEPLOY_PATH) live there.
+# Gatable: enable required reviewers on the `production`
+# environment (Settings → Environments) to require manual
+# approval before the webhook fires.
+#
+# Webhook URL targets the canonical NAS origin
+# (skovbyesexologi-com.prod.denfrievilje.dk), NOT the client
+# domain (skovbyesexologi.com). The client domain CNAMEs to
+# the origin and can be reconfigured freely without touching
+# the deploy pipeline.
+#
+# Path includes the full domain so the shared webhook container
+# on the NAS can disambiguate multiple sites. HMAC secret is
+# per-(site, env) — SKOVBYESEXOLOGI_COM_PRODUCTION_WEBHOOK_SECRET
+# on the NAS, PRODUCTION_WEBHOOK_SECRET on this repo.
+#
+# Smoke-check URL, however, targets the client-facing domain —
+# that's what real users see, and what we want to confirm is
+# actually responding after a deploy.
 
 name: Deploy to production
 
@@ -18,7 +30,11 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/build-and-notify.yml
     with:
       environment: production
-    secrets: inherit
+      image-name: ghcr.io/den-frie-vilje/skovbyesexologi
+      webhook-url: https://skovbyesexologi-com.prod.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/production
+      smoke-check-url: https://skovbyesexologi.com/
+    secrets:
+      WEBHOOK_SECRET: ${{ secrets.PRODUCTION_WEBHOOK_SECRET }}

@@ -1,0 +1,61 @@
+# Front-door reverse proxy for the staging environment.
+#
+# Web Station (DSM nginx) proxies signe.denfrievilje.dk →
+# 127.0.0.1:8080. This Caddy listens on :80 inside the container
+# network and routes by path to the right upstream.
+#
+# Three upstreams:
+#   /hooks/*   → webhook receiver (HMAC-verified deploy triggers)
+#   /auth/*    → GitHub OAuth proxy for Sveltia CMS
+#   /*         → the static site
+
+{
+    # Admin API off — we don't need it and exposing it on :2019
+    # even to localhost is more surface than this needs.
+    admin off
+
+    # Caddy auto-HTTPS off — TLS terminates at DSM/Let's Encrypt
+    # on the outer vhost, not here. Caddy just speaks HTTP on
+    # the docker network.
+    auto_https off
+}
+
+:80 {
+    # Deploy webhook. HMAC verification happens inside the
+    # webhook container; Caddy just routes. Use `handle` (not
+    # `handle_path`) so the /hooks prefix is preserved —
+    # adnanh/webhook serves its hooks at `/hooks/<id>` by
+    # default, matching the id path verbatim. Stripping
+    # breaks hook lookup.
+    handle /hooks/* {
+        reverse_proxy webhook:9000
+    }
+
+    # Sveltia CMS OAuth proxy. `handle_path` strips `/auth` so
+    # the upstream sees `/auth` and `/callback` at its root
+    # (which is what netlify-cms-github-oauth-provider expects).
+    # Sveltia constructs URLs as `${base_url}/auth` and
+    # `${base_url}/callback`, so with base_url =
+    # `https://signe.denfrievilje.dk/auth`, the paths become
+    # `/auth/auth` and `/auth/callback` externally — after
+    # strip, the upstream sees `/auth` and `/callback`.
+    handle_path /auth/* {
+        reverse_proxy sveltia-auth:3000
+    }
+
+    # Everything else: the static site.
+    handle {
+        reverse_proxy site:80
+    }
+
+    # Gzip + zstd on responses that aren't already compressed.
+    encode gzip zstd
+
+    # Structured JSON access log to stdout — Docker / Container
+    # Manager picks it up. Easy to grep or pipe into a log
+    # collector later.
+    log {
+        output stdout
+        format json
+    }
+}

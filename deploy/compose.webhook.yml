@@ -1,0 +1,75 @@
+# Webhook receiver — shared across all environments on this NAS.
+#
+# Listens on :9000 (reachable only via the Caddy front-doors in
+# compose.staging.yml and compose.production.yml, which proxy
+# `/hooks/*` to this container). Verifies HMAC on every POST
+# against per-environment secrets in ./webhook.env, then
+# executes the matching deploy script.
+#
+# Lifecycle: this compose is bootstrapped ONCE during initial
+# NAS setup and does not update itself via the regular deploy
+# pipeline. Updates are manual (`docker compose pull && up -d`
+# by hand) to avoid the chicken-and-egg failure mode where a
+# broken webhook upgrade leaves us unable to deploy anything
+# including the webhook itself.
+
+name: skovbyesexologi-webhook
+
+networks:
+  skovbye-deploy:
+    external: true
+
+services:
+  webhook:
+    # Built by .github/workflows/webhook-image.yml in CI,
+    # pushed to GHCR. Pulled here (not built on the NAS)
+    # because Synology's kernel ships without seccomp support,
+    # and any RUN step in a build fails with "seccomp: config
+    # provided but seccomp not supported".
+    #
+    # Rebuilds whenever deploy/webhook/** changes. Image is
+    # meant to be public — make sure the GHCR package
+    # visibility for skovbyesexologi-webhook is set to Public,
+    # otherwise the NAS needs a PAT to pull.
+    image: ghcr.io/den-frie-vilje/skovbyesexologi-webhook:latest
+    pull_policy: always
+    restart: unless-stopped
+    networks: [skovbye-deploy]
+    # No host port exposure — only reachable via the Caddy
+    # proxies, which are on the same docker network.
+    env_file:
+      - ./webhook.env
+    volumes:
+      # Docker socket → the webhook can run `docker compose`
+      # commands against the host daemon. Equivalent to root
+      # on the host, but privilege is capped by the fixed list
+      # of commands in hooks.yaml.
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # Hooks config: HMAC-verified endpoint definitions. With
+      # `-hotreload` on the webhook command, edits to this
+      # file are picked up live without a restart.
+      - ./webhook/hooks.yaml:/etc/webhook/hooks.yaml:ro
+
+      # Deploy scripts run by the hooks.
+      - ./webhook/scripts:/scripts:ro
+
+      # The deploy-repo clone + compose/data directories. Same
+      # path inside the container as on the host so
+      # `docker compose -f …` sees the compose file and the
+      # host daemon sees the bind-mount sources consistently.
+      - /volume1/docker:/volume1/docker
+    command: >-
+      -verbose
+      -template
+      -hooks=/etc/webhook/hooks.yaml
+      -hotreload
+      -ip=0.0.0.0
+      -port=9000
+    # -template: evaluate Go-template syntax in hooks.yaml so
+    #            `{{ getenv "SOME_SECRET" }}` in the trigger-
+    #            rule `secret:` field pulls from the container
+    #            env at hook-load time. Without this, the
+    #            string is taken literally, HMAC eval panics,
+    #            and every POST returns 500 "Error occurred
+    #            while evaluating hook rules."

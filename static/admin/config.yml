@@ -8,9 +8,11 @@
 #
 # Sveltia speaks to the GitHub API with an access token. To get
 # one without embedding a client secret in the frontend, we run
-# an OAuth proxy (the Sveltia CMS Authenticator, a small Cloudflare
-# Worker) that trades the OAuth `code` for a token server-side.
-# That Worker's URL goes into `base_url` below.
+# an OAuth proxy that trades the OAuth `code` for a token
+# server-side. That proxy runs as the `sveltia-auth` container
+# on the NAS (see deploy/compose.staging.yml), reachable at
+# `https://signe.denfrievilje.dk/auth/*` via the staging Caddy
+# front-door.
 #
 # ----------------------------------------------------------------
 # ONE-TIME MANUAL SETUP
@@ -21,26 +23,21 @@
 #        Application name: Skovbye Sexologi CMS
 #        Homepage URL:     https://skovbyesexologi.com
 #        Authorization callback URL:
-#          https://<WORKER-SUBDOMAIN>.workers.dev/callback
+#          https://skovbyesexologi-com.stage.denfrievilje.dk/auth/callback
 #      Copy the generated Client ID + Client Secret.
 #
-#   2. Deploy the Sveltia CMS Authenticator to Cloudflare Workers
-#      https://github.com/sveltia/sveltia-cms-auth
-#        • Click "Deploy to Cloudflare", or clone + `wrangler deploy`.
-#        • Worker Settings → Variables:
-#            GITHUB_CLIENT_ID      = <from step 1>
-#            GITHUB_CLIENT_SECRET  = <from step 1, Secret>
-#            ALLOWED_DOMAINS       = skovbyesexologi.com, localhost
-#        • Copy the Worker URL and paste it into the OAuth App's
-#          Authorization callback URL (append `/callback`) AND
-#          into `base_url:` below.
+#   2. Bring up the staging compose stack on the NAS with
+#      OAUTH_CLIENT_ID + OAUTH_CLIENT_SECRET in deploy/staging.env.
+#      The `sveltia-auth` service serves the OAuth handshake at
+#      /auth/* behind the Caddy front-door. Full bootstrap in
+#      DEPLOY.md.
 #
 #   3. Comment out the test-repo block below, uncomment the
 #      github block, commit, deploy.
 #
 # Keeping `test-repo` as the shipping default means `/admin` stays
-# openable without a working Worker — test-repo saves never leave
-# the browser tab.
+# openable without a running OAuth proxy — test-repo saves never
+# leave the browser tab.
 #
 # ============================================================
 # MEDIA
@@ -148,8 +145,11 @@ backend:
 #   name: github
 #   repo: den-frie-vilje/skovbyesexologi.com
 #   branch: staging
-#   base_url: https://<WORKER-SUBDOMAIN>.workers.dev
-#   site_domain: signe.denfrievilje.dk
+#   # base_url is the OAuth proxy's root. Sveltia appends /auth
+#   # and /callback, which Caddy strips the /auth prefix from
+#   # and forwards to the sveltia-auth container internally.
+#   base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
+#   site_domain: skovbyesexologi-com.stage.denfrievilje.dk
 
 media_folder: static/img
 public_folder: /img
