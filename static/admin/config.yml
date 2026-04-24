@@ -181,11 +181,12 @@ collections:
             widget: string
             i18n: duplicate
             hint: ISO 639-1 code — must match the locale suffix on the file.
-          - { name: tagline, label: Tagline, widget: string }
-          - { name: leadIn, label: Lead-in paragraph, widget: text }
+          - { name: tagline, label: Tagline, widget: string, i18n: true }
+          - { name: leadIn, label: Lead-in paragraph, widget: text, i18n: true }
           - name: footerCopyright
             label: Footer copyright
             widget: string
+            i18n: true
             hint: 'Template tokens: {year}, {name}, {cvr}.'
 
   # ---- Contact info ----
@@ -201,18 +202,19 @@ collections:
         format: json
         i18n: true
         fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: lede, widget: text }
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - { name: heading, widget: string, i18n: true }
+          - { name: lede, widget: text, i18n: true }
           - { name: email, widget: string, i18n: duplicate }
           - { name: phone, widget: string, i18n: duplicate }
-          - { name: address, widget: string }
+          - { name: address, widget: string, i18n: true }
           - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
-          - { name: hours, label: Opening hours, widget: string }
-          - { name: responseTime, label: Response time note, widget: text }
+          - { name: hours, label: Opening hours, widget: string, i18n: true }
+          - { name: responseTime, label: Response time note, widget: text, i18n: true }
           - name: fieldLabels
             label: Inline field labels (contact card)
             widget: object
+            i18n: true
             fields:
               - { name: email, widget: string }
               - { name: phone, widget: string }
@@ -259,13 +261,14 @@ collections:
         format: json
         i18n: true
         fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: pronouns, widget: string }
-          - { name: portraitAlt, label: Portrait alt text, widget: string }
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - { name: heading, widget: string, i18n: true }
+          - { name: pronouns, widget: string, i18n: true }
+          - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
             label: Body paragraphs
             widget: list
+            i18n: true
             field: { name: paragraph, widget: text }
 
   # ---- Home page (includes stage choreography) ----
@@ -284,12 +287,14 @@ collections:
           - name: nav
             label: Top-nav links
             widget: list
+            i18n: true
             fields:
               - { name: label, widget: string }
               - { name: href, widget: string, hint: 'Use #anchor for in-page links.' }
 
           - name: hero
             widget: object
+            i18n: true
             fields:
               - { name: name, label: Brand name (hero), widget: string }
               - { name: city, widget: string }
@@ -302,8 +307,10 @@ collections:
           - name: nameSection
             label: 'Who: name + role block'
             widget: object
+            i18n: true
             fields:
               - { name: eyebrow, widget: string }
+              # firstName + lastName: structurally shared — DA edits copy to EN
               - { name: firstName, widget: string, i18n: duplicate }
               - { name: lastName, widget: string, i18n: duplicate }
               - { name: pronouns, widget: string }
@@ -313,6 +320,7 @@ collections:
           - name: chapter1
             label: Chapter I header (Terapi)
             widget: object
+            i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
               - { name: title, widget: string }
@@ -320,6 +328,7 @@ collections:
           - name: chapter2
             label: Chapter II header (Konsulentydelser)
             widget: object
+            i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate }
               - { name: title, widget: string }
@@ -328,6 +337,7 @@ collections:
           - name: manifest
             label: Manifest (Chapter I)
             widget: object
+            i18n: true
             fields:
               - { name: label, widget: string }
               - name: items
@@ -338,6 +348,7 @@ collections:
           - name: ritual
             label: Ritual (Chapter I)
             widget: object
+            i18n: true
             fields:
               - { name: label, widget: string }
               - { name: subtitle, widget: string }
@@ -350,16 +361,18 @@ collections:
           - name: forPersonal
             label: 'Kom forbi hvis du — personal'
             widget: object
+            i18n: true
             fields:
               - { name: label, widget: string }
               - name: items
                 widget: list
                 field: { name: line, widget: string }
 
-          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text }
+          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text, i18n: true }
           - name: forWork
             label: 'Skriv hvis I — work'
             widget: object
+            i18n: true
             fields:
               - { name: label, widget: string }
               - name: items
@@ -370,6 +383,7 @@ collections:
             label: Featured testimonials (between bio + contact)
             widget: object
             required: false
+            i18n: true
             fields:
               - { name: label, label: Section label, widget: string }
               - name: items
@@ -435,6 +449,7 @@ collections:
     fields:
       - name: slug
         widget: string
+        i18n: true
         hint: 'URL segment — different per locale (e.g. terapi / therapy).'
       - name: number
         widget: string
@@ -448,23 +463,26 @@ collections:
           - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
           - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
         hint: 'Drives palette + homepage grouping. Same across DA + EN.'
-      - { name: title, widget: string }
-      - { name: kicker, widget: string, hint: 'Short audience line, e.g. "film · tv · teater".' }
-      - { name: blurb, widget: text }
+      - { name: title, widget: string, i18n: true }
+      - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
+      - { name: blurb, widget: text, i18n: true }
       - name: bullets
         label: Feature bullets
         widget: list
+        i18n: true
         field: { name: bullet, widget: string }
-      - { name: supportsLabel, label: Supports list label (optional), widget: string, required: false }
+      - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
       - name: supports
         label: Supporting keywords (optional)
         widget: list
         required: false
+        i18n: true
         field: { name: keyword, widget: string }
       - name: testimonials
         label: Testimonials (optional)
         widget: list
         required: false
+        i18n: true
         summary: '{{fields.source}}'
         fields:
           - { name: quote, widget: text }
@@ -473,6 +491,7 @@ collections:
         label: Call-to-action button (optional)
         widget: object
         required: false
+        i18n: true
         fields:
           - { name: label, widget: string }
           - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
@@ -481,7 +500,7 @@ collections:
             i18n: duplicate
             default: primary
             options: [primary, secondary]
-      - { name: studiosLabel, label: Studios list label (optional), widget: string, required: false }
+      - { name: studiosLabel, label: Studios list label (optional), widget: string, i18n: true, required: false }
       - name: studios
         label: Studio credits (optional)
         widget: list
