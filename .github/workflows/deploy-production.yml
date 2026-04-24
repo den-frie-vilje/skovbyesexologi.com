@@ -12,6 +12,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      multiarch:
+        description: 'Also build linux/arm64 (slow — adds ~3min QEMU emulation). Default amd64-only matches the NAS.'
+        type: boolean
+        default: false
 
 jobs:
   deploy:
@@ -20,6 +25,7 @@ jobs:
       environment: production
       dockerfile: deploy/Dockerfile
       image-name: ghcr.io/den-frie-vilje/skovbyesexologi
+      platforms: ${{ inputs.multiarch && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
       build-args: |
         VITE_MODE=production
         PUBLIC_GIT_SHA=${{ github.sha }}

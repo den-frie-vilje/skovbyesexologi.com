@@ -12,6 +12,11 @@ on:
   push:
     branches: [staging]
   workflow_dispatch:
+    inputs:
+      multiarch:
+        description: 'Also build linux/arm64 (slow — adds ~3min QEMU emulation). Default amd64-only matches the NAS. Tick for M-series Mac local debugging.'
+        type: boolean
+        default: false
 
 jobs:
   deploy:
@@ -20,6 +25,7 @@ jobs:
       environment: staging
       dockerfile: deploy/Dockerfile
       image-name: ghcr.io/den-frie-vilje/skovbyesexologi
+      platforms: ${{ inputs.multiarch && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
       # Vite bakes these into the client bundle at build time so
       # the site footer can show "build <sha> · <date>" linked
       # back to the commit. VITE_MODE selects .env.staging.
