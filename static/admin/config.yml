@@ -120,18 +120,13 @@ pose_options_gem: &pose_options_gem
   - upperRightMed
   - fullBleed
 
-backend:
-  name: test-repo
-
-# Production backend — uncomment to activate.
-#
 # Editorial-workflow note: Sveltia writes every save to the
 # `staging` branch (NOT main). A GH Actions workflow
 # (`.github/workflows/deploy-staging.yml`) picks up every push to
-# `staging` and rebuilds signe.denfrievilje.dk within ~2 min.
-# Signe reviews there, and when happy clicks "Publish to
-# production" at `/publish` on the staging domain — that page
-# merges `staging` → `main` via the GitHub API, which triggers
+# `staging` and rebuilds the staging site within ~2 min. Signe
+# reviews there, and when happy clicks "Publish to production"
+# at `/publish` on the staging domain — that page merges
+# `staging` → `main` via the GitHub API, which triggers
 # `deploy-production.yml` and the change lands on
 # skovbyesexologi.com shortly after.
 #
@@ -141,15 +136,22 @@ backend:
 # feature ships we can reconsider, but the two-branch + /publish
 # button gives us the same UX without extra Sveltia dependency.
 #
+# base_url is the OAuth proxy's root. Sveltia appends /auth and
+# /callback, which Caddy strips the /auth prefix from and
+# forwards to the sveltia-auth container internally.
+backend:
+  name: github
+  repo: den-frie-vilje/skovbyesexologi.com
+  branch: staging
+  base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
+  site_domain: skovbyesexologi-com.stage.denfrievilje.dk
+
+# Offline / no-auth fallback — uncomment to test the admin UI
+# without the OAuth proxy running. Saves never leave the
+# browser tab. Useful for pure UI/schema iteration.
+#
 # backend:
-#   name: github
-#   repo: den-frie-vilje/skovbyesexologi.com
-#   branch: staging
-#   # base_url is the OAuth proxy's root. Sveltia appends /auth
-#   # and /callback, which Caddy strips the /auth prefix from
-#   # and forwards to the sveltia-auth container internally.
-#   base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
-#   site_domain: skovbyesexologi-com.stage.denfrievilje.dk
+#   name: test-repo
 
 media_folder: static/img
 public_folder: /img
@@ -178,12 +180,18 @@ collections:
             label: Language code
             widget: string
             i18n: duplicate
-            hint: ISO 639-1 code — must match the locale suffix on the file.
-          - { name: tagline, label: Tagline, widget: string }
-          - { name: leadIn, label: Lead-in paragraph, widget: text }
+            readonly: true
+            hint: >-
+              ISO 639-1 code — bound to the filename locale
+              suffix (site.da.json → `da`, site.en.json → `en`).
+              Read-only to prevent accidental mismatches that
+              would break the JSON-LD `inLanguage` generation.
+          - { name: tagline, label: Tagline, widget: string, i18n: true }
+          - { name: leadIn, label: Lead-in paragraph, widget: text, i18n: true }
           - name: footerCopyright
             label: Footer copyright
             widget: string
+            i18n: true
             hint: 'Template tokens: {year}, {name}, {cvr}.'
 
   # ---- Contact info ----
@@ -199,23 +207,24 @@ collections:
         format: json
         i18n: true
         fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: lede, widget: text }
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - { name: heading, widget: string, i18n: true }
+          - { name: lede, widget: text, i18n: true }
           - { name: email, widget: string, i18n: duplicate }
           - { name: phone, widget: string, i18n: duplicate }
-          - { name: address, widget: string }
+          - { name: address, widget: string, i18n: true }
           - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
-          - { name: hours, label: Opening hours, widget: string }
-          - { name: responseTime, label: Response time note, widget: text }
+          - { name: hours, label: Opening hours, widget: string, i18n: true }
+          - { name: responseTime, label: Response time note, widget: text, i18n: true }
           - name: fieldLabels
             label: Inline field labels (contact card)
             widget: object
+            i18n: true
             fields:
-              - { name: email, widget: string }
-              - { name: phone, widget: string }
-              - { name: address, widget: string }
-              - { name: hours, widget: string }
+              - { name: email, widget: string, i18n: true }
+              - { name: phone, widget: string, i18n: true }
+              - { name: address, widget: string, i18n: true }
+              - { name: hours, widget: string, i18n: true }
           - name: socials
             label: Social profiles (optional)
             widget: list
@@ -257,13 +266,14 @@ collections:
         format: json
         i18n: true
         fields:
-          - { name: label, label: Section label, widget: string }
-          - { name: heading, widget: string }
-          - { name: pronouns, widget: string }
-          - { name: portraitAlt, label: Portrait alt text, widget: string }
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - { name: heading, widget: string, i18n: true }
+          - { name: pronouns, widget: string, i18n: true }
+          - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
             label: Body paragraphs
             widget: list
+            i18n: true
             field: { name: paragraph, widget: text }
 
   # ---- Home page (includes stage choreography) ----
@@ -282,100 +292,116 @@ collections:
           - name: nav
             label: Top-nav links
             widget: list
+            i18n: true
             fields:
-              - { name: label, widget: string }
-              - { name: href, widget: string, hint: 'Use #anchor for in-page links.' }
+              - { name: label, widget: string, i18n: true }
+              - { name: href, widget: string, i18n: true, hint: 'Use #anchor for in-page links.' }
 
           - name: hero
             widget: object
+            i18n: true
             fields:
-              - { name: name, label: Brand name (hero), widget: string }
-              - { name: city, widget: string }
-              - { name: statementStart, label: Statement (start), widget: text, hint: 'First line of the three-piece hero statement.' }
-              - { name: statementEnd, label: Statement (end before em), widget: text }
-              - { name: statementEm, label: Statement (emphasised tail), widget: string }
-              - { name: attribution, widget: text, hint: 'Role line under the hero statement.' }
-              - { name: scrollLabel, label: Scroll-cue label, widget: string }
+              - { name: name, label: Brand name (hero), widget: string, i18n: true }
+              - { name: city, widget: string, i18n: true }
+              - { name: statementStart, label: Statement (start), widget: text, i18n: true, hint: 'First line of the three-piece hero statement.' }
+              - { name: statementEnd, label: Statement (end before em), widget: text, i18n: true }
+              - { name: statementEm, label: Statement (emphasised tail), widget: string, i18n: true }
+              - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
+              - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
 
           - name: nameSection
             label: 'Who: name + role block'
             widget: object
+            i18n: true
             fields:
-              - { name: eyebrow, widget: string }
+              - { name: eyebrow, widget: string, i18n: true }
+              # firstName + lastName: structurally shared — DA edits copy to EN
               - { name: firstName, widget: string, i18n: duplicate }
               - { name: lastName, widget: string, i18n: duplicate }
-              - { name: pronouns, widget: string }
-              - { name: roleLine, widget: text }
-              - { name: roleSub, widget: text }
+              - { name: pronouns, widget: string, i18n: true }
+              - { name: roleLine, widget: text, i18n: true }
+              - { name: roleSub, widget: text, i18n: true }
 
           - name: chapter1
             label: Chapter I header (Terapi)
             widget: object
+            i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
+              - { name: title, widget: string, i18n: true }
+              - { name: lede, widget: text, i18n: true }
           - name: chapter2
             label: Chapter II header (Konsulentydelser)
             widget: object
+            i18n: true
             fields:
               - { name: mark, widget: string, i18n: duplicate }
-              - { name: title, widget: string }
-              - { name: lede, widget: text }
+              - { name: title, widget: string, i18n: true }
+              - { name: lede, widget: text, i18n: true }
 
           - name: manifest
             label: Manifest (Chapter I)
             widget: object
+            i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
+                i18n: true
                 fields:
-                  - { name: word, widget: string }
-                  - { name: text, widget: text }
+                  - { name: word, widget: string, i18n: true }
+                  - { name: text, widget: text, i18n: true }
           - name: ritual
             label: Ritual (Chapter I)
             widget: object
+            i18n: true
             fields:
-              - { name: label, widget: string }
-              - { name: subtitle, widget: string }
+              - { name: label, widget: string, i18n: true }
+              - { name: subtitle, widget: string, i18n: true }
               - name: steps
                 widget: list
+                i18n: true
                 fields:
                   - { name: n, widget: string, i18n: duplicate }
-                  - { name: title, widget: string }
-                  - { name: body, widget: text }
+                  - { name: title, widget: string, i18n: true }
+                  - { name: body, widget: text, i18n: true }
           - name: forPersonal
             label: 'Kom forbi hvis du — personal'
             widget: object
+            i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
-                field: { name: line, widget: string }
+                i18n: true
+                field: { name: line, widget: string, i18n: true }
 
-          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text }
+          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text, i18n: true }
           - name: forWork
             label: 'Skriv hvis I — work'
             widget: object
+            i18n: true
             fields:
-              - { name: label, widget: string }
+              - { name: label, widget: string, i18n: true }
               - name: items
                 widget: list
-                field: { name: line, widget: string }
+                i18n: true
+                field: { name: line, widget: string, i18n: true }
 
           - name: testimonials
             label: Featured testimonials (between bio + contact)
             widget: object
             required: false
+            i18n: true
             fields:
-              - { name: label, label: Section label, widget: string }
+              - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
                 widget: list
+                i18n: true
                 summary: '{{fields.source}}'
                 fields:
-                  - { name: quote, widget: text }
-                  - { name: source, widget: string }
+                  - { name: quote, widget: text, i18n: true }
+                  - { name: source, widget: string, i18n: true }
 
           # Stage choreography is part of the page's STRUCTURE,
           # not its copy — `i18n: duplicate` keeps DA + EN on
@@ -433,6 +459,7 @@ collections:
     fields:
       - name: slug
         widget: string
+        i18n: true
         hint: 'URL segment — different per locale (e.g. terapi / therapy).'
       - name: number
         widget: string
@@ -446,40 +473,44 @@ collections:
           - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
           - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
         hint: 'Drives palette + homepage grouping. Same across DA + EN.'
-      - { name: title, widget: string }
-      - { name: kicker, widget: string, hint: 'Short audience line, e.g. "film · tv · teater".' }
-      - { name: blurb, widget: text }
+      - { name: title, widget: string, i18n: true }
+      - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
+      - { name: blurb, widget: text, i18n: true }
       - name: bullets
         label: Feature bullets
         widget: list
-        field: { name: bullet, widget: string }
-      - { name: supportsLabel, label: Supports list label (optional), widget: string, required: false }
+        i18n: true
+        field: { name: bullet, widget: string, i18n: true }
+      - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
       - name: supports
         label: Supporting keywords (optional)
         widget: list
         required: false
-        field: { name: keyword, widget: string }
+        i18n: true
+        field: { name: keyword, widget: string, i18n: true }
       - name: testimonials
         label: Testimonials (optional)
         widget: list
         required: false
+        i18n: true
         summary: '{{fields.source}}'
         fields:
-          - { name: quote, widget: text }
-          - { name: source, widget: string }
+          - { name: quote, widget: text, i18n: true }
+          - { name: source, widget: string, i18n: true }
       - name: cta
         label: Call-to-action button (optional)
         widget: object
         required: false
+        i18n: true
         fields:
-          - { name: label, widget: string }
+          - { name: label, widget: string, i18n: true }
           - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
           - name: kind
             widget: select
             i18n: duplicate
             default: primary
             options: [primary, secondary]
-      - { name: studiosLabel, label: Studios list label (optional), widget: string, required: false }
+      - { name: studiosLabel, label: Studios list label (optional), widget: string, i18n: true, required: false }
       - name: studios
         label: Studio credits (optional)
         widget: list

@@ -162,12 +162,18 @@ jobs:
           SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')"
 
           echo "POSTing to $URL"
+          # --max-time 180 because the webhook now synchronously
+          # waits for deploy.sh to complete (include-command-
+          # output-in-response: true) so the HTTP response
+          # reflects real deploy success/failure. Full deploy
+          # = git fetch + compose pull + container recreate +
+          # healthcheck wait ≈ 30-60s; 180 is comfortable margin.
           HTTP_CODE=$(curl -sS -o /tmp/resp.txt -w '%{http_code}' \
             -X POST "$URL" \
             -H "Content-Type: application/json" \
             -H "X-Hub-Signature-256: $SIG" \
             --data "$BODY" \
-            --max-time 30 \
+            --max-time 180 \
             --retry 3 --retry-delay 5 --retry-connrefused)
 
           echo "webhook HTTP $HTTP_CODE"
