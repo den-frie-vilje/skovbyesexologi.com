@@ -69,10 +69,25 @@ COMPOSE_ARGS=(-p "$PROJECT" -f "$COMPOSE_FILE")
 
 docker compose "${COMPOSE_ARGS[@]}" pull site
 
-# --wait blocks until the site container's healthcheck passes.
-# That's the signal the new container is actually serving HTTP,
-# which is the right moment to purge edge cache.
-docker compose "${COMPOSE_ARGS[@]}" up -d --wait
+# First pass: apply any compose/env/volume changes across all
+# services (idempotent — unchanged services are untouched).
+docker compose "${COMPOSE_ARGS[@]}" up -d
+
+# Second pass: force-recreate the site container specifically.
+# Docker Compose's default up skips recreation when the image
+# *reference* is unchanged — but the tag (e.g. `staging-latest`)
+# is a moving pointer: the reference stays the same while the
+# digest behind it changes on every CI push. Without a force
+# here, `pull site` brings new layers down but `up -d` keeps
+# the running container on the old digest, and the deployed
+# content never refreshes.
+#
+# --no-deps: don't touch Caddy + sveltia-auth (both stay up,
+# no brief routing outage during the swap).
+# --wait: block until the new site container's healthcheck
+# passes — this is the "deploy is live" signal that the CF
+# cache purge below can safely fire off.
+docker compose "${COMPOSE_ARGS[@]}" up -d --wait --force-recreate --no-deps site
 
 # Optional Cloudflare purge. Per-site vars via indirection:
 #   <DOMAIN_SAFE>_<ENV>_CF_API_TOKEN
