@@ -69,17 +69,23 @@
 <footer class="foot">
   <div class="foot-inner">
     <p class="copyright">{text}</p>
-    {#if socials && subject}
-      <SocialLinks {socials} {subject} {findLabel} {onLabel} />
-    {/if}
+    <div class="foot-right">
+      {#if socials && subject}
+        <SocialLinks {socials} {subject} {findLabel} {onLabel} />
+      {/if}
+      {#if shortSha}
+        <a
+          class="build-marker"
+          href={commitUrl}
+          target="_blank"
+          rel="noopener"
+          title="View commit on GitHub"
+        >
+          build {shortSha}{#if buildLabel} · {buildLabel}{/if}
+        </a>
+      {/if}
+    </div>
   </div>
-  {#if shortSha}
-    <p class="build-marker">
-      <a href={commitUrl} target="_blank" rel="noopener" title="View commit on GitHub">
-        build {shortSha}{#if buildLabel} · {buildLabel}{/if}
-      </a>
-    </p>
-  {/if}
 </footer>
 
 <style>
@@ -92,7 +98,7 @@
     /* 65% surface token — 4.5:1 on the deep-fern bg, meeting WCAG
        AA for small text. Was 45% (4.06:1) before the a11y pass. */
     color: color-mix(in oklch, var(--surface) 65%, transparent);
-    padding: 1.25rem 1.25rem 2.5rem;
+    padding: 1.25rem;
     font-family: var(--font-mono);
     font-size: 0.66rem;
     letter-spacing: 0.14em;
@@ -117,40 +123,31 @@
     margin: 0;
   }
 
-  /* Build marker — deliberately very muted. ~28% opacity on the
-     already-muted foot color, sub-pixel letter spacing, tiny size.
-     Visible on hover (opacity bumps to parity with the copyright
-     line) but invisible during normal reading. */
+  /* Right-hand cluster on the same row as the copyright: social
+     links (if any) followed by the build marker. Column on mobile
+     so nothing wraps awkwardly in a narrow strip. */
+  .foot-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  /* Build marker — deliberately very muted. Inline with the
+     copyright line so it doesn't add a new row of footer height.
+     Visible on hover (opacity bumps) but quiet during reading. */
   .build-marker {
-    max-width: 1320px;
-    margin: 0.75rem auto 0;
-    padding: 0 1.25rem;
+    color: inherit;
+    text-decoration: none;
     font-size: 0.58rem;
     letter-spacing: 0.08em;
     opacity: 0.3;
     transition: opacity 0.2s ease;
+    white-space: nowrap;
   }
   .build-marker:hover {
     opacity: 0.75;
-  }
-  .build-marker a {
-    color: inherit;
-    text-decoration: none;
-  }
-  .build-marker a:hover {
     text-decoration: underline;
-  }
-
-  @media (min-width: 720px) {
-    .build-marker {
-      padding: 0 2rem;
-      text-align: right;
-    }
-  }
-  @media (min-width: 1024px) {
-    .build-marker {
-      padding: 0 3rem;
-    }
   }
 
   @media (min-width: 720px) {
@@ -160,6 +157,11 @@
       align-items: center;
       padding-left: 2rem;
       padding-right: 2rem;
+    }
+    .foot-right {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
     }
   }
   @media (min-width: 1024px) {
