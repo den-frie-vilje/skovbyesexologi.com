@@ -221,10 +221,10 @@ collections:
             widget: object
             i18n: true
             fields:
-              - { name: email, widget: string }
-              - { name: phone, widget: string }
-              - { name: address, widget: string }
-              - { name: hours, widget: string }
+              - { name: email, widget: string, i18n: true }
+              - { name: phone, widget: string, i18n: true }
+              - { name: address, widget: string, i18n: true }
+              - { name: hours, widget: string, i18n: true }
           - name: socials
             label: Social profiles (optional)
             widget: list
