@@ -120,18 +120,13 @@ pose_options_gem: &pose_options_gem
   - upperRightMed
   - fullBleed
 
-backend:
-  name: test-repo
-
-# Production backend — uncomment to activate.
-#
 # Editorial-workflow note: Sveltia writes every save to the
 # `staging` branch (NOT main). A GH Actions workflow
 # (`.github/workflows/deploy-staging.yml`) picks up every push to
-# `staging` and rebuilds signe.denfrievilje.dk within ~2 min.
-# Signe reviews there, and when happy clicks "Publish to
-# production" at `/publish` on the staging domain — that page
-# merges `staging` → `main` via the GitHub API, which triggers
+# `staging` and rebuilds the staging site within ~2 min. Signe
+# reviews there, and when happy clicks "Publish to production"
+# at `/publish` on the staging domain — that page merges
+# `staging` → `main` via the GitHub API, which triggers
 # `deploy-production.yml` and the change lands on
 # skovbyesexologi.com shortly after.
 #
@@ -141,15 +136,22 @@ backend:
 # feature ships we can reconsider, but the two-branch + /publish
 # button gives us the same UX without extra Sveltia dependency.
 #
+# base_url is the OAuth proxy's root. Sveltia appends /auth and
+# /callback, which Caddy strips the /auth prefix from and
+# forwards to the sveltia-auth container internally.
+backend:
+  name: github
+  repo: den-frie-vilje/skovbyesexologi.com
+  branch: staging
+  base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
+  site_domain: skovbyesexologi-com.stage.denfrievilje.dk
+
+# Offline / no-auth fallback — uncomment to test the admin UI
+# without the OAuth proxy running. Saves never leave the
+# browser tab. Useful for pure UI/schema iteration.
+#
 # backend:
-#   name: github
-#   repo: den-frie-vilje/skovbyesexologi.com
-#   branch: staging
-#   # base_url is the OAuth proxy's root. Sveltia appends /auth
-#   # and /callback, which Caddy strips the /auth prefix from
-#   # and forwards to the sveltia-auth container internally.
-#   base_url: https://skovbyesexologi-com.stage.denfrievilje.dk/auth
-#   site_domain: skovbyesexologi-com.stage.denfrievilje.dk
+#   name: test-repo
 
 media_folder: static/img
 public_folder: /img
