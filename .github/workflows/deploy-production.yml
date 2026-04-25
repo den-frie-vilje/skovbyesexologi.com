@@ -2,9 +2,33 @@
 # (which does a GitHub API merge of staging → main) or via a
 # normal PR merge on the developer side.
 #
-# Gatable: enable required reviewers on the `production`
-# environment (repo Settings → Environments) to require
-# manual approval before the webhook fires.
+# Two-stage gating:
+#
+#   1. detect-changes — diffs HEAD against its parent. If every
+#      changed file is a content-only path (Sveltia editor
+#      output: src/content/** + static/img/**), bypass the
+#      reviewer gate. Anything outside those paths — code, CSS,
+#      deploy config, workflows, the admin loader — requires
+#      explicit approval.
+#
+#   2. approve — runs only when content-only=false. References
+#      the `production-gate` GitHub environment, which has the
+#      required-reviewer rule (Ole) configured in repo Settings
+#      → Environments. Times out after 2 days; if not approved
+#      the workflow auto-fails and a re-deploy needs a fresh
+#      Actions UI rerun.
+#
+#   3. deploy — the actual build + push + webhook trigger. Runs
+#      after approval for code changes; runs immediately for
+#      content-only pushes. References the `production`
+#      environment for secret scope (PRODUCTION_WEBHOOK_SECRET);
+#      that env should NOT have a reviewer rule — the gate is
+#      the responsibility of `production-gate` upstream.
+#
+# One-time setup before the first run with this file on main:
+#   • Create `production-gate` env (Settings → Environments)
+#   • Add Ole as a required reviewer there
+#   • Confirm `production` env has the secret but NO reviewers
 
 name: Deploy to production
 
@@ -19,7 +43,74 @@ on:
         default: false
 
 jobs:
+  detect-changes:
+    # Decides whether this push is content-only (Signe's Sveltia
+    # commits) or contains code/config changes that warrant
+    # human review before deploy. workflow_dispatch always
+    # routes through the reviewer gate (no diff to check).
+    runs-on: ubuntu-latest
+    outputs:
+      # 'true' → bypass reviewer gate. 'false' (or empty,
+      # treated as false) → require approval.
+      content-only: ${{ steps.filter.outputs.content-only || 'false' }}
+    steps:
+      - name: Checkout
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+        with:
+          # Need parent commit on main for the diff. fetch-depth: 2
+          # gets HEAD + parent — enough for paths-filter, much
+          # cheaper than fetching the full history.
+          fetch-depth: 2
+
+      - name: Detect content-only push
+        id: filter
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@v3
+        with:
+          # `every`: every changed file must match at least one
+          # of the listed patterns. A single file outside these
+          # paths flips content-only to false.
+          predicate-quantifier: 'every'
+          filters: |
+            content-only:
+              - 'src/content/**'
+              - 'static/img/**'
+
+      - name: Summarise routing
+        run: |
+          if [ "${{ steps.filter.outputs.content-only || 'false' }}" = "true" ]; then
+            echo "content-only push — skipping reviewer gate" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "code/config change detected — reviewer approval required" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  approve:
+    # Reviewer gate. Skipped entirely for content-only pushes;
+    # required-reviewer prompt fires for anything else. The
+    # `production-gate` environment must have Ole listed as a
+    # required reviewer in repo Settings → Environments.
+    needs: detect-changes
+    if: needs.detect-changes.outputs.content-only != 'true'
+    runs-on: ubuntu-latest
+    environment: production-gate
+    timeout-minutes: 2880  # 2 days — workflow auto-fails if Ole hasn't approved
+    steps:
+      - name: Reviewed
+        run: echo "Code/config change reviewed and approved — proceeding to build + deploy."
+
   deploy:
+    # Build, push, fire webhook, smoke-check. Runs after approval
+    # for code changes; runs immediately for content-only pushes.
+    needs: [detect-changes, approve]
+    # `always()` lets us evaluate this `if:` even when `approve`
+    # was skipped — `needs.approve.result` is then 'skipped',
+    # not 'success'. The first OR branch handles that case.
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      (needs.detect-changes.outputs.content-only == 'true' ||
+       needs.approve.result == 'success')
     uses: den-frie-vilje/nas-sites/.github/workflows/build-and-notify.yml@main
     with:
       environment: production
