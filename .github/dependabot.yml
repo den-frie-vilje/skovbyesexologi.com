@@ -1,0 +1,70 @@
+# Weekly dependency updates, grouped per ecosystem.
+#
+# Strategy: minor + patch updates roll into one PR per ecosystem
+# per week. Major updates land as individual PRs so a single
+# breaking change can't park the whole batch.
+#
+# Schedule fires Monday early morning Copenhagen time so PRs
+# are waiting at the start of the week.
+
+version: 2
+
+updates:
+  # Site dependencies (Svelte, Vite, Tailwind, Three.js, Sveltia, …)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Copenhagen"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Workflow actions (checkout, setup-buildx, metadata-action, …).
+  # These move fast and are usually safe to bulk-merge.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Copenhagen"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions-minor-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Site Dockerfile base images (pkgxdev/pkgx, nginx-unprivileged).
+  # Watching for security patches on the runtime base in particular.
+  - package-ecosystem: "docker"
+    directory: "/deploy"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Copenhagen"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    groups:
+      docker-minor-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
