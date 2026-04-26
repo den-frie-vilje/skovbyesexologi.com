@@ -10,9 +10,19 @@
   doesn't auto-serve directory index files) and in production (any
   host/platform, no reliance on directory-index resolution).
 
-  Pinned to @sveltia/cms@0 on unpkg — update the version string
-  deliberately. Replace with a self-hosted bundle if the CDN is blocked
-  or you want air-gapped editing.
+  Bundle is self-hosted at /admin/sveltia-cms.js — the version is
+  pinned via `package.json`'s devDependency on `@sveltia/cms`, and the
+  prebuild script (`scripts/copy-sveltia.ts`) copies the file from
+  `node_modules/@sveltia/cms/dist/sveltia-cms.js` into `static/admin/`
+  before each `vite build`. Dependabot's weekly npm group surfaces
+  upstream releases for review.
+
+  Why self-hosted (was on unpkg): supply-chain hardening (C1). The
+  unpkg `@0` tag floated to whatever Sveltia had latest, with no
+  Subresource Integrity hash, making the admin loader vulnerable to
+  any compromise of unpkg's CDN distribution path or to upstream
+  publishing breakage. The bundle is now under our own control,
+  served same-origin, version-pinned, and reviewable per upgrade.
 -->
 <svelte:head>
   <title>Skovbye Sexologi — Admin</title>
@@ -21,5 +31,5 @@
     Sveltia's UMD bundle — deliberately NOT `type="module"`. The bundle
     ships as a classic script and warns at runtime if loaded as a module.
   -->
-  <script src="https://unpkg.com/@sveltia/cms@0/dist/sveltia-cms.js"></script>
+  <script src="/admin/sveltia-cms.js"></script>
 </svelte:head>
