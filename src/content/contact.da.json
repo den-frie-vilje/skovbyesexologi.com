@@ -6,10 +6,10 @@
   "phone": "(+45) 31 60 42 15",
   "address": "København",
   "cvr": "43253360",
-  "hours": "Man–Fre 10–17 · Weekend lukket",
-  "responseTime": "Jeg bestræber mig på at besvare forespørgsler indenfor 24–48 timer.",
+  "hours": "man.-fre. 10–17 · Lukket i weekenden",
+  "responseTime": "Jeg bestræber mig på at besvare forespørgsler inden for 24–48 timer.",
   "fieldLabels": {
-    "email": "Email",
+    "email": "E-mail",
     "phone": "Telefon",
     "address": "By",
     "hours": "Åbent"

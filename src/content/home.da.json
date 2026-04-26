@@ -1,7 +1,7 @@
 {
   "nav": [
     { "label": "Terapi", "href": "#terapi" },
-    { "label": "Intimacy", "href": "#intimacy-coordination" },
+    { "label": "Intimitetskoordinering", "href": "#intimacy-coordination" },
     { "label": "Ældrepleje", "href": "#aeldrepleje" },
     { "label": "Undervisning", "href": "#undervisning" },
     { "label": "Kontakt", "href": "#kontakt" }
@@ -21,12 +21,12 @@
     "lastName": "Skovbye",
     "pronouns": "hun / hende · de / dem",
     "roleLine": "Klinisk sexolog · intimitetskoordinator · psykomotorisk terapeut.",
-    "roleSub": "Uddannet psykomotorisk terapeut (KP) og klinisk sexolog (DACS). Arbejder med solo, par, poly, unge, ældre — og med instruktører og performere der skal håndtere intimitet på settet."
+    "roleSub": "Uddannet psykomotorisk terapeut (KP) og klinisk sexolog (DACS). Arbejder med solo, par, poly, unge og ældre — og med instruktører og medvirkende, der skal håndtere intimitet på settet."
   },
   "chapter1": {
     "mark": "I",
     "title": "Terapi",
-    "lede": "For dig, for jer. Solo, par, poly. Kropsligt, samtaleligt, skamfrit. Dit tempo, din rækkefølge, din krop."
+    "lede": "For dig, for jer. Solo, par, poly. Kropsligt, i samtale, skamfrit. Dit tempo, din rækkefølge, din krop."
   },
   "manifest": {
     "label": "Manifest",
@@ -44,7 +44,7 @@
     "steps": [
       { "n": "01", "title": "At lande", "body": "Vi sidder. Du får lov til at være i rummet før du skal forklare noget." },
       { "n": "02", "title": "At sige højt", "body": "Du fortæller hvad der er. Jeg spørger ind, men fylder ikke." },
-      { "n": "03", "title": "At mærke", "body": "Nogle gange bliver vi ved ordene. Andre gange bevæger vi, åndedrættet, kroppen. Altid kun det du siger ja til." },
+      { "n": "03", "title": "At mærke", "body": "Nogle gange bliver vi ved ordene. Andre gange arbejder vi med bevægelse, åndedræt og krop. Altid kun det, du siger ja til." },
       { "n": "04", "title": "At gå videre", "body": "Vi runder. Du tager hjem med en lille forandring — sjældent færdig, altid i gang." }
     ]
   },
@@ -63,7 +63,7 @@
     "title": "Konsulentydelser",
     "lede": "For institutioner, filmproduktioner, plejesektoren og ungdomsuddannelser. Undervisning, intimitetskoordinering, rådgivning — altid baseret i samme terapeutiske fundament."
   },
-  "pillQuote": "Klare linjer om hvordan vi må og ikke må tale, røre eller gøre, tillader en autentisk fremstilling af intime relationer på skærmen.",
+  "pillQuote": "Klare linjer for, hvordan vi må og ikke må tale, røre eller gøre, tillader en autentisk fremstilling af intime relationer på skærmen.",
   "forWork": {
     "label": "Skriv til mig hvis I —",
     "items": [
@@ -84,7 +84,7 @@
         "source": "[mock] Producent, spillefilm"
       },
       {
-        "quote": "[mock] Workshoppen hun kørte for plejepersonalet ændrede, hvordan vi taler med beboerne om intimitet. Vi havde undgået emnet i årevis.",
+        "quote": "[mock] Forløbet, hun holdt for plejepersonalet, ændrede, hvordan vi taler med beboerne om intimitet. Vi havde undgået emnet i årevis.",
         "source": "[mock] Plejeleder, plejehjem"
       },
       {
@@ -92,11 +92,11 @@
         "source": "[mock] Par, København"
       },
       {
-        "quote": "[mock] Workshoppen for de unge var første gang, vores elever stillede spørgsmål om lyst og samtykke uden at trække sig.",
+        "quote": "[mock] Forløbet for de unge var første gang, vores elever stillede spørgsmål om lyst og samtykke uden at trække sig.",
         "source": "[mock] Lærer, ungdomsuddannelse"
       },
       {
-        "quote": "[mock] Jeg kom ud som queer som 47-årig og havde ingen anelse om, hvad det hele betød i kroppen. Tre sessioner senere havde jeg et ordforråd, jeg ikke vidste fandtes.",
+        "quote": "[mock] Jeg kom ud som queer som 47-årig og havde ingen anelse om, hvad det hele betød i kroppen. Tre samtaler senere havde jeg et ordforråd, jeg ikke vidste fandtes.",
         "source": "[mock] Terapiklient"
       }
     ]
