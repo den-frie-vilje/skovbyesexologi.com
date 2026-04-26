@@ -68,11 +68,8 @@
 
 <footer class="foot">
   <div class="foot-inner">
-    <p class="copyright">{text}</p>
-    <div class="foot-right">
-      {#if socials && subject}
-        <SocialLinks {socials} {subject} {findLabel} {onLabel} />
-      {/if}
+    <div class="foot-left">
+      <p class="copyright">{text}</p>
       {#if shortSha}
         <a
           class="build-marker"
@@ -85,6 +82,9 @@
         </a>
       {/if}
     </div>
+    {#if socials && subject}
+      <SocialLinks {socials} {subject} {findLabel} {onLabel} />
+    {/if}
   </div>
 </footer>
 
@@ -108,8 +108,13 @@
   }
   /*
     Inner wrapper shares the 1320px cap the rest of the site uses.
-    Row on tablet+, column on mobile so the social icons aren't
-    competing with the copyright line for a tight strip of space.
+    Row on tablet+, column on mobile. Two clusters: the
+    copyright+build-marker on the left, social icons on the
+    right. Build marker lives in the left cluster (NOT with the
+    socials) so the icons don't fight for the same horizontal
+    strip — on a narrow tablet that strip is already tight, and
+    the muted build marker visually anchors to the copyright
+    string it annotates.
   */
   .foot-inner {
     max-width: 1320px;
@@ -119,21 +124,20 @@
     align-items: flex-start;
     gap: 1rem;
   }
+
+  /* Left cluster: copyright/CVR text + build-marker after it.
+     Stacks on mobile, becomes inline on tablet+. */
+  .foot-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
   .copyright {
     margin: 0;
   }
 
-  /* Right-hand cluster on the same row as the copyright: social
-     links (if any) followed by the build marker. Column on mobile
-     so nothing wraps awkwardly in a narrow strip. */
-  .foot-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.6rem;
-  }
-
-  /* Build marker — deliberately very muted. Inline with the
+  /* Build marker — deliberately very muted. Sits next to the
      copyright line so it doesn't add a new row of footer height.
      Visible on hover (opacity bumps) but quiet during reading. */
   .build-marker {
@@ -158,9 +162,12 @@
       padding-left: 2rem;
       padding-right: 2rem;
     }
-    .foot-right {
+    /* Inline copyright + build marker at tablet+. The build
+       marker sits to the right of the copyright text, before
+       the space-between gap puts socials at the far right. */
+    .foot-left {
       flex-direction: row;
-      align-items: center;
+      align-items: baseline;
       gap: 1rem;
     }
   }
