@@ -79,7 +79,7 @@
     directive's allowlist and re-deploy.
   -->
   <meta
-    http-equiv="Content-Security-Policy"
+    http-equiv="content-security-policy"
     content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com; worker-src 'self' blob:; base-uri 'self';"
   />
   <!--
