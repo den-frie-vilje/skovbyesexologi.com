@@ -2,28 +2,41 @@
 # (which does a GitHub API merge of staging → main) or via a
 # normal PR merge on the developer side.
 #
-# Two-stage gating:
+# Three-stage gating:
 #
 #   1. detect-changes — diffs HEAD against its parent. If every
 #      changed file is a content-only path (Sveltia editor
 #      output: src/content/** + static/img/**), bypass the
-#      reviewer gate. Anything outside those paths — code, CSS,
-#      deploy config, workflows, the admin loader — requires
-#      explicit approval.
+#      signature check AND the reviewer gate. Anything outside
+#      those paths — code, CSS, deploy config, workflows, the
+#      admin loader — requires both signed commits AND explicit
+#      reviewer approval.
 #
-#   2. approve — runs only when content-only=false. References
-#      the `production-gate` GitHub environment, which has the
-#      required-reviewer rule (Ole) configured in repo Settings
-#      → Environments. Times out after 2 days; if not approved
-#      the workflow auto-fails and a re-deploy needs a fresh
-#      Actions UI rerun.
+#   2. verify-signatures — only runs when content-only=false.
+#      Cryptographically verifies that every commit being
+#      introduced to main (between this push's `before` and
+#      `after` SHAs) is signed by a trusted key recognized by
+#      GitHub. Catches the case where someone with stolen
+#      credentials pushes code commits but lacks the signing
+#      key. Trusts GitHub's verification — passes for
+#      developer hand-signed commits AND for GitHub web-flow
+#      signed merge commits, blocks anything `verified: false`
+#      (unsigned, bad signature, unknown key, etc).
 #
-#   3. deploy — the actual build + push + webhook trigger. Runs
+#   3. approve — only runs when content-only=false AND
+#      verify-signatures passed. References the `production-gate`
+#      GitHub environment, which has the required-reviewer rule
+#      (Ole) configured in repo Settings → Environments. Times
+#      out after 2 days; if not approved the workflow auto-fails
+#      and a re-deploy needs a fresh Actions UI rerun.
+#
+#   4. deploy — the actual build + push + webhook trigger. Runs
 #      after approval for code changes; runs immediately for
-#      content-only pushes. References the `production`
-#      environment for secret scope (PRODUCTION_WEBHOOK_SECRET);
-#      that env should NOT have a reviewer rule — the gate is
-#      the responsibility of `production-gate` upstream.
+#      content-only pushes (which skipped both verify-signatures
+#      and approve). References the `production` environment for
+#      secret scope (PRODUCTION_WEBHOOK_SECRET); that env should
+#      NOT have a reviewer rule — the gate is the responsibility
+#      of `production-gate` upstream.
 #
 # One-time setup before the first run with this file on main:
 #   • Create `production-gate` env (Settings → Environments)
@@ -85,12 +98,77 @@ jobs:
             echo "code/config change detected — reviewer approval required" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+  verify-signatures:
+    # Cryptographic gate. Skipped for content-only pushes
+    # (Sveltia saves are unsigned by design — OAuth API commits
+    # don't trigger GitHub's web-flow signing, and the path
+    # filter has already isolated those into the bypass branch).
+    # For any push that touches code/config: every introduced
+    # commit must be `verified: true` per GitHub's verification
+    # check. This catches credential-theft attacks where the
+    # attacker has token access but no signing key.
+    needs: detect-changes
+    if: needs.detect-changes.outputs.content-only != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Verify all introduced commits are GitHub-verified
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          # Range to verify:
+          #   push event   → commits between event.before..event.after
+          #   workflow_dispatch / weird events → just HEAD (1 commit)
+          if [ "$EVENT" = "push" ] && [ -n "$BEFORE" ] && \
+             [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            BASE="$BEFORE"
+            HEAD="$AFTER"
+          else
+            BASE="${AFTER}~1"
+            HEAD="$AFTER"
+          fi
+
+          echo "Verifying commits in $BASE..$HEAD"
+
+          # Single API call. `compare` returns the commit list
+          # with each commit's verification block populated.
+          UNVERIFIED=$(gh api "repos/$REPO/compare/$BASE...$HEAD" \
+            --jq '.commits[] | select(.commit.verification.verified == false) | "\(.sha[0:7]) [\(.commit.verification.reason)] \(.commit.message | split("\n")[0])"')
+
+          TOTAL=$(gh api "repos/$REPO/compare/$BASE...$HEAD" --jq '.commits | length')
+
+          if [ -n "$UNVERIFIED" ]; then
+            echo "::error::$(echo "$UNVERIFIED" | wc -l | tr -d ' ') of $TOTAL introduced commit(s) lack a trusted signature:"
+            echo "$UNVERIFIED" | while IFS= read -r line; do
+              echo "::error::  $line"
+            done
+            echo ""
+            echo "Phase 3 policy: code/config changes must be signed by a key registered with the committer's GitHub account."
+            echo "Hand commits: configure local git signing — see docs/PHASE-3-SIGNED-COMMITS.md if added."
+            echo "Merge commits: GitHub's web-flow auto-signs PR merges and squash-merges; if you see this on a merge commit, the underlying commits were the unsigned ones."
+            exit 1
+          fi
+
+          echo "✓ All $TOTAL introduced commit(s) verified by GitHub"
+          {
+            echo "## Signature verification"
+            echo ""
+            echo "All $TOTAL commit(s) introduced in this push are signed by trusted keys."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   approve:
     # Reviewer gate. Skipped entirely for content-only pushes;
     # required-reviewer prompt fires for anything else. The
     # `production-gate` environment must have Ole listed as a
     # required reviewer in repo Settings → Environments.
-    needs: detect-changes
+    needs: [detect-changes, verify-signatures]
     if: needs.detect-changes.outputs.content-only != 'true'
     runs-on: ubuntu-latest
     environment: production-gate
@@ -102,15 +180,17 @@ jobs:
   deploy:
     # Build, push, fire webhook, smoke-check. Runs after approval
     # for code changes; runs immediately for content-only pushes.
-    needs: [detect-changes, approve]
-    # `always()` lets us evaluate this `if:` even when `approve`
-    # was skipped — `needs.approve.result` is then 'skipped',
-    # not 'success'. The first OR branch handles that case.
+    needs: [detect-changes, verify-signatures, approve]
+    # `always()` lets us evaluate this `if:` even when
+    # verify-signatures and approve were skipped (content-only).
+    # For non-content-only, both must have succeeded. The OR
+    # branch handles the content-only short-circuit.
     if: |
       always() &&
       needs.detect-changes.result == 'success' &&
       (needs.detect-changes.outputs.content-only == 'true' ||
-       needs.approve.result == 'success')
+       (needs.verify-signatures.result == 'success' &&
+        needs.approve.result == 'success'))
     uses: den-frie-vilje/nas-sites/.github/workflows/build-and-notify.yml@main
     with:
       environment: production
