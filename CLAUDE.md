@@ -6,23 +6,20 @@ intimacy coordinator. Static SvelteKit build, Danish-first, self-hostable.
 See [AGENTS.md](AGENTS.md) for the deep reference (Three.js stage architecture,
 palette conventions, perf lessons, roadmap).
 
-## Current Phase
+## Current state
 
-**Phase 2 — the "Flod" direction is the site.** The editorial / techno sketches
-have been removed. The homepage at `/` is the Flod design: a single
-scrolling document, two chapters (Terapi → Konsulentydelser), with a
-scroll-choreographed WebGL stage.
+The "Flod" homepage at `/` is the site: one scrolling document, two
+chapters (Terapi → Konsulentydelser), scroll-choreographed Three.js
+stage. Bilingual: DA at `/`, EN at `/en/...`. Per-service detail
+pages live at `/ydelser/[slug]` (DA) and `/en/services/[slug]` (EN).
+Sveltia CMS at `/admin` writes back to the repo via the GitHub
+backend (self-hosted bundle, CSP-locked). Production deploys via the
+nas-sites HMAC-webhook pipeline with a reviewer-gated workflow.
 
-Next up:
-
-- Content migration from `src/lib/content.ts` (TS object) to
-  `src/content/{da,en}/…` (MDX / JSON frontmatter)
-- Sveltia CMS wired at `/admin`, git-committed edits
-- Bilingual routing (DA default, EN at `/en/…`), `hreflang`
-- JSON-LD schema (LocalBusiness + Person + Service), sitemap, proper OG
-  images per service
-- Per-service detail pages
-- Accessibility audit + `prefers-reduced-motion` fallback for the WebGL stage
+What's still open: JSON-LD structured data (LocalBusiness + Person +
+Service + Review), accessibility audit + `prefers-reduced-motion`
+fallback for the WebGL stage, possible booking integration. See
+[AGENTS.md](AGENTS.md) for the full state breakdown.
 
 ## Quick Reference
 
@@ -34,18 +31,22 @@ Next up:
   pkgx pnpm check    # svelte-check + tsc
   pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
   ```
-- **Admin UI**: Sveltia CMS at `/admin`. Dev backend is `test-repo`
-  (in-browser, no persistence) — switch `backend:` in
-  `static/admin/config.yml` to `github` / `gitlab` before production.
-  The stage pose `options:` arrays under `home.sections.stage` must
-  stay in sync with `src/lib/stage/poses.ts` (manual upkeep until a
-  custom `pose-select` widget lands).
+- **Admin UI**: Sveltia CMS at `/admin`, GitHub backend, version-pinned
+  bundle self-hosted at `/admin/sveltia-cms.js` (the unpkg CDN load
+  was retired in Phase 2 / C1; bundle is copied from
+  `node_modules/@sveltia/cms` by the `prebuild` script). The stage
+  pose `options:` arrays under `home.sections.stage` must stay in
+  sync with `src/lib/stage/poses.ts` (manual upkeep until a custom
+  `pose-select` widget lands). `/admin` ships a meta-tag CSP locked
+  to same-origin + GitHub hosts.
 - **Svelte 5 runes only** (`$props()`, `$state()`, `$derived()`) — no `export let`, no `$:`
 - **Tailwind v4** — design tokens in `@theme` block in `src/app.css`
 - **Static build** via `@sveltejs/adapter-static`; every route prerendered
-  (root `+layout.ts` sets `prerender = true`)
-- Content lives in `src/lib/content.ts` as a typed `site` object (Danish copy,
-  originally scraped from the live Wix site).
+  (root `+layout.ts` sets `prerender = true`); SPA fallback to
+  `/200.html` for the runtime-only `/publish` route.
+- Content lives in `src/content/{da,en}/*.json` + `src/content/services/{da,en}/*.json`,
+  loaded via `$lib/content`'s `contentFor(locale)` and
+  `loadService(slug, locale)`.
 
 ## Three.js Stage in 60 Seconds
 
