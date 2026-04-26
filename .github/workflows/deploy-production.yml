@@ -103,17 +103,22 @@ jobs:
     # (Sveltia saves are unsigned by design — OAuth API commits
     # don't trigger GitHub's web-flow signing, and the path
     # filter has already isolated those into the bypass branch).
+    #
     # For any push that touches code/config: every introduced
-    # commit must be `verified: true` per GitHub's verification
-    # check. This catches credential-theft attacks where the
-    # attacker has token access but no signing key.
+    # commit whose changes include a NON-content path must be
+    # `verified: true` per GitHub's verification check. Commits
+    # that only touch content paths (src/content/** + static/img/**)
+    # are exempt — that's how Signe's Sveltia content edits can
+    # land alongside our code changes in the same push without
+    # blocking the deploy. Catches credential-theft attacks
+    # where the attacker has token access but no signing key.
     needs: detect-changes
     if: needs.detect-changes.outputs.content-only != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Verify all introduced commits are GitHub-verified
+      - name: Verify code/config commits are GitHub-verified
         env:
           GH_TOKEN: ${{ github.token }}
           BEFORE: ${{ github.event.before }}
@@ -137,30 +142,76 @@ jobs:
 
           echo "Verifying commits in $BASE..$HEAD"
 
-          # Single API call. `compare` returns the commit list
-          # with each commit's verification block populated.
-          UNVERIFIED=$(gh api "repos/$REPO/compare/$BASE...$HEAD" \
-            --jq '.commits[] | select(.commit.verification.verified == false) | "\(.sha[0:7]) [\(.commit.verification.reason)] \(.commit.message | split("\n")[0])"')
+          # Per-commit path filtering: a commit is signature-required
+          # iff it touches at least one file outside the content
+          # paths. Walk the commit list, fetch each commit's file
+          # list via the per-commit API, classify, and only enforce
+          # signature on the code/config commits.
+          #
+          # The content-path regex must match what's in
+          # detect-changes' filter above (src/content/** + static/img/**).
+          CONTENT_REGEX='^(src/content/|static/img/)'
 
-          TOTAL=$(gh api "repos/$REPO/compare/$BASE...$HEAD" --jq '.commits | length')
+          # `compare` lists commits in order between BASE and HEAD,
+          # but its `files` array is the AGGREGATE diff — we need
+          # per-commit files for path classification, so we fetch
+          # each commit individually.
+          mapfile -t SHAS < <(gh api "repos/$REPO/compare/$BASE...$HEAD" --jq '.commits[].sha')
+          TOTAL=${#SHAS[@]}
 
-          if [ -n "$UNVERIFIED" ]; then
-            echo "::error::$(echo "$UNVERIFIED" | wc -l | tr -d ' ') of $TOTAL introduced commit(s) lack a trusted signature:"
-            echo "$UNVERIFIED" | while IFS= read -r line; do
+          UNSIGNED_CODE=()
+          CONTENT_ONLY_COUNT=0
+          SIGNED_CODE_COUNT=0
+
+          for sha in "${SHAS[@]}"; do
+            # Some commits (very large merges) may not have a `files`
+            # array readily available; fall back to "code-touching"
+            # in that case (safer, will require signature).
+            files=$(gh api "repos/$REPO/commits/$sha" --jq '.files[].filename' 2>/dev/null || echo "")
+            verified=$(gh api "repos/$REPO/commits/$sha" --jq '.commit.verification.verified')
+            reason=$(gh api "repos/$REPO/commits/$sha" --jq '.commit.verification.reason')
+            msg=$(gh api "repos/$REPO/commits/$sha" --jq '.commit.message | split("\n")[0]')
+
+            non_content=$(echo "$files" | grep -vE "$CONTENT_REGEX" || true)
+
+            if [ -z "$files" ] || [ -n "$non_content" ]; then
+              # Code/config commit (or unclassifiable, treat strictly).
+              if [ "$verified" = "true" ]; then
+                SIGNED_CODE_COUNT=$((SIGNED_CODE_COUNT + 1))
+                echo "✓ ${sha:0:7} signed   — $msg"
+              else
+                UNSIGNED_CODE+=("${sha:0:7} [$reason] $msg")
+                echo "✗ ${sha:0:7} UNSIGNED — $msg"
+              fi
+            else
+              CONTENT_ONLY_COUNT=$((CONTENT_ONLY_COUNT + 1))
+              echo "· ${sha:0:7} content — $msg (signature not required)"
+            fi
+          done
+
+          if [ ${#UNSIGNED_CODE[@]} -gt 0 ]; then
+            echo ""
+            echo "::error::${#UNSIGNED_CODE[@]} of $TOTAL introduced commit(s) touch code/config without a trusted signature:"
+            for line in "${UNSIGNED_CODE[@]}"; do
               echo "::error::  $line"
             done
             echo ""
-            echo "Phase 3 policy: code/config changes must be signed by a key registered with the committer's GitHub account."
-            echo "Hand commits: configure local git signing — see docs/PHASE-3-SIGNED-COMMITS.md if added."
-            echo "Merge commits: GitHub's web-flow auto-signs PR merges and squash-merges; if you see this on a merge commit, the underlying commits were the unsigned ones."
+            echo "Phase 3 policy: commits that touch anything outside src/content/ + static/img/"
+            echo "must be signed by a key registered with the committer's GitHub account."
+            echo "Hand commits: configure local git signing (see project README/AGENTS.md)."
+            echo "Merge commits: GitHub web-flow auto-signs PR merges; if a merge commit"
+            echo "shows up here, one of the underlying commits is the unsigned one."
             exit 1
           fi
 
-          echo "✓ All $TOTAL introduced commit(s) verified by GitHub"
+          echo ""
+          echo "✓ $SIGNED_CODE_COUNT signed code/config commit(s), $CONTENT_ONLY_COUNT content-only commit(s) (signature exempt)"
           {
             echo "## Signature verification"
             echo ""
-            echo "All $TOTAL commit(s) introduced in this push are signed by trusted keys."
+            echo "- Signed code/config commits: $SIGNED_CODE_COUNT"
+            echo "- Content-only commits (signature exempt): $CONTENT_ONLY_COUNT"
+            echo "- Total introduced: $TOTAL"
           } >> "$GITHUB_STEP_SUMMARY"
 
   approve:

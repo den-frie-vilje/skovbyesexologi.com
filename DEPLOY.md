@@ -446,7 +446,7 @@ On DSM:
    ```sh
    sudo mkdir -p /volume1/docker/webhook/webhook/scripts
    sudo chown -R deploy:users /volume1/docker
-   sudo docker network create skovbye-deploy
+   sudo docker network create nas-deploy
    ```
 
    **If you're using DSM ACLs on the docker shared folder**,
@@ -470,14 +470,14 @@ On DSM:
 
    The webhook image is built in CI
    (`.github/workflows/webhook-image.yml`) and pushed to
-   `ghcr.io/den-frie-vilje/skovbyesexologi-webhook:latest` —
+   `ghcr.io/den-frie-vilje/nas-webhook:latest` —
    the NAS never builds it locally. This sidesteps Synology's
    kernel missing seccomp support, which breaks any `RUN`
    step during an in-place docker build on DSM.
 
    After the webhook-image workflow's first successful run,
    visit
-   <https://github.com/den-frie-vilje/skovbyesexologi.com/pkgs/container/skovbyesexologi-webhook>
+   <https://github.com/orgs/den-frie-vilje/packages/container/package/nas-webhook>
    → Package settings → **Change visibility** → **Public**,
    so the NAS can pull without authentication.
 
@@ -657,7 +657,7 @@ sudo docker compose down
 sudo docker compose up -d
 
 # Verify the values actually landed inside the container:
-sudo docker exec skovbyesexologi-webhook-webhook-1 env | grep WEBHOOK_SECRET
+sudo docker exec nas-webhook-webhook-1 env | grep WEBHOOK_SECRET
 # Should show non-empty values. If empty, the env_file edit
 # didn't take — check for CRLF / duplicates / quoting.
 ```
@@ -980,7 +980,7 @@ Public).
 rules."** The HMAC secret env var is missing or empty inside
 the container. Check:
 ```sh
-sudo docker exec skovbyesexologi-webhook-webhook-1 env | grep WEBHOOK_SECRET
+sudo docker exec nas-webhook-webhook-1 env | grep WEBHOOK_SECRET
 ```
 If you see `VAR=` with no value, the env_file didn't land.
 Most common causes:

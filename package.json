@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "icons": "node scripts/gen-pose-icons.ts",
-    "og": "node scripts/gen-og-images.ts"
+    "og": "node scripts/gen-og-images.ts",
+    "prebuild": "node scripts/copy-sveltia.ts"
   },
   "engines": {
     "node": "~25",
@@ -22,6 +23,7 @@
     "@sveltejs/kit": "^2.15.0",
     "@sveltejs/mcp": "^0.1.20",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@sveltia/cms": "0.157.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/three": "^0.184.0",
     "playwright": "^1.59.1",

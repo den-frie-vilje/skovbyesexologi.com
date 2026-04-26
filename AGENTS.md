@@ -6,34 +6,52 @@ self-hostable, git-controlled.
 
 This file is the deep reference. [CLAUDE.md](CLAUDE.md) is the quick start.
 
-## Status — Phase 2
+## Status
 
-**Direction chosen.** The "Flod" visual system is the site. The earlier
-`/editorial` and `/techno` preview sketches have been deleted; the root
-`/` route is the Flod page. Content is still sourced from
-`src/lib/content.ts` (scraped verbatim from the live Wix site).
+The "Flod" visual system is the site. The root `/` route is the Flod
+page; the earlier `/editorial` and `/techno` preview sketches have
+been deleted. Content lives in `src/content/{da,en}/...` JSON files
+edited via the Sveltia admin at `/admin`. Production deploys via the
+nas-sites infrastructure (HMAC webhook → Synology NAS) with a
+reviewer-gated GitHub Actions pipeline.
 
-### Phase 2 roadmap (in priority order)
+### Done so far
 
-1. **Sveltia CMS** — wire at `/admin`, git-backed, configure collections
-   for `site`, `services`, `bio`, `contact`, `pillQuote`. Hosted admin
-   writes back to the repo via GitHub/GitLab OAuth.
-2. **Content model migration** — move from `src/lib/content.ts` (single
-   TS object) to `src/content/{da,en}/…` (MDX or JSON frontmatter per
-   collection). `+page.svelte` reads through a typed loader.
-3. **Bilingual routing** — DA at `/`, EN at `/en/…`. Svelte param
-   matcher for locale, `hreflang` links, locale-aware internal links.
-4. **SEO structured data** — JSON-LD for `LocalBusiness`, `Person`,
-   `Service` (per service), `Review` (from existing testimonial). Generate
-   `sitemap.xml` and `robots.txt`. Per-service OG images.
-5. **Per-service detail pages** — `/terapi`, `/intimacy-coordination`,
-   `/aeldrepleje`, `/undervisning`. Deeper content, pricing, booking CTA.
-   The root page's service cards link in.
-6. **Accessibility** — `prefers-reduced-motion` full fallback for the
-   WebGL stage (static hero image + skipped canvas mount), visible focus
-   states, ARIA on the chapter transition, keyboard navigation review.
-7. **Booking integration** — likely a simple `mailto:` + calendar
-   embed first, Calendly/Simply.coach later if warranted.
+- ✅ Flod design — homepage, two chapters (Terapi → Konsulentydelser),
+  scroll-choreographed Three.js stage
+- ✅ Sveltia CMS at `/admin` — GitHub backend + self-hosted OAuth
+  proxy + path-pinned npm bundle (no third-party CDN)
+- ✅ Content model migration — `src/content/{site,contact,bio,home}.{da,en}.json`
+  + per-service files under `src/content/services/{da,en}/...`
+  (`src/lib/content.ts` is no longer imported anywhere)
+- ✅ Bilingual routing — `[[lang=locale]]` param matcher; DA at `/`,
+  EN at `/en/...`; `hreflang` links
+- ✅ Per-service detail pages — DA at `/ydelser/[slug]`, EN at
+  `/en/services/[slug]`
+- ✅ Per-service OG images — runtime-generated via `og/[[lang=locale]]/[slug]`
+- ✅ Production deploy pipeline — GitHub Actions → HMAC webhook →
+  NAS, with a `production-gate` reviewer environment + path-scoped
+  signed-commit verification gate (Phase 3)
+- ✅ Admin Content-Security-Policy locking down `/admin`'s allowed
+  origins (Phase 2 / H3)
+
+### Open
+
+- [ ] **JSON-LD structured data** — `LocalBusiness`, `Person`,
+  `Service` (per service), `Review` (testimonials). `sitemap.xml`
+  and `robots.txt` if not yet emitted.
+- [ ] **Accessibility audit** — `prefers-reduced-motion` full
+  fallback for the WebGL stage (static hero image + skipped canvas
+  mount), visible focus states, ARIA on the chapter transition,
+  keyboard navigation review.
+- [ ] **Booking integration** — currently `mailto:` only; consider
+  Calendly/Simply.coach embed if/when warranted.
+- [ ] **Site security hardening (in progress)** — the rest of the
+  post-security-review plan: HMAC + ts freshness check (Phase 4),
+  digest-pin all base images (Phase 5), gitleaks instead of regex
+  scan (Phase 6), `type=gha` build cache (Phase 7),
+  `STRIP_EDITOR=true` build arg to remove `/admin` + `/publish`
+  from the production image (Phase 8).
 
 ### Intentionally out of scope for now
 
@@ -69,9 +87,11 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 - **Typography** loaded in `src/app.html`: Fraunces, Inter, Space Grotesk,
   JetBrains Mono, Instrument Serif, DM Sans. The Flod page uses Instrument
   Serif + Fraunces + DM Sans.
-- **Content** lives in `src/lib/content.ts` as a typed `site` object.
-  Services, bio, contact, pill-quote, nav. The root page imports
-  `{ site }` and composes the layout.
+- **Content** lives in `src/content/{site,contact,bio,home}.{da,en}.json`
+  + `src/content/services/{da,en}/*.json` per service. Loaded via
+  `src/lib/content/` (a `$lib/content` import resolves there) which
+  exposes `contentFor(locale)` and `loadService(slug, locale)` plus
+  the typed shapes (`Locale`, `Contact`, `Testimonial`, etc.).
 
 ## Repo Layout
 
@@ -79,17 +99,29 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 src/
   app.html                       Font imports, base head
   app.css                        @theme tokens + base resets
+  content/                       JSON-per-collection content tree
+    {site,contact,bio,home}.{da,en}.json
+    services/{da,en}/{terapi,intimacy-coordination,aeldrepleje,undervisning}.json
   lib/
-    content.ts                   All copy (Danish) — migrates to src/content/ in Phase 2
+    content/index.ts             Loaders + types — `$lib/content` resolves here
     components/
       FlodStage.svelte           Three.js stage
+      SiteFooter.svelte          Footer with build-marker linking the deployed commit
     three/
       warmEnv.ts                 4 equirectangular env-map painters
   routes/
-    +layout.svelte
+    +layout.svelte               Root shell
     +layout.ts                   prerender = true
-    +page.svelte                 Homepage — the Flod page
+    (app)/[[lang=locale]]/+page.svelte    Homepage — the Flod page (DA + EN)
+    (app)/ydelser/[slug]/+page.svelte     Service detail — DA
+    (app)/en/services/[slug]/+page.svelte Service detail — EN
+    admin/+page.svelte           Sveltia CMS host (CSP-locked)
+    publish/+page.svelte         Signe's "publish to production" button (staging→main merge)
+    og/[[lang=locale]]/[slug]/   Per-service OG image generator
 static/
+  admin/
+    config.yml                   Sveltia config
+    sveltia-cms.js               Self-hosted bundle (gitignored, copied at build time)
   favicon.svg
   img/signe.jpg                  Portrait (from live Wix site)
 ```
