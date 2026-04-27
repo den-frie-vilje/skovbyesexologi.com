@@ -62,10 +62,13 @@ FROM nginxinc/nginx-unprivileged:1.29-alpine@sha256:f35982400455b4f359083ba9d1ef
 # only one. Install wget — nginxinc/nginx-unprivileged is slim
 # and doesn't ship it; the compose healthcheck
 # (`wget --spider http://localhost:8080/`) needs it.
+# Stay as root for the install + COPYs + the optional strip
+# below — /usr/share/nginx/html/ in the base image is root-
+# owned, so the nginx user can't `rm` files inside it. Switch
+# to nginx for the final EXPOSE / runtime.
 USER root
 RUN rm /etc/nginx/conf.d/default.conf \
     && apk add --no-cache wget
-USER nginx
 
 # Site nginx config. Listens on 8080 — update the Caddyfile
 # upstream if this ever changes.
@@ -73,6 +76,45 @@ COPY --chown=nginx:nginx deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Prerendered SvelteKit output from the builder stage.
 COPY --from=builder --chown=nginx:nginx /app/build/ /usr/share/nginx/html/
+
+# Phase 8 / M5 — strip the editor from production images.
+#
+# The `/admin` route hosts Sveltia CMS and only needs to exist
+# on staging (where Signe edits content). Including it in the
+# production image means the Sveltia bundle is loadable at
+# `https://skovbyesexologi-com.prod.denfrievilje.dk/admin`
+# even though it has no working OAuth proxy on prod — anyone
+# who discovers the .prod hostname can hit the editor shell
+# and probe its config. Tiny attack surface but a needless one.
+#
+# When STRIP_EDITOR=true (set by deploy-production.yml's
+# build-args; deploy-staging.yml leaves it default-false to
+# keep the editor functional on staging), we delete:
+#   /usr/share/nginx/html/admin/  (the prerendered Sveltia
+#                                  host page + config.yml +
+#                                  the self-hosted bundle)
+#
+# /admin without trailing slash falls through nginx's
+# try_files to /200.html (the SPA shell). The shell tries to
+# render the /admin route client-side, but the Sveltia bundle
+# script tag points at /admin/sveltia-cms.js which now 404s,
+# so the editor mounts no UI — visible-but-broken. Better
+# would be an explicit 404, but that needs a per-environment
+# nginx.conf which we'd rather not introduce yet.
+#
+# /publish is intentionally NOT stripped — it has prerender=
+# false (lives only in /200.html) and depends on a
+# localStorage Sveltia OAuth token to do anything, which
+# isn't present in production. Harmless if ever loaded.
+ARG STRIP_EDITOR=false
+RUN if [ "$STRIP_EDITOR" = "true" ]; then \
+        echo "STRIP_EDITOR=true → removing /admin from production image" ; \
+        rm -rf /usr/share/nginx/html/admin ; \
+    fi
+
+# Drop privilege for the runtime — nginx-unprivileged binds
+# to :8080 as UID 101, so root isn't needed at runtime.
+USER nginx
 
 # Container listens on 8080 (not 80) because nginx runs as a
 # non-root user. Compose / Caddy target this port.
