@@ -1,8 +1,9 @@
 # Production stack — skovbyesexologi.com.
 #
-# Brought up + reconciled by the deploy webhook on every push
-# to the `main` branch. Composition:
-#   caddy   (front-door — routes /hooks, blocks /admin + /publish, /*)
+# Brought up + reconciled by the nas-sites pull-only deploy agent
+# on its next fire after a `main` branch push (see nas-sites
+# /docs/PULL-DEPLOY-MODEL.md). Composition:
+#   caddy   (front-door — host canonicalisation, blocks /admin + /publish, /*)
 #   site    (static site, pulled from GHCR)
 #
 # No OAuth proxy: Sveltia admin lives on staging only.
@@ -10,9 +11,9 @@
 name: skovbyesexologi-production
 
 networks:
-  # External shared network — lets Caddy reach the shared
-  # webhook container. See compose.staging.yml for the
-  # per-project internal network rationale (avoids the
+  # External shared network. Reserved for cross-project routing
+  # (currently unused by this site). See compose.staging.yml for
+  # the per-project internal network rationale (avoids the
   # `site` DNS-collision bug across sites).
   nas-deploy:
     external: true
