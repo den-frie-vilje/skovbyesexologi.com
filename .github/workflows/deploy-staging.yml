@@ -1,10 +1,10 @@
 # Trigger: push to the `staging` branch (Sveltia auto-commits
 # here on every editor save) or manual workflow_dispatch.
 #
-# All heavy lifting — docker buildx build, paranoia scan,
-# HMAC webhook POST, smoke-check — lives in the reusable
-# workflow in den-frie-vilje/nas-sites. This file is the thin
-# per-site caller that wires in site-specific identifiers.
+# Build + push + Sigstore Cosign sign happens in the reusable
+# workflow in den-frie-vilje/nas-sites. CI does NOT call the NAS —
+# the NAS-side pull-only agent verifies the signature and deploys
+# on its own schedule (within ~5 min of the push).
 
 name: Deploy to staging
 
@@ -20,7 +20,7 @@ on:
 
 jobs:
   deploy:
-    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-notify.yml@main
+    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-sign.yml@main
     with:
       environment: staging
       dockerfile: deploy/Dockerfile
@@ -28,12 +28,14 @@ jobs:
       platforms: ${{ inputs.multiarch && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
       # Vite bakes these into the client bundle at build time so
       # the site footer can show "build <sha> · <date>" linked
-      # back to the commit. VITE_MODE selects .env.staging.
+      # back to the commit. PUBLIC_GIT_SHA also doubles as the
+      # verify-pattern source — the post-sign poll greps the
+      # rendered footer for the new SHA.
       build-args: |
         VITE_MODE=staging
         PUBLIC_GIT_SHA=${{ github.sha }}
         PUBLIC_BUILD_TIME=${{ github.event.head_commit.timestamp }}
-      webhook-url: https://skovbyesexologi-com.stage.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/staging
-      smoke-check-url: https://skovbyesexologi-com.stage.denfrievilje.dk/
-    secrets:
-      WEBHOOK_SECRET: ${{ secrets.STAGING_WEBHOOK_SECRET }}
+      # Origin URL (not CF apex) so the verify poll bypasses any
+      # CDN caching. Returns the new commit SHA in the footer
+      # markup once the agent's deploy lands.
+      verify-url: https://skovbyesexologi-com.stage.denfrievilje.dk/

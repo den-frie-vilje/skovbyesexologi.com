@@ -30,18 +30,19 @@
 #      out after 2 days; if not approved the workflow auto-fails
 #      and a re-deploy needs a fresh Actions UI rerun.
 #
-#   4. deploy — the actual build + push + webhook trigger. Runs
-#      after approval for code changes; runs immediately for
+#   4. deploy — the actual build + push + Sigstore Cosign sign.
+#      Runs after approval for code changes; runs immediately for
 #      content-only pushes (which skipped both verify-signatures
 #      and approve). References the `production` environment for
-#      secret scope (PRODUCTION_WEBHOOK_SECRET); that env should
-#      NOT have a reviewer rule — the gate is the responsibility
-#      of `production-gate` upstream.
+#      env-scoped policy; that env should NOT have a reviewer rule
+#      — the gate is the responsibility of `production-gate`
+#      upstream. CI does NOT call the NAS — the pull-only deploy
+#      agent verifies the signature and rolls out within ~5 min.
 #
 # One-time setup before the first run with this file on main:
 #   • Create `production-gate` env (Settings → Environments)
 #   • Add Ole as a required reviewer there
-#   • Confirm `production` env has the secret but NO reviewers
+#   • Confirm `production` env exists (no reviewers, no secrets)
 
 name: Deploy to production
 
@@ -229,8 +230,10 @@ jobs:
         run: echo "Code/config change reviewed and approved — proceeding to build + deploy."
 
   deploy:
-    # Build, push, fire webhook, smoke-check. Runs after approval
-    # for code changes; runs immediately for content-only pushes.
+    # Build + push + Sigstore Cosign sign. Runs after approval for code
+    # changes; runs immediately for content-only pushes. CI does NOT call
+    # the NAS — the NAS-side pull-only agent verifies the signature and
+    # deploys on its own schedule (within ~5 min of the push).
     needs: [detect-changes, verify-signatures, approve]
     # `always()` lets us evaluate this `if:` even when
     # verify-signatures and approve were skipped (content-only).
@@ -242,7 +245,7 @@ jobs:
       (needs.detect-changes.outputs.content-only == 'true' ||
        (needs.verify-signatures.result == 'success' &&
         needs.approve.result == 'success'))
-    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-notify.yml@main
+    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-sign.yml@main
     with:
       environment: production
       dockerfile: deploy/Dockerfile
@@ -253,9 +256,9 @@ jobs:
         PUBLIC_GIT_SHA=${{ github.sha }}
         PUBLIC_BUILD_TIME=${{ github.event.head_commit.timestamp }}
         STRIP_EDITOR=true
-      webhook-url: https://skovbyesexologi-com.prod.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/production
-      # Smoke check against the client-facing apex — that's the
-      # URL real users hit, not the internal .prod.* origin.
-      smoke-check-url: https://skovbyesexologi.com/
-    secrets:
-      WEBHOOK_SECRET: ${{ secrets.PRODUCTION_WEBHOOK_SECRET }}
+      # Verify against the .prod.* ORIGIN, not the client-facing
+      # apex skovbyesexologi.com. The apex sits behind Cloudflare,
+      # which can return cached HTML even with the verify step's
+      # cache-bust query — the origin gives an unambiguous read of
+      # whether the agent's deploy actually landed.
+      verify-url: https://skovbyesexologi-com.prod.denfrievilje.dk/
