@@ -6,6 +6,12 @@
       "runtimeExecutable": "pkgx",
       "runtimeArgs": ["pnpm", "dev"],
       "port": 5173
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "pkgx",
+      "runtimeArgs": ["pnpm", "preview"],
+      "port": 4173
     }
   ]
 }
