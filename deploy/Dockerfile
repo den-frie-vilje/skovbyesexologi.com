@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile — build tooling lives in the builder
-# stage so CI only runs `docker build` + push + webhook. The
-# reusable build-and-notify workflow in nas-sites stays
+# stage so CI only runs `docker build` + push + cosign sign. The
+# reusable build-and-sign workflow in nas-sites stays
 # framework-agnostic; this file owns the dev→image bridge.
 #
 # Stage 1: pkgx-backed builder — same Node + pnpm versions as
