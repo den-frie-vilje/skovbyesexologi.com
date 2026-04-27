@@ -252,6 +252,7 @@ jobs:
         VITE_MODE=production
         PUBLIC_GIT_SHA=${{ github.sha }}
         PUBLIC_BUILD_TIME=${{ github.event.head_commit.timestamp }}
+        STRIP_EDITOR=true
       webhook-url: https://skovbyesexologi-com.prod.denfrievilje.dk/hooks/deploy/skovbyesexologi.com/production
       # Smoke check against the client-facing apex — that's the
       # URL real users hit, not the internal .prod.* origin.
