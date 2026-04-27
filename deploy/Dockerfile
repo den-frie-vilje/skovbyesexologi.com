@@ -15,7 +15,7 @@
 # bumps node or pnpm, this Dockerfile gets the new versions on
 # the next build — no code change here. Same dev↔CI toolchain
 # as `pkgx pnpm ...` on the laptop.
-FROM pkgxdev/pkgx:latest AS builder
+FROM pkgxdev/pkgx:latest@sha256:a752ba83d58f0429a21e11206af5be562b44674e1ac0e97f9022ae150a1b6973 AS builder
 WORKDIR /app
 
 # Copy pkgx.yml first so the pkgx-install layer caches until
@@ -56,7 +56,7 @@ RUN pkgx pnpm build -- --mode $VITE_MODE
 # nginx widens the blast radius. uid 101 with no shell and
 # no write access to /usr/share/nginx/html keeps damage
 # contained.
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.29-alpine@sha256:f35982400455b4f359083ba9d1ef573fbbe4221a6a8a194dc7a14beb4e2cd3dc
 
 # Drop the distro's default config so our server block is the
 # only one. Install wget — nginxinc/nginx-unprivileged is slim
