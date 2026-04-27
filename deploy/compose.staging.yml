@@ -1,35 +1,35 @@
 # Staging stack — signe.denfrievilje.dk.
 #
-# Brought up + reconciled by the deploy webhook on every push
-# to the `staging` branch. Composition:
-#   caddy         (front-door — routes /hooks, /auth, /*)
+# Brought up + reconciled by the nas-sites pull-only deploy agent
+# on its next fire after a `staging` branch push (see nas-sites
+# /docs/PULL-DEPLOY-MODEL.md). Composition:
+#   caddy         (front-door — routes /auth, /*)
 #   site          (static site, pulled from GHCR)
 #   sveltia-auth  (GitHub OAuth proxy for /admin)
 #
 # Env file (./staging.env) on the NAS holds the OAuth secrets.
 # NOT committed — see deploy/staging.env.example for the shape.
 #
-# Joins the `nas-deploy` external network so it can reach
-# the shared `webhook` container (which lives in its own
-# compose project — see compose.webhook.yml).
+# Joins the `nas-deploy` external network. Currently nothing else
+# lives there for this site; the network is kept so future
+# cross-site routing (e.g. shared services) can attach without a
+# compose-file restructure.
 
 name: skovbyesexologi-staging
 
 networks:
-  # External shared network — lets Caddy reach the shared
-  # webhook container (which lives in a separate compose
-  # project) without exposing site/sveltia-auth DNS
-  # cross-project.
+  # External shared network. Reserved for cross-project routing
+  # (currently unused by this site).
   nas-deploy:
     external: true
   # Per-project internal network — Caddy talks to site and
-  # sveltia-auth here. Because each site's compose has its
-  # OWN internal network, service names like `site` are
-  # unique per-project and can't collide with other sites'
-  # containers on the shared network. (Earlier bug: both
-  # staging and production had `site` on nas-deploy,
-  # Docker DNS resolved to whichever randomly and Caddy
-  # ended up reverse-proxying to the wrong site's image.)
+  # sveltia-auth here. Because each site's compose has its OWN
+  # internal network, service names like `site` are unique
+  # per-project and can't collide with other sites' containers
+  # on the shared network. (Earlier bug: both staging and
+  # production had `site` on nas-deploy, Docker DNS resolved
+  # to whichever randomly and Caddy ended up reverse-proxying
+  # to the wrong site's image.)
   internal:
 
 services:

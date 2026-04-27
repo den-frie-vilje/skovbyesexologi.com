@@ -4,7 +4,7 @@
 # (apex, www, legacy domains…) to 127.0.0.1:8081.
 #
 # Two responsibilities Caddy handles:
-#   1. Path routing — /hooks/*, /admin + /publish blocks, /*
+#   1. Path routing — /admin + /publish blocks, /*
 #   2. Host canonicalization — redirect non-canonical hostnames
 #      (www, legacy brands) to the apex so SEO doesn't see
 #      duplicate content.
@@ -19,26 +19,9 @@
 }
 
 :80 {
-    # Explicit ordering inside `route {}` — hook passes through
-    # first, canonicalization second, editor-tooling block next,
-    # site last.
+    # Explicit ordering inside `route {}` — canonicalization
+    # first, editor-tooling block next, site last.
     route {
-        # Deploy webhook — same pattern as staging, shared
-        # webhook container, different hook ID per (site, env).
-        # No canonicalization applied to this path (deploy hits
-        # the .prod.denfrievilje.dk hostname directly).
-        # `handle` (not `handle_path`) so adnanh/webhook sees
-        # the full `/hooks/<id>` URL it expects by default.
-        #
-        # Invariant: the shared nas-deploy network MUST only
-        # contain (a) the singleton webhook container and (b)
-        # each site's Caddy. Adding any other service there
-        # risks cross-site DNS collisions on service names.
-        # Site-scoped services live on per-project `internal`.
-        handle /hooks/* {
-            reverse_proxy webhook:9000
-        }
-
         # Host canonicalization. List every non-canonical
         # production hostname here; Caddy 301s them to the
         # canonical apex (skovbyesexologi.com).
