@@ -4,6 +4,13 @@
 # per week. Major updates land as individual PRs so a single
 # breaking change can't park the whole batch.
 #
+# Target: `staging` (not the default `main`). Dependabot updates
+# get the same staging-soak as our own changes — they merge into
+# staging, the staging deploy validates the bump on a real build,
+# then they're promoted to main via a normal staging→main PR
+# (which fires the production-gate's reviewer prompt + the
+# Phase 3 verify-signatures gate).
+#
 # Schedule fires Monday early morning Copenhagen time so PRs
 # are waiting at the start of the week.
 
@@ -13,6 +20,7 @@ updates:
   # Site dependencies (Svelte, Vite, Tailwind, Three.js, Sveltia, …)
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -33,6 +41,7 @@ updates:
   # These move fast and are usually safe to bulk-merge.
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -51,8 +60,11 @@ updates:
 
   # Site Dockerfile base images (pkgxdev/pkgx, nginx-unprivileged).
   # Watching for security patches on the runtime base in particular.
+  # Tracks digest pins (FROM image:tag@sha256:…) — Dependabot updates
+  # both tag and digest when an upgrade is available.
   - package-ecosystem: "docker"
     directory: "/deploy"
+    target-branch: "staging"
     schedule:
       interval: "weekly"
       day: "monday"

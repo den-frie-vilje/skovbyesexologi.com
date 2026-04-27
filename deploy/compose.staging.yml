@@ -34,7 +34,7 @@ networks:
 
 services:
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2-alpine@sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d
     restart: unless-stopped
     networks: [nas-deploy, internal]
     ports:
@@ -91,7 +91,7 @@ services:
     # If we ever need something newer: igk1972/netlify-cms-oauth-
     # provider-go is a Go binary (source-only, no published image);
     # sveltia-cms-auth itself targets Cloudflare Workers only.
-    image: vencax/netlify-cms-github-oauth-provider:master
+    image: vencax/netlify-cms-github-oauth-provider:master@sha256:8608529ae357f0c6cade85f9ed02336a1c3ea45c07b0719852762edc3bbaec6c
     restart: unless-stopped
     networks: [internal]
     environment:
