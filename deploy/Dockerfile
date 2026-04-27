@@ -56,7 +56,7 @@ RUN pkgx pnpm build -- --mode $VITE_MODE
 # nginx widens the blast radius. uid 101 with no shell and
 # no write access to /usr/share/nginx/html keeps damage
 # contained.
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.29-alpine
 
 # Drop the distro's default config so our server block is the
 # only one. Install wget — nginxinc/nginx-unprivileged is slim
