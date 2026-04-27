@@ -4,8 +4,7 @@
 # 127.0.0.1:8080. This Caddy listens on :80 inside the container
 # network and routes by path to the right upstream.
 #
-# Three upstreams:
-#   /hooks/*   → webhook receiver (HMAC-verified deploy triggers)
+# Two upstreams:
 #   /auth/*    → GitHub OAuth proxy for Sveltia CMS
 #   /*         → the static site
 
@@ -21,24 +20,6 @@
 }
 
 :80 {
-    # Deploy webhook. HMAC verification happens inside the
-    # webhook container; Caddy just routes. Use `handle` (not
-    # `handle_path`) so the /hooks prefix is preserved —
-    # adnanh/webhook serves its hooks at `/hooks/<id>` by
-    # default, matching the id path verbatim. Stripping
-    # breaks hook lookup.
-    #
-    # `webhook` resolves over the shared nas-deploy network.
-    # Invariant: that network MUST only contain (a) the
-    # singleton webhook container, and (b) each site's Caddy.
-    # Adding any other service there (especially with a common
-    # name) risks DNS collisions across sites. Site-scoped
-    # services (site, sveltia-auth) stay on the per-project
-    # `internal` network.
-    handle /hooks/* {
-        reverse_proxy webhook:9000
-    }
-
     # Sveltia CMS OAuth proxy. `handle_path` strips `/auth` so
     # the upstream sees `/auth` and `/callback` at its root
     # (which is what netlify-cms-github-oauth-provider expects).

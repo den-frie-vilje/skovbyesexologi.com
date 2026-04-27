@@ -47,8 +47,9 @@
   }: Props = $props();
 
   // Build marker — tiny link to the commit this bundle was built
-  // from. CI populates these (see .github/workflows/build-and-notify.yml).
-  // Local dev builds have all three empty → marker renders nothing.
+  // from. CI populates these via build-args in deploy-{staging,
+  // production}.yml. Local dev builds have all three empty → marker
+  // renders nothing.
   const shortSha = PUBLIC_GIT_SHA ? PUBLIC_GIT_SHA.slice(0, 7) : '';
   const commitUrl =
     PUBLIC_GIT_SHA && PUBLIC_GITHUB_REPO
