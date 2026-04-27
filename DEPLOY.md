@@ -1,17 +1,48 @@
 # Deployment
 
-Pull-replication pipeline: GitHub Actions builds a container
-image, pushes it to GHCR, and POSTs an HMAC-signed webhook to
-the NAS. The NAS pulls the image, applies compose changes, and
-(optionally) purges Cloudflare edge cache.
+> ## ⚠ Largely superseded — pending rewrite
+>
+> The deploy pipeline has moved from inbound HMAC webhook + self-updating
+> `deploy.sh` on the NAS to a pull-only model where the NAS runs an
+> operator-installed agent that cosign-verifies images before deploying.
+> CI's job ends at `cosign sign` — it no longer calls the NAS.
+>
+> **Canonical references for the new model live in `nas-sites`:**
+>
+> - [Operator manual](https://github.com/den-frie-vilje/nas-sites/blob/main/docs/PULL-DEPLOY-MODEL.md)
+>   — install the agent, schedule it, day-2 ops, troubleshooting, security model
+> - [Migration guide](https://github.com/den-frie-vilje/nas-sites/blob/main/docs/MIGRATION-FROM-WEBHOOK.md)
+>   — per-site cutover steps and rollback
+> - [Synotools hardening](https://github.com/den-frie-vilje/nas-sites/blob/main/docs/SYNOTOOLS-HARDENING.md)
+>   — credential-removal for the acme.sh cert hook
+>
+> **What in this doc is still current**: site-specific bits — the URL
+> pattern (§The URL pattern), the repository layout (§Repository layout),
+> the GitHub OAuth app + repo secrets setup (§3), the Caddyfile and
+> compose layout, the Sveltia activation flow (§9), Signe's editor
+> workflow (§Editor flow). These haven't changed.
+>
+> **What is now obsolete**: every section that mentions HMAC webhooks,
+> `WEBHOOK_SECRET`, `hooks.yaml` editing, the `nas-webhook` container,
+> the `synology_dsm` acme.sh hook with admin creds, or the `webhook.env`
+> file. Specifically that's most of §5 (NAS — webhook.env / hooks.yaml),
+> the rollback workflow in §Rollback, and parts of the troubleshooting
+> section.
+>
+> A full rewrite of this doc is queued as a follow-up after the migration
+> proves out on production.
 
-No inbound SSH, no mesh VPN, no US-cloud control plane. The only
-inbound port on the NAS is :443 — the same port the public site
-already needs.
+Pull-only pipeline: GitHub Actions builds a container image, pushes it
+to GHCR, and Sigstore-signs the resulting digest. A small NAS-side
+agent polls every 5 min, cosign-verifies the image, and runs
+`docker compose pull && up -d --wait` only on digest change. CI does not
+call the NAS; there is no inbound deploy endpoint.
 
-This document covers the **generalised pattern** — every site
-hosted on `server.denfrievilje.dk` follows it identically. The
-specific values below show the skovbyesexologi.com instantiation.
+The only inbound port on the NAS is :443 — the same port the public
+site already needs.
+
+This document covers the **site-specific bits** of the pattern; the
+generic deploy machinery lives in `nas-sites` (links above).
 
 ---
 
