@@ -68,8 +68,14 @@ installed globally.
 pkgx pnpm install     # install deps
 pkgx pnpm dev         # vite dev server on :5173, host 0.0.0.0
 pkgx pnpm build       # static build → build/
-pkgx pnpm check       # svelte-check + tsc
+pkgx pnpm check       # svelte-check + tsc — run BEFORE every push
 ```
+
+**Pre-push routine**: `pkgx pnpm check` before `git push`. Vite's
+`pnpm build` does NOT run svelte-check; the CI Docker build does
+(via `RUN pkgx pnpm check` in `deploy/Dockerfile`'s builder stage).
+A type-only or attribute-typed error you didn't catch locally surfaces
+as a failed CI build a minute or two after the push. Cheap to prevent.
 
 `pkgx.yml` declares the toolchain: `nodejs.org: ~25`, `pnpm.io: ~10`.
 `package.json` `engines` agrees. Node 25 is required — we lean on its

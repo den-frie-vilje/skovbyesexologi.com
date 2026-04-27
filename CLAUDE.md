@@ -31,6 +31,13 @@ fallback for the WebGL stage, possible booking integration. See
   pkgx pnpm check    # svelte-check + tsc
   pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
   ```
+- **Run `pkgx pnpm check` before pushing.** The CI Docker build runs
+  `RUN pkgx pnpm check` BEFORE `pnpm build`; local `pnpm build` does
+  NOT run check, so type-only errors slip past local validation and
+  surface as a failed CI build minutes later. Verified by hitting
+  exactly that footgun on Phase 2 rollout (a wrong-case
+  `http-equiv="Content-Security-Policy"` typed cleanly under build
+  but failed svelte-check's strict attribute-keyword union).
 - **Admin UI**: Sveltia CMS at `/admin`, GitHub backend, version-pinned
   bundle self-hosted at `/admin/sveltia-cms.js` (the unpkg CDN load
   was retired in Phase 2 / C1; bundle is copied from
