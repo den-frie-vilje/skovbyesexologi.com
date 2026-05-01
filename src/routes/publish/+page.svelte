@@ -44,6 +44,25 @@
   promotion PR), `POST /pulls` returns 422 — we catch that, look
   up the existing PR via `GET /pulls?head=...&base=...`, and merge
   it instead of giving up.
+
+  Post-publish reset: after a successful squash-merge, /publish
+  fast-forwards `staging` to point at `main`'s new HEAD via
+  `PATCH /git/refs/heads/staging` with `force: true`. Why:
+  squash-merging from a long-lived branch leaves staging "N commits
+  ahead, 1 commit behind" forever, because main's squash commit
+  has a different SHA than staging's individual commits even though
+  the content is identical. Without the reset, the divergence count
+  grows monotonically with every publish. Resetting staging =
+  main's HEAD after each publish keeps the count at 0/0, and
+  Sveltia's next save creates a clean single-commit ahead state.
+
+  This requires `allow_force_pushes: true` on the staging branch
+  protection (set 2026-05-01). The force-push IS the publish
+  operation — the squash-merged commit on main carries the same
+  content, so resetting staging is content-preserving by
+  construction. The trade-off is that staging branch history
+  resets after each publish; pre-publish edit history exists only
+  on main as the squash commit's body.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
@@ -205,14 +224,35 @@
       //    `main` so the "no merge commits" branch-protection rule
       //    stays happy. The squash commit's message preserves the
       //    individual content commit messages from staging.
-      await ghFetch(`/repos/${REPO}/pulls/${prNumber}/merge`, {
+      type MergeResp = { sha: string; merged: boolean };
+      const merge = (await ghFetch(`/repos/${REPO}/pulls/${prNumber}/merge`, {
         method: 'PUT',
         body: JSON.stringify({
           merge_method: 'squash',
           commit_title: title,
           commit_message: commits.map((c) => `- ${c.shortSha} ${c.message}`).join('\n')
         })
-      });
+      })) as MergeResp;
+
+      // 3. Reset `staging` to point at the squash commit. Without
+      //    this, staging stays "N commits ahead, 1 commit behind"
+      //    of main forever — the squash on main carries the same
+      //    content as staging's individual commits but under a
+      //    different SHA. Resetting keeps GitHub's count at 0/0
+      //    and means the NEXT publish only includes truly-new
+      //    edits. Best-effort: a failure here doesn't block the
+      //    publish (the merge already succeeded), it just leaves
+      //    cosmetic divergence.
+      try {
+        await ghFetch(`/repos/${REPO}/git/refs/heads/${HEAD_BRANCH}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ sha: merge.sha, force: true })
+        });
+      } catch (resetErr) {
+        // Don't surface this as an error to the user — the publish
+        // itself is done. Log to console for diagnosis.
+        console.warn('Post-publish staging reset failed:', resetErr);
+      }
 
       publishMessage = `${count} commit${count === 1 ? '' : 's'} merged into ${BASE_BRANCH} via PR #${prNumber}. Production deploy starting — skovbyesexologi.com should reflect the change within ~2 minutes.`;
       await loadDiff();
