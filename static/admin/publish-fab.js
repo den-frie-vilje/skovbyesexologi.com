@@ -138,9 +138,14 @@
       // Anchor vertically to Sveltia's primary toolbar. The toolbar
       // is at top:0 normally and shifts down by ~36px when the
       // announcement banner is shown — the FAB rides along.
-      // +14px puts it visually centred in the 56px-tall toolbar.
+      // +18px aligns the FAB's text baseline with Sveltia's
+      // toolbar text/icons (the geometric centre of the 56px
+      // toolbar is 28, but the perceived visual centre sits a
+      // touch lower because of font-metrics + line-height inside
+      // the FAB pill — measured against Sveltia's avatar +
+      // search-bar text on staging).
       const anchor = findVisibleToolbar();
-      const top = anchor ? anchor.getBoundingClientRect().top + 14 : 14;
+      const top = anchor ? anchor.getBoundingClientRect().top + 18 : 18;
       if (!fab) {
         fab = makeFab();
         document.body.appendChild(fab);
