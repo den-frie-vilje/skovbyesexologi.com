@@ -87,4 +87,14 @@
     ships as a classic script and warns at runtime if loaded as a module.
   -->
   <script src="/admin/sveltia-cms.js"></script>
+
+  <!--
+    Floating "Publicér" button injected into Sveltia's toolbar.
+    See static/admin/publish-fab.js for the rationale (auth-aware,
+    anchored to Sveltia's primary `[role="toolbar"]` so it tracks
+    the toolbar's actual position when the announcement banner
+    toggles, hidden on the pre-auth screen). Same-origin script,
+    allowed by the CSP above's `script-src 'self'` directive.
+  -->
+  <script src="/admin/publish-fab.js" defer></script>
 </svelte:head>
