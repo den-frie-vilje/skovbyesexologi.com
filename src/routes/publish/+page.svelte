@@ -25,11 +25,25 @@
   If the token is missing or expired, we show a "sign in at /admin
   first" message with a link — one-click recovery.
 
-  Publishing itself uses the GitHub `POST /repos/:o/:r/merges`
-  endpoint: a direct merge (no intermediate PR) of `staging` into
-  `main`. A PR would be nicer for audit trail but adds a round-trip
-  and a second API call; for a single-author workflow it's overkill.
-  If we later want PRs, swap for `POST /pulls` + `PUT /pulls/:n/merge`.
+  Publishing flow: open a PR with `POST /repos/:o/:r/pulls`, then
+  immediately squash-merge it with `PUT /pulls/:n/merge` (method:
+  squash). Two API calls instead of one, but both branch-protection
+  rules on `main` are satisfied:
+
+    1. "Changes must be made through a pull request" — yes, we
+       create one.
+    2. "This branch must not contain merge commits" — squash-merge
+       lands a single linear commit on main, not a merge commit.
+
+  Was previously a direct `POST /merges` (one API call, no PR), but
+  that hit the protected-branch 409 the moment branch protection
+  was enabled on main. Switched 2026-05-01.
+
+  If a PR for `staging → main` is already open (e.g. a previous
+  /publish run failed mid-flight, or a developer opened a manual
+  promotion PR), `POST /pulls` returns 422 — we catch that, look
+  up the existing PR via `GET /pulls?head=...&base=...`, and merge
+  it instead of giving up.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
@@ -136,21 +150,71 @@
     }
   }
 
+  /**
+   * Owner of the repo, e.g. `den-frie-vilje` from `den-frie-vilje/foo`.
+   * GitHub's "list pulls" endpoint wants `head=owner:branch`.
+   */
+  function repoOwner(): string {
+    return REPO.split('/')[0];
+  }
+
+  /**
+   * Find an open `staging → main` PR if one exists. Returns its
+   * number, or null if none. Used to recover from a partial
+   * previous /publish run that opened a PR but didn't merge it.
+   */
+  async function findExistingPr(): Promise<number | null> {
+    type ListPrsResp = Array<{ number: number }>;
+    const list = (await ghFetch(
+      `/repos/${REPO}/pulls?state=open&head=${repoOwner()}:${HEAD_BRANCH}&base=${BASE_BRANCH}`
+    )) as ListPrsResp;
+    return list.length ? list[0].number : null;
+  }
+
   async function publish(): Promise<void> {
     publishing = true;
     error = null;
     publishMessage = null;
     try {
       const count = commits.length;
-      await ghFetch(`/repos/${REPO}/merges`, {
-        method: 'POST',
+      const title = `Publish staging → ${BASE_BRANCH} (${count} commit${count === 1 ? '' : 's'})`;
+
+      // 1. Open a PR. If one already exists for this head/base
+      //    pair, GitHub returns 422 with "A pull request already
+      //    exists" — fall through to look it up.
+      type CreatePrResp = { number: number };
+      let prNumber: number;
+      try {
+        const pr = (await ghFetch(`/repos/${REPO}/pulls`, {
+          method: 'POST',
+          body: JSON.stringify({
+            title,
+            head: HEAD_BRANCH,
+            base: BASE_BRANCH,
+            body: 'Auto-created from /publish — squash-merged immediately on open.'
+          })
+        })) as CreatePrResp;
+        prNumber = pr.number;
+      } catch (e) {
+        const existing = await findExistingPr();
+        if (existing == null) throw e;
+        prNumber = existing;
+      }
+
+      // 2. Squash-merge it. Lands a single non-merge commit on
+      //    `main` so the "no merge commits" branch-protection rule
+      //    stays happy. The squash commit's message preserves the
+      //    individual content commit messages from staging.
+      await ghFetch(`/repos/${REPO}/pulls/${prNumber}/merge`, {
+        method: 'PUT',
         body: JSON.stringify({
-          base: BASE_BRANCH,
-          head: HEAD_BRANCH,
-          commit_message: `Publish staging → ${BASE_BRANCH} (${count} commit${count === 1 ? '' : 's'})`
+          merge_method: 'squash',
+          commit_title: title,
+          commit_message: commits.map((c) => `- ${c.shortSha} ${c.message}`).join('\n')
         })
       });
-      publishMessage = `${count} commit${count === 1 ? '' : 's'} merged into ${BASE_BRANCH}. Production deploy starting — skovbyesexologi.com should reflect the change within ~2 minutes.`;
+
+      publishMessage = `${count} commit${count === 1 ? '' : 's'} merged into ${BASE_BRANCH} via PR #${prNumber}. Production deploy starting — skovbyesexologi.com should reflect the change within ~2 minutes.`;
       await loadDiff();
     } catch (e) {
       if (!needsLogin) error = (e as Error).message;
