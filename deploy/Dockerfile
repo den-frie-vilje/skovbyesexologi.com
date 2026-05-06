@@ -15,18 +15,34 @@
 # bumps node or pnpm, this Dockerfile gets the new versions on
 # the next build — no code change here. Same dev↔CI toolchain
 # as `pkgx pnpm ...` on the laptop.
+#
+# IMPORTANT: ad-hoc `pkgx <cmd>` does NOT auto-read pkgx.yml — it
+# defaults to "latest", which silently broke when Node 26 dropped
+# upstream and pkgx started serving v26 to a project that expects
+# `~25`. The `eval "$(pkgx dev --shellcode)" && dev on` pattern
+# below is the documented activation flow that DOES read pkgx.yml
+# from CWD. Each Dockerfile RUN is a fresh shell, so we re-activate
+# per RUN — but the per-version downloads cached by the first
+# activation stay on the layer fs, so subsequent activations are
+# pure PATH manipulation (instant).
 FROM pkgxdev/pkgx:latest@sha256:a752ba83d58f0429a21e11206af5be562b44674e1ac0e97f9022ae150a1b6973 AS builder
 WORKDIR /app
 
+# pkgx dev shellcode is bash 4+ syntax; the pkgx image's default
+# sh is dash. Switch every RUN in this stage to bash so
+# `eval "$(pkgx dev …)"` parses correctly.
+SHELL ["/bin/bash", "-c"]
+
 # Copy pkgx.yml first so the pkgx-install layer caches until
-# tool versions change.
+# tool versions change. `dev on` (below) reads it from CWD.
 COPY pkgx.yml ./
 
 # Copy lockfile next so the deps-install layer caches until
 # lockfile actually changes. Source-only changes don't re-run
 # pnpm install.
 COPY package.json pnpm-lock.yaml ./
-RUN pkgx pnpm install --frozen-lockfile
+RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
+    pnpm install --frozen-lockfile
 
 # Source tree. Changes here bust the build layer but leave
 # node_modules alone.
@@ -43,9 +59,13 @@ ENV PUBLIC_GIT_SHA=$PUBLIC_GIT_SHA
 ENV PUBLIC_BUILD_TIME=$PUBLIC_BUILD_TIME
 
 # Type check first — faster to fail here than in the (slower)
-# Vite build. Output lands in ./build via adapter-static.
-RUN pkgx pnpm check
-RUN pkgx pnpm build -- --mode $VITE_MODE
+# Vite build. Output lands in ./build via adapter-static. Same
+# dev-shellcode activation as the install step above (each RUN
+# is a fresh shell).
+RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
+    pnpm check
+RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
+    pnpm build -- --mode $VITE_MODE
 
 # ----- runtime --------------------------------------------------
 # nginxinc/nginx-unprivileged runs as UID 101 (nginx user),
