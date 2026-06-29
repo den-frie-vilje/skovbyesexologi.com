@@ -6,6 +6,15 @@ intimacy coordinator. Static SvelteKit build, Danish-first, self-hostable.
 See [AGENTS.md](AGENTS.md) for the deep reference (Three.js stage architecture,
 palette conventions, perf lessons, roadmap).
 
+## Working-style
+
+Work in this repo follows **Den Frie Vilje's working-style conventions**:
+Danish-first copy; verify by measurement (`getBoundingClientRect` /
+`getComputedStyle` / real numbers), never by eyeballing screenshots; prefer
+subagents for multi-file research; binaries via `pkgx`; TypeScript everywhere
+(no stray `.mjs`/`.js`); RTFM any third-party component before integrating.
+Applied automatically when the environment provides them.
+
 ## Current state
 
 The "Flod" homepage at `/` is the site: one scrolling document, two
