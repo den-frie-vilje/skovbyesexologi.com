@@ -9,9 +9,7 @@
   "hero": {
     "name": "Skovbye Sexology",
     "city": "Copenhagen",
-    "statementStart": "You come as you are,",
-    "statementEnd": "not as you ",
-    "statementEm": "should",
+    "statement": "You come as you are,\n\nnot as you *should*",
     "attribution": "Signe Skovbye — clinical sexologist, intimacy coordinator, psychomotor therapist.",
     "scrollLabel": "feel"
   },

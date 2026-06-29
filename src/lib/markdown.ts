@@ -59,6 +59,23 @@ export function renderInlineParagraphs(md: string): string[] {
 }
 
 /**
+ * Inline-render markdown split on EVERY line break (not just blank
+ * lines) — one HTML string per display line. Used by the hero
+ * statement, where each line is a separate `.line` block and a word can
+ * carry the accent emphasis (italic). Treats single and double newlines
+ * alike so it doesn't matter whether the editor makes a soft or hard
+ * break.
+ */
+export function renderInlineLines(md: string): string[] {
+  return md
+    .trim()
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => marked.parseInline(l) as string);
+}
+
+/**
  * Flatten markdown to plain text — for meta descriptions / JSON-LD where
  * markup must not leak. Renders then strips tags + collapses whitespace.
  * First-party, build-time content, so a tag-strip is sufficient.

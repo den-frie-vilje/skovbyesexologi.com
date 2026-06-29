@@ -311,9 +311,21 @@ collections:
             fields:
               - { name: name, label: Brand name (hero), widget: string, i18n: true }
               - { name: city, widget: string, i18n: true }
-              - { name: statementStart, label: Statement (start), widget: text, i18n: true, hint: 'First line of the three-piece hero statement.' }
-              - { name: statementEnd, label: Statement (end before em), widget: text, i18n: true }
-              - { name: statementEm, label: Statement (emphasised tail), widget: string, i18n: true }
+              - name: statement
+                label: Hero statement
+                widget: markdown
+                i18n: true
+                # Single field replacing the old start/end/em split.
+                # Each line break is a display line; italic = the accent
+                # underline. No headings/bold/links — it's a one-line
+                # marquee statement.
+                buttons: [italic]
+                editor_components: []
+                hint: >-
+                  The big hero line. Press Enter to break it onto a new
+                  display line. Italicise a word to give it the accent
+                  underline (as in "ikke som du *burde*"). A decorative
+                  period is added automatically at the end.
               - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
               - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
 

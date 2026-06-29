@@ -204,10 +204,13 @@ export type NavLink = {
 export type HomeHero = {
   name: string;
   city: string;
-  /** Three-piece hero statement: `<start> <end><em>em</em>.` */
-  statementStart: string;
-  statementEnd: string;
-  statementEm: string;
+  /** Hero statement as a single markdown string. Each line break is a
+   *  display line; italicise a word for the accent-underline emphasis
+   *  (e.g. `"Du kommer som du er,\n\nikke som du *burde*"`). Rendered
+   *  via `$lib/markdown`'s `renderInlineLines`; the component appends a
+   *  decorative accent period. Replaces the old three-field split
+   *  (statementStart / statementEnd / statementEm). */
+  statement: string;
   attribution: string;
   scrollLabel: string;
 };
