@@ -271,10 +271,18 @@ collections:
           - { name: pronouns, widget: string, i18n: true }
           - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
-            label: Body paragraphs
-            widget: list
+            label: Body
+            widget: markdown
             i18n: true
-            field: { name: paragraph, widget: text }
+            # Inline marks only — bio paragraphs, not a document. No
+            # headings (the section already has its own heading) and no
+            # image/code inserts. Each blank-line-separated paragraph
+            # fades in with a slight stagger on the page.
+            buttons: [bold, italic, link]
+            editor_components: []
+            hint: >-
+              Signe's bio. Separate paragraphs with a blank line. Bold,
+              italic, and links are available.
 
   # ---- Home page (includes stage choreography) ----
   - name: home

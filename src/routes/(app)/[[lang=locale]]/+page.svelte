@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { contentFor, type Locale } from '$lib/content';
+  import { renderInlineParagraphs } from '$lib/markdown';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import Testimonials from '$lib/components/Testimonials.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
@@ -28,6 +29,9 @@
   const site = $derived(bundle.site);
   const contact = $derived(bundle.contact);
   const bio = $derived(bundle.bio);
+  // Bio body is markdown; split into inline-rendered paragraphs so each
+  // keeps its own staggered reveal (<p class="reveal" style="--d">).
+  const bioParagraphs = $derived(renderInlineParagraphs(bio.body));
   const home = $derived(bundle.home);
   const services = $derived(bundle.services);
   /*
@@ -518,8 +522,8 @@
         </figcaption>
       </figure>
       <div class="bio-body">
-        {#each bio.body as p, i}
-          <p class="reveal" style="--d: {i * 80}ms">{p}</p>
+        {#each bioParagraphs as p, i}
+          <p class="reveal" style="--d: {i * 80}ms">{@html p}</p>
         {/each}
       </div>
     </div>

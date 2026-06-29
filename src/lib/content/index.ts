@@ -106,14 +106,16 @@ export type Contact = {
   socials?: SocialLink[];
 };
 
-/** Everything in the bio section. `body` stays a string[] until a
- *  markdown migration lands. */
+/** Everything in the bio section. `body` is markdown — paragraphs
+ *  separated by blank lines, with inline emphasis/links. Rendered
+ *  per-paragraph via `$lib/markdown`'s `renderInlineParagraphs` so the
+ *  bio's staggered reveal keeps working. */
 export type Bio = {
   label: string;
   heading: string;
   pronouns: string;
   portraitAlt: string;
-  body: string[];
+  body: string;
 };
 
 /** Action button on a service card. */

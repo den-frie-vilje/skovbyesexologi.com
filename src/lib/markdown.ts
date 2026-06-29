@@ -38,3 +38,36 @@ marked.use({
 export function renderServiceBody(md: string): string {
   return marked.parse(md.trim(), { async: false });
 }
+
+/**
+ * Split paragraph-shaped markdown (blank-line-separated) into an array
+ * of INLINE-rendered HTML strings — one per paragraph. Used where the
+ * surrounding component owns the <p> elements (e.g. the bio's
+ * per-paragraph staggered reveal) but the text should still carry inline
+ * markdown (bold, italic, links). Block syntax (headings, lists) is not
+ * applied here by design — these are prose paragraphs.
+ */
+export function renderInlineParagraphs(md: string): string[] {
+  return md
+    .trim()
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    // parseInline is synchronous (async defaults off) — the union return
+    // type includes Promise, so assert the string branch.
+    .map((p) => marked.parseInline(p) as string);
+}
+
+/**
+ * Flatten markdown to plain text — for meta descriptions / JSON-LD where
+ * markup must not leak. Renders then strips tags + collapses whitespace.
+ * First-party, build-time content, so a tag-strip is sufficient.
+ */
+export function markdownToPlainText(md: string): string {
+  const html = marked.parse(md.trim(), { async: false });
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
