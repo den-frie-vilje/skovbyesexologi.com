@@ -476,6 +476,17 @@ collections:
       - { name: title, widget: string, i18n: true }
       - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
       - { name: blurb, widget: text, i18n: true }
+      - name: body
+        label: Body (prose)
+        widget: text
+        required: false
+        i18n: true
+        hint: >-
+          Optional longer prose, shown on the detail page after the
+          blurb. Separate paragraphs with a blank line. When you write
+          a body here, the detail page shows this prose INSTEAD of the
+          feature bullets below — the bullets still appear on the
+          homepage card. Leave empty to keep the bullets-only layout.
       - name: bullets
         label: Feature bullets
         widget: list

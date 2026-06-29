@@ -86,6 +86,19 @@
   );
 
   /*
+    Detail-page prose. `body` is authored as plain multi-paragraph
+    text (blank line = paragraph break); split on blank lines into
+    <p> elements. When a service has a body, the detail page leads
+    with this prose and SKIPS the feature bullets — the bullets still
+    render on the homepage service card, where compact skimming earns
+    its keep, but a full detail page reads more human as prose. A
+    service with no body falls back to the bullets as before.
+  */
+  const bodyParas = $derived(
+    (service.body ?? '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+  );
+
+  /*
     Publish this service's stage config to the shared store. The
     layout's persistent Stage consumes it; when navigating
     between services (or home → service), the new anchors +
@@ -169,8 +182,24 @@
         <p class="s-blurb">{service.blurb}</p>
       </header>
 
+      <!-- ============== BODY (prose) ============== -->
+      <!--
+        Long-form prose intro. When present it replaces the feature
+        bullets on the detail page (see `bodyParas` derivation) so the
+        page reads as writing rather than a stacked list. Each blank-
+        line-separated paragraph becomes its own <p>.
+      -->
+      {#if bodyParas.length > 0}
+        <section class="s-block s-body-block">
+          {#each bodyParas as para}
+            <p class="s-body">{para}</p>
+          {/each}
+        </section>
+      {/if}
+
       <!-- ============== WHAT'S INCLUDED ============== -->
-      {#if service.bullets.length > 0}
+      <!-- Bullets are the fallback when no prose `body` is authored. -->
+      {#if bodyParas.length === 0 && service.bullets.length > 0}
         <section class="s-block s-bullets-block">
           <ul class="s-bullets">
             {#each service.bullets as bullet, i}
@@ -379,6 +408,25 @@
     color: color-mix(in oklch, var(--text) 88%, transparent);
     max-width: 42ch;
     margin: 0;
+  }
+
+  /* ============== BODY (prose) ============== */
+  /* Reading-scale serif prose — quieter than the blurb, a longer
+     measure for sustained reading. Paragraphs are spaced by margin
+     rather than rules so the block reads as writing, not a list. */
+  .s-body-block {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+  .s-body {
+    font-family: var(--font-serif);
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    line-height: 1.65;
+    color: color-mix(in oklch, var(--text) 90%, transparent);
+    max-width: 56ch;
+    margin: 0 0 1.1em;
+  }
+  .s-body:last-child {
+    margin-bottom: 0;
   }
 
   /* ============== BLOCKS ============== */
