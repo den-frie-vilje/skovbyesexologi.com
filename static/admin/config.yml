@@ -478,15 +478,25 @@ collections:
       - { name: blurb, widget: text, i18n: true }
       - name: body
         label: Body (prose)
-        widget: text
+        widget: markdown
         required: false
         i18n: true
+        # Toolbar limited to what the detail page renders: bold,
+        # italic, links, and two heading levels. `editor_components: []`
+        # drops the code-block/image inserts — body is prose only.
+        # Italic inside a heading renders as the site's accent-underline
+        # emphasis (the chartreuse highlighter); in body text it stays
+        # plain italic.
+        buttons: [bold, italic, link, heading-two, heading-three]
+        editor_components: []
         hint: >-
           Optional longer prose, shown on the detail page after the
-          blurb. Separate paragraphs with a blank line. When you write
-          a body here, the detail page shows this prose INSTEAD of the
-          feature bullets below — the bullets still appear on the
-          homepage card. Leave empty to keep the bullets-only layout.
+          blurb. When you write a body here, the detail page shows this
+          prose INSTEAD of the feature bullets below — the bullets still
+          appear on the homepage card. Use the two heading levels to
+          break it into sections; italic inside a heading becomes the
+          highlighted accent. Leave empty to keep the bullets-only
+          layout.
       - name: bullets
         label: Feature bullets
         widget: list

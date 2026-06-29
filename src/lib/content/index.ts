@@ -152,12 +152,12 @@ export type Service = {
   kicker: string;
   blurb: string;
   /** Optional long-form prose intro for the detail page, shown after
-   *  the blurb. Paragraphs separated by blank lines. When present, the
-   *  detail page renders this prose INSTEAD of `bullets` (the bullets
-   *  still feed the homepage service card, where compact skimming
-   *  earns its keep). Plain multi-paragraph text today; upgrading this
-   *  to a markdown / richtext field — for inline emphasis and links —
-   *  is the natural next step (see the CMS shape weighing). */
+   *  the blurb. Authored as markdown (bold, italic, links, two heading
+   *  levels) and rendered via `$lib/markdown`'s `renderServiceBody`.
+   *  When present, the detail page renders this prose INSTEAD of
+   *  `bullets` (the bullets still feed the homepage service card, where
+   *  compact skimming earns its keep). Italic inside a heading renders
+   *  as the site's accent-underline emphasis. */
   body?: string;
   bullets: string[];
   /** Labels for optional sub-blocks live alongside their data so they

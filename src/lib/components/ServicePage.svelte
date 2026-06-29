@@ -28,6 +28,7 @@
   import ManifestSection from './ManifestSection.svelte';
   import RitualSection from './RitualSection.svelte';
   import NumberedList from './NumberedList.svelte';
+  import { renderServiceBody } from '$lib/markdown';
 
   interface Props {
     service: Service;
@@ -86,17 +87,16 @@
   );
 
   /*
-    Detail-page prose. `body` is authored as plain multi-paragraph
-    text (blank line = paragraph break); split on blank lines into
-    <p> elements. When a service has a body, the detail page leads
-    with this prose and SKIPS the feature bullets — the bullets still
-    render on the homepage service card, where compact skimming earns
-    its keep, but a full detail page reads more human as prose. A
-    service with no body falls back to the bullets as before.
+    Detail-page prose. `body` is authored as markdown (bold, italic,
+    links, two heading levels) and rendered to HTML via `marked`. When
+    a service has a body, the detail page leads with this prose and
+    SKIPS the feature bullets — the bullets still render on the
+    homepage service card, where compact skimming earns its keep, but a
+    full detail page reads more human as prose. A service with no body
+    falls back to the bullets as before. `bodyHtml` is `{@html}`-ed
+    below; the markdown is first-party + build-time, see `$lib/markdown`.
   */
-  const bodyParas = $derived(
-    (service.body ?? '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
-  );
+  const bodyHtml = $derived(service.body ? renderServiceBody(service.body) : '');
 
   /*
     Publish this service's stage config to the shared store. The
@@ -182,24 +182,22 @@
         <p class="s-blurb">{service.blurb}</p>
       </header>
 
-      <!-- ============== BODY (prose) ============== -->
+      <!-- ============== BODY (prose / markdown) ============== -->
       <!--
-        Long-form prose intro. When present it replaces the feature
-        bullets on the detail page (see `bodyParas` derivation) so the
-        page reads as writing rather than a stacked list. Each blank-
-        line-separated paragraph becomes its own <p>.
+        Long-form markdown prose. When present it replaces the feature
+        bullets on the detail page (see `bodyHtml`) so the page reads as
+        writing rather than a stacked list. Rendered HTML is first-party
+        + build-time (see `$lib/markdown`), hence `{@html}`.
       -->
-      {#if bodyParas.length > 0}
+      {#if bodyHtml}
         <section class="s-block s-body-block">
-          {#each bodyParas as para}
-            <p class="s-body">{para}</p>
-          {/each}
+          <div class="s-body">{@html bodyHtml}</div>
         </section>
       {/if}
 
       <!-- ============== WHAT'S INCLUDED ============== -->
       <!-- Bullets are the fallback when no prose `body` is authored. -->
-      {#if bodyParas.length === 0 && service.bullets.length > 0}
+      {#if !bodyHtml && service.bullets.length > 0}
         <section class="s-block s-bullets-block">
           <ul class="s-bullets">
             {#each service.bullets as bullet, i}
@@ -410,23 +408,106 @@
     margin: 0;
   }
 
-  /* ============== BODY (prose) ============== */
+  /* ============== BODY (markdown prose) ============== */
   /* Reading-scale serif prose — quieter than the blurb, a longer
-     measure for sustained reading. Paragraphs are spaced by margin
-     rather than rules so the block reads as writing, not a list. */
+     measure for sustained reading. `.s-body` is the wrapper; marked
+     emits <p>, <h2>/<h3>, <strong>, <em>, <a>, and lists inside it. */
   .s-body-block {
     margin-top: clamp(2.5rem, 5vw, 4rem);
   }
+  /*
+    `.s-body` is scoped (it's a real element in the template), but its
+    children come from `{@html}` and never receive Svelte's scope
+    attribute — so every descendant rule must be `:global()`, or it
+    both warns as "unused" AND silently fails to apply.
+  */
   .s-body {
+    max-width: 56ch;
+  }
+  .s-body :global(p) {
     font-family: var(--font-serif);
     font-size: clamp(1.05rem, 1.6vw, 1.3rem);
     line-height: 1.65;
     color: color-mix(in oklch, var(--text) 90%, transparent);
-    max-width: 56ch;
     margin: 0 0 1.1em;
   }
-  .s-body:last-child {
+  .s-body > :global(:last-child) {
     margin-bottom: 0;
+  }
+
+  /* Two heading levels. Serif display scale, generous space above so
+     they break the prose into sections. */
+  .s-body :global(h2),
+  .s-body :global(h3) {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    color: var(--text);
+  }
+  .s-body :global(h2) {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    max-width: 22ch;
+    margin: 1.6em 0 0.5em;
+  }
+  .s-body :global(h3) {
+    font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+    max-width: 28ch;
+    margin: 1.4em 0 0.4em;
+  }
+  .s-body > :global(h2:first-child),
+  .s-body > :global(h3:first-child) {
+    margin-top: 0;
+  }
+
+  /* Custom emphasis: italic inside a HEADING gets the site's
+     chartreuse highlighter bar — the same gesture as the hero
+     `<em>burde</em>` and the manifest keywords. In body text, italic
+     stays plain. Same `<em>` element, styled by context. */
+  .s-body :global(:is(h2, h3) em) {
+    font-style: italic;
+    font-weight: 500;
+    background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
+    padding: 0 0.08em;
+  }
+  .s-body :global(p em),
+  .s-body :global(li em) {
+    font-style: italic;
+  }
+  .s-body :global(strong) {
+    font-weight: 600;
+  }
+
+  /* Links: chartreuse-accent underline that warms to the text colour
+     on hover — quiet inside prose, unmistakably a link. */
+  .s-body :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    transition: text-decoration-color 0.15s, color 0.15s;
+  }
+  .s-body :global(a:hover),
+  .s-body :global(a:focus-visible) {
+    text-decoration-color: currentColor;
+  }
+
+  /* Markdown lists, if the editor reaches for one inside the prose —
+     kept understated so they don't reintroduce the list-heaviness the
+     prose body exists to relieve. */
+  .s-body :global(ul),
+  .s-body :global(ol) {
+    font-family: var(--font-serif);
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    line-height: 1.6;
+    color: color-mix(in oklch, var(--text) 90%, transparent);
+    max-width: 52ch;
+    margin: 0 0 1.1em;
+    padding-left: 1.4em;
+  }
+  .s-body :global(li) {
+    margin: 0 0 0.3em;
   }
 
   /* ============== BLOCKS ============== */
