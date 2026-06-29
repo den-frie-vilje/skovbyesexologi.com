@@ -160,6 +160,12 @@ export type Service = {
    *  as the site's accent-underline emphasis. */
   body?: string;
   bullets: string[];
+  /** Editor toggle for the feature-bullet list on the DETAIL page only
+   *  (the homepage service card always shows bullets). Defaults to
+   *  shown — `false` hides them, letting a service lead with prose, or
+   *  drop the list entirely even without a body. The homepage card is
+   *  unaffected. `undefined`/`true` → shown. */
+  showDetailBullets?: boolean;
   /** Labels for optional sub-blocks live alongside their data so they
    *  translate with the service. */
   supportsLabel?: string;

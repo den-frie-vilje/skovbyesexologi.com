@@ -491,17 +491,26 @@ collections:
         editor_components: []
         hint: >-
           Optional longer prose, shown on the detail page after the
-          blurb. When you write a body here, the detail page shows this
-          prose INSTEAD of the feature bullets below — the bullets still
-          appear on the homepage card. Use the two heading levels to
-          break it into sections; italic inside a heading becomes the
-          highlighted accent. Leave empty to keep the bullets-only
-          layout.
+          blurb. Use the two heading levels to break it into sections;
+          italic inside a heading becomes the highlighted accent. The
+          feature bullets are controlled separately — see the toggle
+          below.
       - name: bullets
         label: Feature bullets
         widget: list
         i18n: true
         field: { name: bullet, widget: string, i18n: true }
+      - name: showDetailBullets
+        label: Show feature bullets on the detail page
+        widget: boolean
+        default: true
+        i18n: duplicate
+        hint: >-
+          On by default. Turn off to hide the bullet list on this
+          service's detail page (e.g. when the prose body says it
+          better, or to drop the list entirely). The homepage service
+          card always shows the bullets regardless. Same in both
+          locales.
       - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
       - name: supports
         label: Supporting keywords (optional)

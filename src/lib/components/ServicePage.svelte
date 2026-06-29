@@ -88,15 +88,21 @@
 
   /*
     Detail-page prose. `body` is authored as markdown (bold, italic,
-    links, two heading levels) and rendered to HTML via `marked`. When
-    a service has a body, the detail page leads with this prose and
-    SKIPS the feature bullets — the bullets still render on the
-    homepage service card, where compact skimming earns its keep, but a
-    full detail page reads more human as prose. A service with no body
-    falls back to the bullets as before. `bodyHtml` is `{@html}`-ed
-    below; the markdown is first-party + build-time, see `$lib/markdown`.
+    links, two heading levels) and rendered to HTML via `marked`. The
+    prose and the feature bullets are now INDEPENDENT: a service can
+    lead with prose, keep its bullets, both, or neither. Bullet
+    visibility on the detail page is the editor's explicit choice
+    (`showDetailBullets`, default on); the homepage service card always
+    shows bullets regardless. `bodyHtml` is `{@html}`-ed below; the
+    markdown is first-party + build-time, see `$lib/markdown`.
   */
   const bodyHtml = $derived(service.body ? renderServiceBody(service.body) : '');
+
+  /* Show the feature bullets on the detail page unless the editor has
+     turned them off. Independent of `body`. */
+  const showBullets = $derived(
+    service.showDetailBullets !== false && service.bullets.length > 0
+  );
 
   /*
     Publish this service's stage config to the shared store. The
@@ -196,8 +202,9 @@
       {/if}
 
       <!-- ============== WHAT'S INCLUDED ============== -->
-      <!-- Bullets are the fallback when no prose `body` is authored. -->
-      {#if !bodyHtml && service.bullets.length > 0}
+      <!-- Feature bullets — independent of the prose body; hidden when
+           the editor sets `showDetailBullets: false`. -->
+      {#if showBullets}
         <section class="s-block s-bullets-block">
           <ul class="s-bullets">
             {#each service.bullets as bullet, i}

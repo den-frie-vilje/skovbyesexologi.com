@@ -6,6 +6,7 @@
   "blurb": "Vi arbejder både med samtale og krop. Psykomotorik forener kognition og sansning — en naturlig vej til seksuel trivsel.",
   "body": "Vi arbejder både i samtale og gennem kroppen. Psykomotorikken forener det, du tænker, med det, du sanser — og ofte er det dér, noget der har siddet fast længe, begynder at give slip. Vi går kun derhen, du selv åbner.\n\nI praksis kan det være samtale, kropslige øvelser eller mere konkret sexologisk rådgivning. Sjældent i en fast rækkefølge. Du behøver ikke vide præcis, hvad du kommer med — vi finder retningen undervejs, i dit tempo.",
   "bullets": ["Samtaleterapi", "Kropslige øvelser", "Sexologisk rådgivning"],
+  "showDetailBullets": false,
   "supportsLabel": "Understøtter din eller jeres",
   "supports": [
     "Lyst",
