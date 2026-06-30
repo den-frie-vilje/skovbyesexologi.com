@@ -1,11 +1,16 @@
 {
   "slug": "therapy",
   "number": "01",
+  "chapter": "terapi",
   "title": "Psychomotor sexological therapy",
   "kicker": "solo · couples · poly",
   "blurb": "We work with both conversation and body. Psychomotor therapy unites cognition and sensation — a natural path to sexual wellbeing.",
-  "body": "## The meeting\n\nYou're allowed to be in the room before you have to explain yourself. We begin by arriving and noticing what's there — without it having to lead anywhere in particular. There's no test to pass.\n\n### When words aren't *enough*\n\nSometimes we stay with conversation. Other times we work with movement, breath, and touch, always within what you open to yourself. That's often where something long held finally lets go.\n\n### In your own *order*\n\nA course of sessions might be about desire, boundaries, relationships, or the body — rarely in a fixed sequence. You don't need to know exactly what you're bringing; we find the direction as we go.",
-  "bullets": ["Talk therapy", "Embodied exercises", "Sexological counselling"],
+  "body": "## The meeting\n\nYou're allowed to be in the room before you have to explain yourself. We begin by arriving and noticing what's there — without it having to lead anywhere in particular. There's no test to pass.\n\n### When words aren't _enough_\n\nSometimes we stay with conversation. Other times we work with movement, breath, and touch, always within what you open to yourself. That's often where something long held finally lets go.\n\n### In your own _order_\n\nA course of sessions might be about desire, boundaries, relationships, or the body — rarely in a fixed sequence. You don't need to know exactly what you're bringing; we find the direction as we go.",
+  "bullets": [
+    "Talk therapy",
+    "Embodied exercises",
+    "Sexological counselling"
+  ],
   "showDetailBullets": false,
   "supportsLabel": "Supporting your",
   "supports": [
@@ -20,11 +25,6 @@
     "Safety",
     "Sex life"
   ],
-  "cta": {
-    "label": "Book a session",
-    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
-    "kind": "primary"
-  },
   "testimonials": [
     {
       "quote": "[mock] I had never spoken to anyone about my sex life. Signe made the first space where it didn't feel awkward.",
@@ -39,6 +39,16 @@
       "source": "[mock] Therapy client"
     }
   ],
-  "chapter": "terapi",
-  "stage": { "bubble": "fullBleed", "drops": "offstage", "gem": "offstage", "intensity": 1.05 }
+  "cta": {
+    "label": "Book a session",
+    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
+    "kind": "primary"
+  },
+  "studiosLabel": "",
+  "stage": {
+    "bubble": "fullBleed",
+    "drops": "offstage",
+    "gem": "offstage",
+    "intensity": 1.05
+  }
 }

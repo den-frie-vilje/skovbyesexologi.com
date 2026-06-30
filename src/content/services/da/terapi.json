@@ -1,11 +1,16 @@
 {
   "slug": "terapi",
   "number": "01",
+  "chapter": "terapi",
   "title": "Psykomotorisk sexologisk terapi",
   "kicker": "solo · par · poly",
   "blurb": "Vi arbejder både med samtale og krop. Psykomotorik forener kognition og sansning — en naturlig vej til seksuel trivsel.",
-  "body": "## Mødet\n\nDu får lov at være i rummet, før du skal forklare dig. Vi begynder med at lande og mærke efter, hvad der er — uden at det skal føre et bestemt sted hen. Der er ingen prøve, du skal bestå.\n\n### Når ordene ikke *rækker*\n\nNogle gange bliver vi ved samtalen. Andre gange arbejder vi med bevægelse, åndedræt og berøring, altid inden for det, du selv åbner for. Det er ofte dér, at noget, der har siddet fast længe, får lov at give slip.\n\n### I din egen *rækkefølge*\n\nEt forløb kan handle om lyst, grænser, relationer eller krop — sjældent i en fast orden. Du behøver ikke vide præcis, hvad du kommer med; vi finder retningen undervejs.",
-  "bullets": ["Samtaleterapi", "Kropslige øvelser", "Sexologisk rådgivning"],
+  "body": "## Mødet\n\nDu får lov at være i rummet, før du skal forklare dig. Vi begynder med at lande og mærke efter, hvad der er — uden at det skal føre et bestemt sted hen. Der er ingen prøve, du skal bestå.\n\n### Når ordene ikke _slår til_\n\nNogle gange bliver vi ved samtalen. Andre gange arbejder vi med bevægelse, åndedræt og berøring, altid inden for det, du selv åbner for. Det er ofte dér, at noget, der har siddet fast længe, får lov at give slip.\n\n### I din egen _rækkefølge_\n\nEt forløb kan handle om lyst, grænser, relationer eller krop — sjældent i en fast orden. Du behøver ikke vide præcis, hvad du kommer med; vi finder retningen undervejs.",
+  "bullets": [
+    "Samtaleterapi",
+    "Kropslige øvelser",
+    "Sexologisk rådgivning"
+  ],
   "showDetailBullets": false,
   "supportsLabel": "Understøtter din eller jeres",
   "supports": [
@@ -20,11 +25,6 @@
     "Tryghed",
     "Sexliv"
   ],
-  "cta": {
-    "label": "Book en tid",
-    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
-    "kind": "primary"
-  },
   "testimonials": [
     {
       "quote": "[mock] Jeg havde aldrig talt med nogen om mit sexliv. Signe skabte det første rum, hvor det ikke var pinligt.",
@@ -39,6 +39,16 @@
       "source": "[mock] Terapiklient"
     }
   ],
-  "chapter": "terapi",
-  "stage": { "bubble": "fullBleed", "drops": "offstage", "gem": "offstage", "intensity": 1.05 }
+  "cta": {
+    "label": "Book en tid",
+    "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
+    "kind": "primary"
+  },
+  "studiosLabel": "",
+  "stage": {
+    "bubble": "fullBleed",
+    "drops": "offstage",
+    "gem": "offstage",
+    "intensity": 1.05
+  }
 }
