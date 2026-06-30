@@ -17,6 +17,7 @@
 -->
 <script lang="ts">
   import type { HomeManifest } from '$lib/content';
+  import { renderInline } from '$lib/markdown';
 
   interface Props {
     manifest: HomeManifest;
@@ -36,11 +37,7 @@
       {#each manifest.items as m, i}
         <li>
           <span class="num">{String(i + 1).padStart(2, '0')}</span>
-          <p>
-            {#each m.text.split(m.word) as part, j}
-              {part}{#if j < m.text.split(m.word).length - 1}<em>{m.word}</em>{/if}
-            {/each}
-          </p>
+          <p>{@html renderInline(m.text)}</p>
         </li>
       {/each}
     </ul>
@@ -95,7 +92,9 @@
   /* Chartreuse highlighter under the italicised keyword —
      same gesture as the hero's em treatment, scaled with the
      surrounding text via `em`-relative padding on the bar. */
-  em {
+  /* `:global` — the <em> is injected via {@html} from the markdown
+     manifest line, so it doesn't carry Svelte's scope class. */
+  p :global(em) {
     font-style: italic;
     font-weight: 500;
     background: linear-gradient(

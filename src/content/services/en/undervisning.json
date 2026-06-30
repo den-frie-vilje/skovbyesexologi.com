@@ -4,7 +4,9 @@
   "title": "Sex education",
   "kicker": "youth · groups · workshops",
   "blurb": "Biology, psychology, and culture — woven together. A language for boundaries, desires, and needs, without shame.",
+  "body": "## More than *biology*\n\nStudents often know the mechanics already. What's missing are words for what happens between people: arousal, consent, touch, and the boundaries that shift along the way.\n\n## No one has to have it *figured out*\n\nWe also talk about sex and porn, and about everything else that's otherwise hard to say out loud. Not as a syllabus to get through, but as a conversation where doubt is allowed. The format adapts to the group and the setting.",
   "bullets": ["Arousal", "Consent", "Touch", "Sex", "Conversation", "Porn"],
+  "showDetailBullets": false,
   "testimonials": [
     {
       "quote": "[mock] My class asked more in that workshop than in a whole semester of biology.",

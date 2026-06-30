@@ -23,6 +23,7 @@
  */
 
 import type { Bio, Contact, Locale, Service, Site } from '$lib/content';
+import { markdownToPlainText } from '$lib/markdown';
 import { env } from '$env/dynamic/public';
 
 /*
@@ -137,7 +138,7 @@ function businessAndPerson(
     '@id': personId,
     name: personName(bio.heading),
     jobTitle: site.tagline,
-    description: bio.body.join(' '),
+    description: markdownToPlainText(bio.body),
     worksFor: { '@id': businessId },
     pronouns: bio.pronouns,
     // Both locales declared up front so a DA-page graph also

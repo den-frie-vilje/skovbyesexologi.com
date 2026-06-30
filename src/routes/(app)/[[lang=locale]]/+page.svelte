@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { contentFor, type Locale } from '$lib/content';
+  import { renderInlineParagraphs, renderInlineLines, renderInline } from '$lib/markdown';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import Testimonials from '$lib/components/Testimonials.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
@@ -28,7 +29,13 @@
   const site = $derived(bundle.site);
   const contact = $derived(bundle.contact);
   const bio = $derived(bundle.bio);
+  // Bio body is markdown; split into inline-rendered paragraphs so each
+  // keeps its own staggered reveal (<p class="reveal" style="--d">).
+  const bioParagraphs = $derived(renderInlineParagraphs(bio.body));
   const home = $derived(bundle.home);
+  // Hero statement is markdown; each line break is a display line, and
+  // an italicised word renders as the accent-underline emphasis.
+  const statementLines = $derived(renderInlineLines(home.hero.statement));
   const services = $derived(bundle.services);
   /*
     Look up services by their stable cross-locale `id` (derived from
@@ -228,11 +235,19 @@
       roughly half the eyebrow's former height.
     -->
     <div class="hero-spacer" aria-hidden="true"></div>
+    <!--
+      Hero statement from a single markdown field: each line is a `.line`
+      block, an italicised word becomes the accent-underline `<em>`, and
+      the decorative accent period is appended to the final line.
+    -->
     <h1 class="statement">
-      <span class="line reveal-soft"><span class="ink">{hero.statementStart}</span></span>
-      <span class="line reveal-soft em">
-        <span class="ink">{hero.statementEnd}</span><em>{hero.statementEm}</em><span class="ink dot">.</span>
-      </span>
+      {#each statementLines as line, i}
+        <span class="line reveal-soft"
+          ><span class="ink">{@html line}</span>{#if i === statementLines.length - 1}<span
+              class="ink dot">.</span
+            >{/if}</span
+        >
+      {/each}
     </h1>
     <p class="attribution reveal">
       {hero.attribution}
@@ -274,11 +289,7 @@
       {#each manifest.items as m, i}
         <li class="reveal">
           <span class="m-num">{String(i + 1).padStart(2, '0')}</span>
-          <p>
-            {#each m.text.split(m.word) as part, j}
-              {part}{#if j < m.text.split(m.word).length - 1}<em>{m.word}</em>{/if}
-            {/each}
-          </p>
+          <p>{@html renderInline(m.text)}</p>
         </li>
       {/each}
     </ul>
@@ -518,8 +529,8 @@
         </figcaption>
       </figure>
       <div class="bio-body">
-        {#each bio.body as p, i}
-          <p class="reveal" style="--d: {i * 80}ms">{p}</p>
+        {#each bioParagraphs as p, i}
+          <p class="reveal" style="--d: {i * 80}ms">{@html p}</p>
         {/each}
       </div>
     </div>
@@ -607,7 +618,9 @@
   .statement .line {
     display: block;
   }
-  .statement em {
+  /* `:global` because the <em> is injected via {@html} from the
+     markdown statement and so doesn't carry Svelte's scope class. */
+  .statement :global(em) {
     font-style: italic;
     font-weight: 500;
     background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
@@ -756,7 +769,9 @@
     margin: 0;
     max-width: 26ch;
   }
-  .manifest em {
+  /* `:global` — the <em> is injected via {@html} from the markdown
+     manifest line, so it doesn't carry Svelte's scope class. */
+  .manifest :global(em) {
     font-style: italic;
     font-weight: 500;
     background: linear-gradient(180deg, transparent 68%, color-mix(in oklch, var(--highlight) 55%, transparent) 68%);
