@@ -59,6 +59,15 @@ export function renderInlineParagraphs(md: string): string[] {
 }
 
 /**
+ * Inline-render a single markdown string to HTML — no block wrapper, no
+ * line splitting. For one-line fields that allow only inline marks
+ * (e.g. a manifest line where one word carries the accent emphasis).
+ */
+export function renderInline(md: string): string {
+  return marked.parseInline(md.trim()) as string;
+}
+
+/**
  * Inline-render markdown split on EVERY line break (not just blank
  * lines) — one HTML string per display line. Used by the hero
  * statement, where each line is a separate `.line` block and a word can

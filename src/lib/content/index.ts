@@ -230,7 +230,11 @@ export type ChapterHeader = {
   lede: string;
 };
 
-export type ManifestEntry = { word: string; text: string };
+/** One manifest line. Markdown with inline emphasis only — italicise
+ *  the keyword to give it the accent underline. Replaces the old
+ *  `{ word, text }` split, where `word` was matched against `text` to
+ *  inject the emphasis (brittle: case- and substring-sensitive). */
+export type ManifestEntry = { text: string };
 export type HomeManifest = { label: string; items: ManifestEntry[] };
 
 export type RitualStep = { n: string; title: string; body: string };

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { contentFor, type Locale } from '$lib/content';
-  import { renderInlineParagraphs, renderInlineLines } from '$lib/markdown';
+  import { renderInlineParagraphs, renderInlineLines, renderInline } from '$lib/markdown';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import Testimonials from '$lib/components/Testimonials.svelte';
   import { resolveAnchor } from '$lib/stage/poses';
@@ -289,11 +289,7 @@
       {#each manifest.items as m, i}
         <li class="reveal">
           <span class="m-num">{String(i + 1).padStart(2, '0')}</span>
-          <p>
-            {#each m.text.split(m.word) as part, j}
-              {part}{#if j < m.text.split(m.word).length - 1}<em>{m.word}</em>{/if}
-            {/each}
-          </p>
+          <p>{@html renderInline(m.text)}</p>
         </li>
       {/each}
     </ul>
@@ -773,7 +769,9 @@
     margin: 0;
     max-width: 26ch;
   }
-  .manifest em {
+  /* `:global` — the <em> is injected via {@html} from the markdown
+     manifest line, so it doesn't carry Svelte's scope class. */
+  .manifest :global(em) {
     font-style: italic;
     font-weight: 500;
     background: linear-gradient(180deg, transparent 68%, color-mix(in oklch, var(--highlight) 55%, transparent) 68%);

@@ -29,11 +29,11 @@
   "manifest": {
     "label": "Manifesto",
     "items": [
-      { "word": "boundaries", "text": "Boundaries are not a test. You don't have to pass anything here." },
-      { "word": "listening", "text": "The body speaks first. I listen too — even where the words aren't." },
-      { "word": "everyone", "text": "Poly, queer, unsure, curious — there's room for every version of you." },
-      { "word": "performance", "text": "Intimacy is not a performance. It's attention." },
-      { "word": "pace", "text": "Your pace. Your order. Your body." }
+      { "text": "*Boundaries* are not a test. You don't have to pass anything here." },
+      { "text": "The body speaks first. I *listen* too — even where the words aren't." },
+      { "text": "Poly, queer, unsure, curious — there's room for *every* version of you." },
+      { "text": "Intimacy is not a *performance*. It's attention." },
+      { "text": "Your *pace*. Your order. Your body." }
     ]
   },
   "ritual": {

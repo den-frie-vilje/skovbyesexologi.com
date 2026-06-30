@@ -368,9 +368,18 @@ collections:
               - name: items
                 widget: list
                 i18n: true
+                summary: '{{fields.text}}'
                 fields:
-                  - { name: word, widget: string, i18n: true }
-                  - { name: text, widget: text, i18n: true }
+                  - name: text
+                    label: Line
+                    widget: markdown
+                    buttons: [italic]
+                    editor_components: []
+                    i18n: true
+                    hint: >-
+                      One manifest line. Italicise the keyword to give it
+                      the accent underline (e.g. "Grænser er ikke en
+                      *test*").
           - name: ritual
             label: Ritual (Chapter I)
             widget: object
