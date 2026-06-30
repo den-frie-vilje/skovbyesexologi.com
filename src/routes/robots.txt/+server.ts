@@ -7,7 +7,7 @@
  *
  * Staging build (PUBLIC_ALLOW_INDEXING=false, set in
  * `.env.staging`): disallow everything so search engines don't
- * surface `signe.denfrievilje.dk` instead of the real domain. We
+ * surface `skovbyesexologi-com.stage.denfrievilje.dk` instead of the real domain. We
  * don't even advertise a sitemap here — there'd be nothing useful
  * at `/sitemap.xml` for crawlers since any URLs would be staging
  * duplicates of production content.

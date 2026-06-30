@@ -1,6 +1,6 @@
 # Front-door reverse proxy for the staging environment.
 #
-# Web Station (DSM nginx) proxies signe.denfrievilje.dk →
+# Web Station (DSM nginx) proxies skovbyesexologi-com.stage.denfrievilje.dk →
 # 127.0.0.1:8080. This Caddy listens on :80 inside the container
 # network and routes by path to the right upstream.
 #
@@ -25,7 +25,7 @@
     # (which is what netlify-cms-github-oauth-provider expects).
     # Sveltia constructs URLs as `${base_url}/auth` and
     # `${base_url}/callback`, so with base_url =
-    # `https://signe.denfrievilje.dk/auth`, the paths become
+    # `https://skovbyesexologi-com.stage.denfrievilje.dk/auth`, the paths become
     # `/auth/auth` and `/auth/callback` externally — after
     # strip, the upstream sees `/auth` and `/callback`.
     handle_path /auth/* {

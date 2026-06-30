@@ -3,7 +3,7 @@
 
   A one-button "push staging → main" page for non-technical editors.
   Sveltia CMS writes her edits to the `staging` branch; GH Actions
-  redeploys signe.denfrievilje.dk within ~2 min; she reviews there,
+  redeploys skovbyesexologi-com.stage.denfrievilje.dk within ~2 min; she reviews there,
   and when ready comes to this page and clicks "Publish to
   production" to merge staging into main. GH Actions then deploys
   skovbyesexologi.com from main.
@@ -290,7 +290,7 @@
     <p class="subtitle">
       Changes saved via <a href="/admin">the admin editor</a> land first on
       <strong>staging</strong>
-      (signe.denfrievilje.dk) for review. When you're ready for the changes to go
+      (skovbyesexologi-com.stage.denfrievilje.dk) for review. When you're ready for the changes to go
       live on <strong>skovbyesexologi.com</strong>, click the button below.
     </p>
   </header>
