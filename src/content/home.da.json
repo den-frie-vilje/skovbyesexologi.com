@@ -9,9 +9,7 @@
   "hero": {
     "name": "Skovbye Sexologi",
     "city": "København",
-    "statementStart": "Du kommer som du er,",
-    "statementEnd": "ikke som du ",
-    "statementEm": "burde",
+    "statement": "Du kommer som du er,\n\nikke som du *burde*",
     "attribution": "Signe Skovbye — klinisk sexolog, intimitetskoordinator, psykomotorisk terapeut.",
     "scrollLabel": "mærk"
   },
@@ -31,11 +29,11 @@
   "manifest": {
     "label": "Manifest",
     "items": [
-      { "word": "grænser", "text": "Grænser er ikke en test. Du behøver ikke bestå noget, her." },
-      { "word": "lytter", "text": "Kroppen taler først. Jeg lytter med — også hvor ordene ikke er." },
-      { "word": "alle", "text": "Poly, queer, usikker, nysgerrig — der er plads til alle udgaver af dig." },
-      { "word": "præstation", "text": "Intimitet er ikke en præstation. Det er opmærksomhed." },
-      { "word": "tempo", "text": "Dit tempo. Din rækkefølge. Din krop." }
+      { "text": "*Grænser* er ikke en test. Du behøver ikke bestå noget, her." },
+      { "text": "Kroppen taler først. Jeg *lytter* med — også hvor ordene ikke er." },
+      { "text": "Poly, queer, usikker, nysgerrig — der er plads til *alle* udgaver af dig." },
+      { "text": "Intimitet er ikke en *præstation*. Det er opmærksomhed." },
+      { "text": "Dit *tempo*. Din rækkefølge. Din krop." }
     ]
   },
   "ritual": {

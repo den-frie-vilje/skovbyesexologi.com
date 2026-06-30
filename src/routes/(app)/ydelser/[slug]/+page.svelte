@@ -30,7 +30,6 @@
   const site = $derived(bundle.site);
   const bio = $derived(bundle.bio);
   const contact = $derived(bundle.contact);
-  const home = $derived(bundle.home);
   const service = $derived(data.service);
 
   /*
@@ -56,12 +55,17 @@
 
 <SeoHead {seo} />
 
+<!--
+  The terapi detail page previously borrowed the homepage's manifest +
+  ritual + forPersonal blocks (three stacked numbered lists) so it
+  "didn't end abruptly after the bullets". With terapi now carrying its
+  own prose `body`, those borrowed blocks were pure duplication of the
+  homepage and the page's heaviest list-load — dropped. Re-add a prop
+  here if a future terapi-chapter service wants one back.
+-->
 <ServicePage
   service={data.service}
   {bundle}
   backLabel="Forsiden"
   backHref="/"
-  manifest={service.chapter === 'terapi' ? home.manifest : undefined}
-  ritual={service.chapter === 'terapi' ? home.ritual : undefined}
-  forPersonal={service.chapter === 'terapi' ? home.forPersonal : undefined}
 />

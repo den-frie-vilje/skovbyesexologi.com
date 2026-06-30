@@ -271,10 +271,18 @@ collections:
           - { name: pronouns, widget: string, i18n: true }
           - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
-            label: Body paragraphs
-            widget: list
+            label: Body
+            widget: markdown
             i18n: true
-            field: { name: paragraph, widget: text }
+            # Inline marks only — bio paragraphs, not a document. No
+            # headings (the section already has its own heading) and no
+            # image/code inserts. Each blank-line-separated paragraph
+            # fades in with a slight stagger on the page.
+            buttons: [bold, italic, link]
+            editor_components: []
+            hint: >-
+              Signe's bio. Separate paragraphs with a blank line. Bold,
+              italic, and links are available.
 
   # ---- Home page (includes stage choreography) ----
   - name: home
@@ -303,9 +311,21 @@ collections:
             fields:
               - { name: name, label: Brand name (hero), widget: string, i18n: true }
               - { name: city, widget: string, i18n: true }
-              - { name: statementStart, label: Statement (start), widget: text, i18n: true, hint: 'First line of the three-piece hero statement.' }
-              - { name: statementEnd, label: Statement (end before em), widget: text, i18n: true }
-              - { name: statementEm, label: Statement (emphasised tail), widget: string, i18n: true }
+              - name: statement
+                label: Hero statement
+                widget: markdown
+                i18n: true
+                # Single field replacing the old start/end/em split.
+                # Each line break is a display line; italic = the accent
+                # underline. No headings/bold/links — it's a one-line
+                # marquee statement.
+                buttons: [italic]
+                editor_components: []
+                hint: >-
+                  The big hero line. Press Enter to break it onto a new
+                  display line. Italicise a word to give it the accent
+                  underline (as in "ikke som du *burde*"). A decorative
+                  period is added automatically at the end.
               - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
               - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
 
@@ -348,9 +368,18 @@ collections:
               - name: items
                 widget: list
                 i18n: true
+                summary: '{{fields.text}}'
                 fields:
-                  - { name: word, widget: string, i18n: true }
-                  - { name: text, widget: text, i18n: true }
+                  - name: text
+                    label: Line
+                    widget: markdown
+                    buttons: [italic]
+                    editor_components: []
+                    i18n: true
+                    hint: >-
+                      One manifest line. Italicise the keyword to give it
+                      the accent underline (e.g. "Grænser er ikke en
+                      *test*").
           - name: ritual
             label: Ritual (Chapter I)
             widget: object
@@ -476,11 +505,41 @@ collections:
       - { name: title, widget: string, i18n: true }
       - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
       - { name: blurb, widget: text, i18n: true }
+      - name: body
+        label: Body (prose)
+        widget: markdown
+        required: false
+        i18n: true
+        # Toolbar limited to what the detail page renders: bold,
+        # italic, links, and two heading levels. `editor_components: []`
+        # drops the code-block/image inserts — body is prose only.
+        # Italic inside a heading renders as the site's accent-underline
+        # emphasis (the chartreuse highlighter); in body text it stays
+        # plain italic.
+        buttons: [bold, italic, link, heading-two, heading-three]
+        editor_components: []
+        hint: >-
+          Optional longer prose, shown on the detail page after the
+          blurb. Use the two heading levels to break it into sections;
+          italic inside a heading becomes the highlighted accent. The
+          feature bullets are controlled separately — see the toggle
+          below.
       - name: bullets
         label: Feature bullets
         widget: list
         i18n: true
         field: { name: bullet, widget: string, i18n: true }
+      - name: showDetailBullets
+        label: Show feature bullets on the detail page
+        widget: boolean
+        default: true
+        i18n: duplicate
+        hint: >-
+          On by default. Turn off to hide the bullet list on this
+          service's detail page (e.g. when the prose body says it
+          better, or to drop the list entirely). The homepage service
+          card always shows the bullets regardless. Same in both
+          locales.
       - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
       - name: supports
         label: Supporting keywords (optional)

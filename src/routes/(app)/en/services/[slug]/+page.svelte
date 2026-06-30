@@ -19,7 +19,6 @@
   const site = $derived(bundle.site);
   const bio = $derived(bundle.bio);
   const contact = $derived(bundle.contact);
-  const home = $derived(bundle.home);
   const service = $derived(data.service);
 
   // EN mirror of DA's SEO head — see DA wrapper for commentary.
@@ -38,12 +37,14 @@
 
 <SeoHead {seo} />
 
+<!--
+  See the DA mirror for the rationale: terapi's borrowed homepage
+  blocks (manifest + ritual + forPersonal) are dropped now that the
+  service carries its own prose `body`.
+-->
 <ServicePage
   service={data.service}
   {bundle}
   backLabel="Home"
   backHref="/en"
-  manifest={service.chapter === 'terapi' ? home.manifest : undefined}
-  ritual={service.chapter === 'terapi' ? home.ritual : undefined}
-  forPersonal={service.chapter === 'terapi' ? home.forPersonal : undefined}
 />

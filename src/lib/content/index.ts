@@ -106,14 +106,16 @@ export type Contact = {
   socials?: SocialLink[];
 };
 
-/** Everything in the bio section. `body` stays a string[] until a
- *  markdown migration lands. */
+/** Everything in the bio section. `body` is markdown — paragraphs
+ *  separated by blank lines, with inline emphasis/links. Rendered
+ *  per-paragraph via `$lib/markdown`'s `renderInlineParagraphs` so the
+ *  bio's staggered reveal keeps working. */
 export type Bio = {
   label: string;
   heading: string;
   pronouns: string;
   portraitAlt: string;
-  body: string[];
+  body: string;
 };
 
 /** Action button on a service card. */
@@ -151,7 +153,21 @@ export type Service = {
   title: string;
   kicker: string;
   blurb: string;
+  /** Optional long-form prose intro for the detail page, shown after
+   *  the blurb. Authored as markdown (bold, italic, links, two heading
+   *  levels) and rendered via `$lib/markdown`'s `renderServiceBody`.
+   *  When present, the detail page renders this prose INSTEAD of
+   *  `bullets` (the bullets still feed the homepage service card, where
+   *  compact skimming earns its keep). Italic inside a heading renders
+   *  as the site's accent-underline emphasis. */
+  body?: string;
   bullets: string[];
+  /** Editor toggle for the feature-bullet list on the DETAIL page only
+   *  (the homepage service card always shows bullets). Defaults to
+   *  shown — `false` hides them, letting a service lead with prose, or
+   *  drop the list entirely even without a body. The homepage card is
+   *  unaffected. `undefined`/`true` → shown. */
+  showDetailBullets?: boolean;
   /** Labels for optional sub-blocks live alongside their data so they
    *  translate with the service. */
   supportsLabel?: string;
@@ -188,10 +204,13 @@ export type NavLink = {
 export type HomeHero = {
   name: string;
   city: string;
-  /** Three-piece hero statement: `<start> <end><em>em</em>.` */
-  statementStart: string;
-  statementEnd: string;
-  statementEm: string;
+  /** Hero statement as a single markdown string. Each line break is a
+   *  display line; italicise a word for the accent-underline emphasis
+   *  (e.g. `"Du kommer som du er,\n\nikke som du *burde*"`). Rendered
+   *  via `$lib/markdown`'s `renderInlineLines`; the component appends a
+   *  decorative accent period. Replaces the old three-field split
+   *  (statementStart / statementEnd / statementEm). */
+  statement: string;
   attribution: string;
   scrollLabel: string;
 };
@@ -211,7 +230,11 @@ export type ChapterHeader = {
   lede: string;
 };
 
-export type ManifestEntry = { word: string; text: string };
+/** One manifest line. Markdown with inline emphasis only — italicise
+ *  the keyword to give it the accent underline. Replaces the old
+ *  `{ word, text }` split, where `word` was matched against `text` to
+ *  inject the emphasis (brittle: case- and substring-sensitive). */
+export type ManifestEntry = { text: string };
 export type HomeManifest = { label: string; items: ManifestEntry[] };
 
 export type RitualStep = { n: string; title: string; body: string };
