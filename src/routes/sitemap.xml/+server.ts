@@ -16,6 +16,16 @@
  * rather than a single shared suffix that's just prefixed with
  * `/en`.
  *
+ * Deliberately NO <lastmod>, <changefreq>, or <priority>:
+ * changefreq/priority are ignored by Google, and the only lastmod
+ * this build could emit honestly would be the build date stamped
+ * on every URL — which claims everything changed on every deploy.
+ * Google ignores lastmod it can't trust, and a per-file git date
+ * isn't reachable here (CI builds from a shallow checkout, and
+ * the promote flow squash-merges to main, collapsing history).
+ * Omitting the optional tags entirely is the honest shape; the
+ * <urlset> stays purely derived from content + env.
+ *
  * `prerender = true` bakes the XML into the static build so hosts
  * serve it like any other file. Services enumerate from
  * `$lib/content` at build time — drifts automatically as services
@@ -23,22 +33,16 @@
  */
 
 import type { RequestHandler } from './$types';
-import { contentFor } from '$lib/content';
+import { contentFor, DEFAULT_LOCALE, LOCALES, type Locale } from '$lib/content';
 import { SITE_URL } from '$lib/seo/structured-data';
 
 export const prerender = true;
-
-type Locale = 'da' | 'en';
-const LOCALES: Locale[] = ['da', 'en'];
-const DEFAULT_LOCALE: Locale = 'da';
 
 type Page = {
   /** Per-locale site-relative paths. Both keys required so each
    *  <url> can cross-reference its alternate. Use `/` for DA root
    *  and `/en` for EN root. */
   paths: Record<Locale, string>;
-  changefreq?: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  priority?: number;
 };
 
 /*
@@ -46,13 +50,7 @@ type Page = {
   added here must have a path in BOTH locales; if a page is
   single-locale the alt link would point at a 404.
 */
-const STATIC_PAGES: Page[] = [
-  {
-    paths: { da: '/', en: '/en' },
-    changefreq: 'monthly',
-    priority: 1.0
-  }
-];
+const STATIC_PAGES: Page[] = [{ paths: { da: '/', en: '/en' } }];
 
 /*
   Per-service pages — one entry per DA service, paired with its EN
@@ -74,9 +72,7 @@ function servicePages(): Page[] {
         paths: {
           da: `/ydelser/${da.slug}`,
           en: `/en/services/${en.slug}`
-        },
-        changefreq: 'monthly' as const,
-        priority: 0.8
+        }
       }
     ];
   });
@@ -87,7 +83,6 @@ function fullUrl(path: string): string {
 }
 
 export const GET: RequestHandler = () => {
-  const lastmod = new Date().toISOString().slice(0, 10);
   const pages: Page[] = [...STATIC_PAGES, ...servicePages()];
 
   const urls = pages
@@ -99,16 +94,8 @@ export const GET: RequestHandler = () => {
             `    <xhtml:link rel="alternate" hreflang="${alt}" href="${fullUrl(page.paths[alt])}" />`
         ).join('\n');
         const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${fullUrl(page.paths[DEFAULT_LOCALE])}" />`;
-        const meta = [
-          `    <lastmod>${lastmod}</lastmod>`,
-          page.changefreq ? `    <changefreq>${page.changefreq}</changefreq>` : null,
-          page.priority !== undefined ? `    <priority>${page.priority.toFixed(1)}</priority>` : null
-        ]
-          .filter(Boolean)
-          .join('\n');
         return `  <url>
     <loc>${loc}</loc>
-${meta}
 ${alternates}
 ${xDefault}
   </url>`;
