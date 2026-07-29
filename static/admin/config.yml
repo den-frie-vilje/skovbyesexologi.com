@@ -11,7 +11,7 @@
 # an OAuth proxy that trades the OAuth `code` for a token
 # server-side. That proxy runs as the `sveltia-auth` container
 # on the NAS (see deploy/compose.staging.yml), reachable at
-# `https://signe.denfrievilje.dk/auth/*` via the staging Caddy
+# `https://skovbyesexologi-com.stage.denfrievilje.dk/auth/*` via the staging Caddy
 # front-door.
 #
 # ----------------------------------------------------------------
