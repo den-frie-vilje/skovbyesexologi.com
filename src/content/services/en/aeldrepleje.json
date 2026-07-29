@@ -5,7 +5,7 @@
   "title": "Sexual health in elder care",
   "kicker": "care staff · residents",
   "blurb": "Developed at the LGBT+ nursing home Slottet. Training and toolkits that meet older adults' sexuality with dignity.",
-  "body": "",
+  "body": "My work in the elder care sector can be seen at ældreseksualitet.dk",
   "bullets": [
     "Training for healthcare staff",
     "Guidance on age-appropriate aids",
@@ -14,6 +14,11 @@
   ],
   "supportsLabel": "",
   "testimonials": [],
+  "cta": {
+    "label": "ældreseksualitet.dk",
+    "href": "https://ældreseksualitet.dk",
+    "kind": "primary"
+  },
   "studiosLabel": "",
   "stage": {
     "bubble": "offstage",
