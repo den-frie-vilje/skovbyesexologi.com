@@ -64,8 +64,15 @@ ENV PUBLIC_BUILD_TIME=$PUBLIC_BUILD_TIME
 # is a fresh shell).
 RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
     pnpm check
+# NO `--` before the flags: pnpm forwards a literal `--` to the
+# script, so `pnpm build -- --mode staging` ran
+# `vite build -- --mode staging` — Vite reads `--` as
+# end-of-options and silently built in PRODUCTION mode. Every
+# staging image before 2026-07-29 shipped production env values
+# (robots.txt Allow-all + production sitemap origin) because of
+# this.
 RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
-    pnpm build -- --mode $VITE_MODE
+    pnpm build --mode $VITE_MODE
 
 # ----- runtime --------------------------------------------------
 # nginxinc/nginx-unprivileged runs as UID 101 (nginx user),

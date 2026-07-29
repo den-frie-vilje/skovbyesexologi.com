@@ -67,14 +67,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { env } from '$env/dynamic/public';
+  import { PUBLIC_GITHUB_REPO } from '$env/static/public';
 
   /*
     Configuration pulled from the public env (so the same route
     ships on both staging and production builds without hardcoding
-    the repo name). Both values MUST be set for this page to work.
+    the repo name). Static env for build-time determinism — the
+    dynamic variant resolves from the build process's environment,
+    not the `.env.[mode]` files (see structured-data.ts).
   */
-  const REPO = env.PUBLIC_GITHUB_REPO ?? '';
+  const REPO = PUBLIC_GITHUB_REPO;
   /** Branch Sveltia writes to. Lands in staging first. */
   const HEAD_BRANCH = 'staging';
   /** Branch that production deploys from. Merge target. */

@@ -22,13 +22,17 @@
  */
 
 import type { RequestHandler } from './$types';
-import { env } from '$env/dynamic/public';
+import { PUBLIC_ALLOW_INDEXING } from '$env/static/public';
 import { SITE_URL } from '$lib/seo/structured-data';
 
 export const prerender = true;
 
 export const GET: RequestHandler = () => {
-  const allowIndexing = (env.PUBLIC_ALLOW_INDEXING ?? 'true').toLowerCase() !== 'false';
+  /* Static env, not dynamic — mode-file-sourced and loud on a
+     missing declaration, so this can't silently default to the
+     production Allow-all variant again (staging images shipped
+     exactly that until 2026-07-29; see structured-data.ts). */
+  const allowIndexing = (PUBLIC_ALLOW_INDEXING || 'true').toLowerCase() !== 'false';
 
   const body = allowIndexing
     ? [
