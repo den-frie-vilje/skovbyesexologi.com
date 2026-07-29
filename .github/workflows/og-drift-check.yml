@@ -56,9 +56,20 @@ jobs:
           set -euo pipefail
 
           # `github.event.before` is the all-zeros SHA on a new
-          # branch's first push — fall back to HEAD~1 then to
-          # empty-tree for diffing.
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+          # branch's first push, and on a multi-commit or force
+          # push it isn't inside the fetch-depth:2 clone at all
+          # (a 2-commit push put BEFORE at HEAD~2 and this diff
+          # died with `fatal: bad object`). Fetch the SHA
+          # directly — its tree is all the diff needs — then fall
+          # back to HEAD~1, then to the empty tree.
+          ZEROS="0000000000000000000000000000000000000000"
+          if [ -n "$BEFORE" ] && [ "$BEFORE" != "$ZEROS" ]; then
+            git cat-file -e "$BEFORE" 2>/dev/null \
+              || git fetch --depth=1 origin "$BEFORE" \
+              || true
+          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "$ZEROS" ] \
+            || ! git cat-file -e "$BEFORE" 2>/dev/null; then
             BEFORE="$(git rev-parse HEAD~1 2>/dev/null || git hash-object -t tree /dev/null)"
           fi
 
