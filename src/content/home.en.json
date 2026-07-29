@@ -1,15 +1,30 @@
 {
   "nav": [
-    { "label": "Therapy", "href": "#terapi" },
-    { "label": "Intimacy", "href": "#intimacy-coordination" },
-    { "label": "Elder care", "href": "#aeldrepleje" },
-    { "label": "Education", "href": "#undervisning" },
-    { "label": "Contact", "href": "#kontakt" }
+    {
+      "label": "Therapy",
+      "href": "#terapi"
+    },
+    {
+      "label": "Intimacy",
+      "href": "#intimacy-coordination"
+    },
+    {
+      "label": "Elder care",
+      "href": "#aeldrepleje"
+    },
+    {
+      "label": "Education",
+      "href": "#undervisning"
+    },
+    {
+      "label": "Contact",
+      "href": "#kontakt"
+    }
   ],
   "hero": {
     "name": "Skovbye Sexology",
     "city": "Copenhagen",
-    "statement": "You come as you are,\n\nnot as you *should*",
+    "statement": "You come as you are,\n\nnot as you _should_",
     "attribution": "Signe Skovbye — clinical sexologist, intimacy coordinator, psychomotor therapist.",
     "scrollLabel": "feel"
   },
@@ -26,24 +41,55 @@
     "title": "Therapy",
     "lede": "For you, for you both. Solo, couples, poly. Embodied, conversational, shame-free. Your pace, your order, your body."
   },
+  "chapter2": {
+    "mark": "II",
+    "title": "Consultancy services",
+    "lede": "For institutions, film productions, care services, and youth education. Teaching, intimacy coordination, counselling — always grounded in the same therapeutic foundation."
+  },
   "manifest": {
     "label": "Manifesto",
     "items": [
-      { "text": "*Boundaries* are not a test. You don't have to pass anything here." },
-      { "text": "The body speaks first. I *listen* too — even where the words aren't." },
-      { "text": "Poly, queer, unsure, curious — there's room for *every* version of you." },
-      { "text": "Intimacy is not a *performance*. It's attention." },
-      { "text": "Your *pace*. Your order. Your body." }
+      {
+        "text": "_Boundaries_ are not a test. You don't have to pass anything here."
+      },
+      {
+        "text": "The body speaks first. I _listen_ too — even where the words aren't."
+      },
+      {
+        "text": "Poly, queer, unsure, curious — there's room for _every_ version of you."
+      },
+      {
+        "text": "Intimacy is not a performance. It's _attention_."
+      },
+      {
+        "text": "Your _pace_. Your order. Your body."
+      }
     ]
   },
   "ritual": {
     "label": "How we meet",
     "subtitle": "A session has four movements.",
     "steps": [
-      { "n": "01", "title": "Arriving", "body": "We sit. You get to be in the room before you need to explain anything." },
-      { "n": "02", "title": "Speaking aloud", "body": "You share what's there. I ask questions but don't fill the space." },
-      { "n": "03", "title": "Sensing", "body": "Sometimes we stay with words. Other times we move — breath, body — always only what you say yes to." },
-      { "n": "04", "title": "Moving on", "body": "We close. You go home with a small shift — rarely finished, always underway." }
+      {
+        "n": "01",
+        "title": "Arriving",
+        "body": "We sit. You get to be in the room before you need to explain anything."
+      },
+      {
+        "n": "02",
+        "title": "Speaking aloud",
+        "body": "You share what's there. I ask questions but don't fill the space."
+      },
+      {
+        "n": "03",
+        "title": "Sensing",
+        "body": "Sometimes we stay with words. Other times we move — breath, body — always only what you say yes to."
+      },
+      {
+        "n": "04",
+        "title": "Moving on",
+        "body": "We close. You go home with a small shift — rarely finished, always underway."
+      }
     ]
   },
   "forPersonal": {
@@ -55,11 +101,6 @@
       "are in an open or polyamorous relationship and need a third voice",
       "have had a boundary crossed — recently or long ago"
     ]
-  },
-  "chapter2": {
-    "mark": "II",
-    "title": "Consultancy services",
-    "lede": "For institutions, film productions, care services, and youth education. Teaching, intimacy coordination, counselling — always grounded in the same therapeutic foundation."
   },
   "pillQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimate relationships on screen.",
   "forWork": {
@@ -101,20 +142,132 @@
   },
   "stage": {
     "sections": [
-      { "id": "hero",              "stage": { "bubble": "heroFarRight",   "drops": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },
-      { "id": "name-section",      "stage": { "bubble": "topRightSm",     "drops": "disperseLowR",     "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "chapter-terapi",    "stage": { "bubble": "heroRightBig",   "drops": "cornerTLtiny",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "manifest",          "stage": { "bubble": "cornerBLtiny",   "drops": "cornerTLtiny",     "gem": "midRightBig",    "intensity": 1.00 } },
-      { "id": "ritual",            "stage": { "bubble": "upperRightBig",  "drops": "bottomLeftMed",    "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "service-terapi",    "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "for-personal",      "stage": { "bubble": "topLeftSm",      "drops": "bottomLeftMed",    "gem": "heroRightBig",   "intensity": 1.05 } },
-      { "id": "chapter-konsulent", "stage": { "bubble": "heroLeftBig",    "drops": "cornerBRsm",       "gem": "cornerTRsm",     "intensity": 1.05 } },
-      { "id": "service-intimacy",  "stage": { "bubble": "heroRightBig",   "drops": "bottomLeftMed",    "gem": "topRightSm",     "intensity": 1.20 } },
-      { "id": "service-elderly",   "stage": { "bubble": "topLeftSm",      "drops": "cornerBLsm",       "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "service-teaching",  "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.00 } },
-      { "id": "for-work",          "stage": { "bubble": "bottomLeftSm",   "drops": "topLeftSm",        "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "bio",               "stage": { "bubble": "bottomLeftSm",   "drops": "disperseRightMid", "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "contact",           "stage": { "bubble": "centerMax",      "drops": "disperseLowL",     "gem": "upperRightMed",  "intensity": 1.35 } }
+      {
+        "id": "hero",
+        "stage": {
+          "bubble": "heroFarRight",
+          "drops": "topLeftSm",
+          "gem": "heroBRhuge",
+          "intensity": 1.1
+        }
+      },
+      {
+        "id": "name-section",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowR",
+          "gem": "topLeftSm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "chapter-terapi",
+        "stage": {
+          "bubble": "heroRightBig",
+          "drops": "cornerTLtiny",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "manifest",
+        "stage": {
+          "bubble": "cornerBLtiny",
+          "drops": "cornerTLtiny",
+          "gem": "midRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "ritual",
+        "stage": {
+          "bubble": "upperRightBig",
+          "drops": "bottomLeftMed",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "service-terapi",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowC",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "for-personal",
+        "stage": {
+          "bubble": "topLeftSm",
+          "drops": "bottomLeftMed",
+          "gem": "heroRightBig",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "chapter-konsulent",
+        "stage": {
+          "bubble": "heroLeftBig",
+          "drops": "cornerBRsm",
+          "gem": "cornerTRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "service-intimacy",
+        "stage": {
+          "bubble": "heroRightBig",
+          "drops": "bottomLeftMed",
+          "gem": "topRightSm",
+          "intensity": 1.2
+        }
+      },
+      {
+        "id": "service-elderly",
+        "stage": {
+          "bubble": "topLeftSm",
+          "drops": "cornerBLsm",
+          "gem": "heroRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "service-teaching",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowC",
+          "gem": "cornerBRsm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "for-work",
+        "stage": {
+          "bubble": "bottomLeftSm",
+          "drops": "topLeftSm",
+          "gem": "heroRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "bio",
+        "stage": {
+          "bubble": "bottomLeftSm",
+          "drops": "disperseRightMid",
+          "gem": "topLeftSm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "contact",
+        "stage": {
+          "bubble": "centerMax",
+          "drops": "disperseLowL",
+          "gem": "upperRightMed",
+          "intensity": 1.35
+        }
+      }
     ]
   }
 }

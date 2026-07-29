@@ -1,15 +1,30 @@
 {
   "nav": [
-    { "label": "Terapi", "href": "#terapi" },
-    { "label": "Intimitetskoordinering", "href": "#intimacy-coordination" },
-    { "label": "Ældrepleje", "href": "#aeldrepleje" },
-    { "label": "Undervisning", "href": "#undervisning" },
-    { "label": "Kontakt", "href": "#kontakt" }
+    {
+      "label": "Terapi",
+      "href": "#terapi"
+    },
+    {
+      "label": "Intimitetskoordinering",
+      "href": "#intimacy-coordination"
+    },
+    {
+      "label": "Ældrepleje",
+      "href": "#aeldrepleje"
+    },
+    {
+      "label": "Undervisning",
+      "href": "#undervisning"
+    },
+    {
+      "label": "Kontakt",
+      "href": "#kontakt"
+    }
   ],
   "hero": {
     "name": "Skovbye Sexologi",
     "city": "København",
-    "statement": "Du kommer som du er,\n\nikke som du *burde*",
+    "statement": "Du kommer som du er,\n\nikke som du _burde_",
     "attribution": "Signe Skovbye — klinisk sexolog, intimitetskoordinator, psykomotorisk terapeut.",
     "scrollLabel": "mærk"
   },
@@ -26,24 +41,55 @@
     "title": "Terapi",
     "lede": "For dig, for jer. Solo, par, poly. Kropsligt, i samtale, skamfrit. Dit tempo, din rækkefølge, din krop."
   },
+  "chapter2": {
+    "mark": "II",
+    "title": "Konsulentydelser",
+    "lede": "For institutioner, filmproduktioner, plejesektoren og ungdomsuddannelser. Undervisning, intimitetskoordinering, rådgivning — altid baseret i samme terapeutiske fundament."
+  },
   "manifest": {
     "label": "Manifest",
     "items": [
-      { "text": "*Grænser* er ikke en test. Du behøver ikke bestå noget, her." },
-      { "text": "Kroppen taler først. Jeg *lytter* med — også hvor ordene ikke er." },
-      { "text": "Poly, queer, usikker, nysgerrig — der er plads til *alle* udgaver af dig." },
-      { "text": "Intimitet er ikke en *præstation*. Det er opmærksomhed." },
-      { "text": "Dit *tempo*. Din rækkefølge. Din krop." }
+      {
+        "text": "_Grænser_ er ikke en test. Du behøver ikke bestå noget, her."
+      },
+      {
+        "text": "Kroppen taler først. Jeg _lytter_ med — også hvor ordene ikke er."
+      },
+      {
+        "text": "Poly, queer, usikker, nysgerrig — der er plads til _alle_ udgaver af dig."
+      },
+      {
+        "text": "Intimitet er ikke en præstation. Det er _opmærksomhed_."
+      },
+      {
+        "text": "Dit _tempo_. Din rækkefølge. Din krop."
+      }
     ]
   },
   "ritual": {
     "label": "Sådan mødes vi",
     "subtitle": "En session har fire bevægelser.",
     "steps": [
-      { "n": "01", "title": "At lande", "body": "Vi sidder. Du får lov til at være i rummet før du skal forklare noget." },
-      { "n": "02", "title": "At sige højt", "body": "Du fortæller hvad der er. Jeg spørger ind, men fylder ikke." },
-      { "n": "03", "title": "At mærke", "body": "Nogle gange bliver vi ved ordene. Andre gange arbejder vi med bevægelse, åndedræt og krop. Altid kun det, du siger ja til." },
-      { "n": "04", "title": "At gå videre", "body": "Vi runder. Du tager hjem med en lille forandring — sjældent færdig, altid i gang." }
+      {
+        "n": "01",
+        "title": "At lande",
+        "body": "Vi sidder. Du får lov til at være i rummet før du skal forklare noget."
+      },
+      {
+        "n": "02",
+        "title": "At sige højt",
+        "body": "Du fortæller hvad der er. Jeg spørger ind, men fylder ikke."
+      },
+      {
+        "n": "03",
+        "title": "At mærke",
+        "body": "Nogle gange bliver vi ved ordene. Andre gange arbejder vi med bevægelse, åndedræt og krop. Altid kun det, du siger ja til."
+      },
+      {
+        "n": "04",
+        "title": "At gå videre",
+        "body": "Vi runder. Du tager hjem med en lille forandring — sjældent færdig, altid i gang."
+      }
     ]
   },
   "forPersonal": {
@@ -55,11 +101,6 @@
       "er i et åbent eller polyamorøst forhold og har brug for en tredje stemme",
       "har haft en grænse overskredet — nyligt eller for længe siden"
     ]
-  },
-  "chapter2": {
-    "mark": "II",
-    "title": "Konsulentydelser",
-    "lede": "For institutioner, filmproduktioner, plejesektoren og ungdomsuddannelser. Undervisning, intimitetskoordinering, rådgivning — altid baseret i samme terapeutiske fundament."
   },
   "pillQuote": "Klare linjer for, hvordan vi må og ikke må tale, røre eller gøre, tillader en autentisk fremstilling af intime relationer på skærmen.",
   "forWork": {
@@ -101,20 +142,132 @@
   },
   "stage": {
     "sections": [
-      { "id": "hero",              "stage": { "bubble": "heroFarRight",   "drops": "topLeftSm",        "gem": "heroBRhuge",     "intensity": 1.10 } },
-      { "id": "name-section",      "stage": { "bubble": "topRightSm",     "drops": "disperseLowR",     "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "chapter-terapi",    "stage": { "bubble": "heroRightBig",   "drops": "cornerTLtiny",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "manifest",          "stage": { "bubble": "cornerBLtiny",   "drops": "cornerTLtiny",     "gem": "midRightBig",    "intensity": 1.00 } },
-      { "id": "ritual",            "stage": { "bubble": "upperRightBig",  "drops": "bottomLeftMed",    "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "service-terapi",    "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.05 } },
-      { "id": "for-personal",      "stage": { "bubble": "topLeftSm",      "drops": "bottomLeftMed",    "gem": "heroRightBig",   "intensity": 1.05 } },
-      { "id": "chapter-konsulent", "stage": { "bubble": "heroLeftBig",    "drops": "cornerBRsm",       "gem": "cornerTRsm",     "intensity": 1.05 } },
-      { "id": "service-intimacy",  "stage": { "bubble": "heroRightBig",   "drops": "bottomLeftMed",    "gem": "topRightSm",     "intensity": 1.20 } },
-      { "id": "service-elderly",   "stage": { "bubble": "topLeftSm",      "drops": "cornerBLsm",       "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "service-teaching",  "stage": { "bubble": "topRightSm",     "drops": "disperseLowC",     "gem": "cornerBRsm",     "intensity": 1.00 } },
-      { "id": "for-work",          "stage": { "bubble": "bottomLeftSm",   "drops": "topLeftSm",        "gem": "heroRightBig",   "intensity": 1.00 } },
-      { "id": "bio",               "stage": { "bubble": "bottomLeftSm",   "drops": "disperseRightMid", "gem": "topLeftSm",      "intensity": 1.00 } },
-      { "id": "contact",           "stage": { "bubble": "centerMax",      "drops": "disperseLowL",     "gem": "upperRightMed",  "intensity": 1.35 } }
+      {
+        "id": "hero",
+        "stage": {
+          "bubble": "heroFarRight",
+          "drops": "topLeftSm",
+          "gem": "heroBRhuge",
+          "intensity": 1.1
+        }
+      },
+      {
+        "id": "name-section",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowR",
+          "gem": "topLeftSm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "chapter-terapi",
+        "stage": {
+          "bubble": "heroRightBig",
+          "drops": "cornerTLtiny",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "manifest",
+        "stage": {
+          "bubble": "cornerBLtiny",
+          "drops": "cornerTLtiny",
+          "gem": "midRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "ritual",
+        "stage": {
+          "bubble": "upperRightBig",
+          "drops": "bottomLeftMed",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "service-terapi",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowC",
+          "gem": "cornerBRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "for-personal",
+        "stage": {
+          "bubble": "topLeftSm",
+          "drops": "bottomLeftMed",
+          "gem": "heroRightBig",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "chapter-konsulent",
+        "stage": {
+          "bubble": "heroLeftBig",
+          "drops": "cornerBRsm",
+          "gem": "cornerTRsm",
+          "intensity": 1.05
+        }
+      },
+      {
+        "id": "service-intimacy",
+        "stage": {
+          "bubble": "heroRightBig",
+          "drops": "bottomLeftMed",
+          "gem": "topRightSm",
+          "intensity": 1.2
+        }
+      },
+      {
+        "id": "service-elderly",
+        "stage": {
+          "bubble": "topLeftSm",
+          "drops": "cornerBLsm",
+          "gem": "heroRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "service-teaching",
+        "stage": {
+          "bubble": "topRightSm",
+          "drops": "disperseLowC",
+          "gem": "cornerBRsm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "for-work",
+        "stage": {
+          "bubble": "bottomLeftSm",
+          "drops": "topLeftSm",
+          "gem": "heroRightBig",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "bio",
+        "stage": {
+          "bubble": "bottomLeftSm",
+          "drops": "disperseRightMid",
+          "gem": "topLeftSm",
+          "intensity": 1
+        }
+      },
+      {
+        "id": "contact",
+        "stage": {
+          "bubble": "centerMax",
+          "drops": "disperseLowL",
+          "gem": "upperRightMed",
+          "intensity": 1.35
+        }
+      }
     ]
   }
 }
