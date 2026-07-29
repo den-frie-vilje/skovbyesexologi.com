@@ -29,6 +29,7 @@
   import RitualSection from './RitualSection.svelte';
   import NumberedList from './NumberedList.svelte';
   import { renderServiceBody } from '$lib/markdown';
+  import StudioLogos from './StudioLogos.svelte';
 
   interface Props {
     service: Service;
@@ -275,19 +276,11 @@
       {#if service.studios && service.studiosLabel}
         <section class="s-block s-studios-block">
           <p class="s-label">{service.studiosLabel}</p>
-          <ul class="s-studios">
-            {#each service.studios as studio}
-              <li>
-                {#if studio.url}
-                  <a href={studio.url} target="_blank" rel="noopener noreferrer">
-                    <img src={studio.logo} alt={studio.name} />
-                  </a>
-                {:else}
-                  <img src={studio.logo} alt={studio.name} />
-                {/if}
-              </li>
-            {/each}
-          </ul>
+          <StudioLogos
+            studios={service.studios}
+            label={service.studiosLabel}
+            locale={bundle.site.lang}
+          />
         </section>
       {/if}
 
@@ -587,29 +580,9 @@
      styles live there so the same component can be used on the
      homepage featured section. */
 
-  /* ============== STUDIOS ============== */
-  .s-studios {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.5rem;
-    align-items: center;
-  }
-  .s-studios li {
-    line-height: 0;
-  }
-  .s-studios img {
-    height: 28px;
-    width: auto;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-  }
-  .s-studios a:hover img,
-  .s-studios a:focus-visible img {
-    opacity: 1;
-  }
+  /* Studios strip rendered via $lib/components/StudioLogos.svelte —
+     equal-area logo sizing + overflow marquee live there so the
+     homepage intimacy block stays visually identical. */
 
   /* CTA moved from inline `.s-cta-block` to `<StickyCta>` at the
      top of the article — styles live in the component. */

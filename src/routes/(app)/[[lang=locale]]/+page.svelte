@@ -8,6 +8,7 @@
   import { resolveAnchor } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import SeoHead from '$lib/components/SeoHead.svelte';
+  import StudioLogos from '$lib/components/StudioLogos.svelte';
   import { buildHomePageSeo } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
 
@@ -420,19 +421,12 @@
       {#if intimacyService.studios?.length && intimacyService.studiosLabel}
         <div class="studios reveal">
           <p class="studios-lede">{intimacyService.studiosLabel}</p>
-          <ul class="studios-list">
-            {#each intimacyService.studios as studio}
-              <li>
-                {#if studio.url}
-                  <a href={studio.url} target="_blank" rel="noopener">
-                    <img src={studio.logo} alt={studio.name} loading="lazy" />
-                  </a>
-                {:else}
-                  <img src={studio.logo} alt={studio.name} loading="lazy" />
-                {/if}
-              </li>
-            {/each}
-          </ul>
+          <StudioLogos
+            studios={intimacyService.studios}
+            label={intimacyService.studiosLabel}
+            locale={data.locale}
+            scale={1.25}
+          />
         </div>
       {/if}
       <a
@@ -625,6 +619,11 @@
     font-weight: 500;
     background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
     padding: 0 0.08em;
+    /* A multi-word emphasis run ("du er") is one highlighted unit —
+       never let it wrap mid-run. Safe at this length: the CMS hint
+       asks for a word or two of emphasis, and the statement lines
+       are short marquee lines, not prose. */
+    white-space: nowrap;
   }
   .dot {
     color: oklch(0.82 0.22 115);
@@ -1164,50 +1163,9 @@
     color: var(--text-muted);
     margin: 0 0 1.1rem;
   }
-  /* Single row, scrolls sideways when more logos are added. */
-  .studios-list {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0.25rem;
-    display: flex;
-    gap: 2.25rem;
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklch, var(--text) 25%, transparent) transparent;
-  }
-  .studios-list::-webkit-scrollbar {
-    height: 3px;
-  }
-  .studios-list::-webkit-scrollbar-thumb {
-    background: color-mix(in oklch, var(--text) 25%, transparent);
-    border-radius: 2px;
-  }
-  .studios-list li {
-    margin: 0;
-    flex-shrink: 0;
-  }
-  .studios-list img {
-    display: block;
-    /* Explicit height ensures SVGs without intrinsic width/height attrs
-       compute a non-zero size (they'd otherwise collapse to 0×0 because
-       max-height doesn't establish a concrete dimension for the browser
-       to derive aspect-ratio-based width from). */
-    height: 40px;
-    width: auto;
-    color: var(--text);
-    opacity: 0.65;
-    transition: opacity 0.2s ease;
-  }
-  .studios-list a {
-    display: block;
-    line-height: 0;
-  }
-  .studios-list a:hover img {
-    opacity: 1;
-  }
+  /* Logo row rendered via $lib/components/StudioLogos.svelte —
+     equal-area sizing + overflow marquee + manual-scroll fallback
+     live there, shared with the service detail pages. */
 
   /* ============== FOR YOU (shared styles for .for-personal + .for-work) ============== */
   .for-personal,
