@@ -1,9 +1,11 @@
 {
   "slug": "intimacy-coordination",
   "number": "02",
+  "chapter": "konsulent",
   "title": "Intimacy coordination",
   "kicker": "film · tv · theatre",
   "blurb": "Scenes involving physical intimacy must be handled with care, professionalism, and respect for everyone involved.",
+  "body": "",
   "bullets": [
     "Preparatory conversations with producers, directors, and performers",
     "Choreography of intimate scenes",
@@ -11,6 +13,7 @@
     "Upholding a safe set",
     "Support after the scene"
   ],
+  "supportsLabel": "",
   "testimonials": [
     {
       "quote": "I can recommend Signe Skovbye — she is deeply professional and a pleasure to work with.",
@@ -37,6 +40,11 @@
       "source": "[mock] Director, short film"
     }
   ],
+  "cta": {
+    "label": "Get in touch",
+    "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
+    "kind": "primary"
+  },
   "studiosLabel": "Previous collaborations",
   "studios": [
     {
@@ -50,11 +58,10 @@
       "url": "https://www.nordiskfilm.com"
     }
   ],
-  "cta": {
-    "label": "Get in touch",
-    "href": "mailto:signeskovbye@gmail.com?subject=Intimacy%20coordination",
-    "kind": "primary"
-  },
-  "chapter": "konsulent",
-  "stage": { "bubble": "offstage", "drops": "topRightMed", "gem": "offstage", "intensity": 1.15 }
+  "stage": {
+    "bubble": "offstage",
+    "drops": "topRightMed",
+    "gem": "offstage",
+    "intensity": 1.15
+  }
 }
