@@ -53,16 +53,16 @@
         "text": "_Grænser_ er ikke en test. Du behøver ikke bestå noget, her."
       },
       {
-        "text": "Kroppen taler først. Jeg _lytter_ med — også hvor ordene ikke er."
+        "text": "Kroppen husker, vi _lytter_ sammen til den."
       },
       {
-        "text": "Poly, queer, usikker, nysgerrig — der er plads til _alle_ udgaver af dig."
+        "text": "Poly, queer, uafklaret, nysgerrig — der er plads til _alle_ udgaver af dig."
       },
       {
-        "text": "Intimitet er ikke en præstation. Det er _opmærksomhed_."
+        "text": "Intimitet er ikke en præstation. Det er opmærksomhed og _nærvær_."
       },
       {
-        "text": "Dit _tempo_. Din rækkefølge. Din krop."
+        "text": "Dit _tempo_. Dit rum. Din krop."
       }
     ]
   },
@@ -78,7 +78,7 @@
       {
         "n": "02",
         "title": "At sige højt",
-        "body": "Du fortæller hvad der er. Jeg spørger ind, men fylder ikke."
+        "body": "Du fortæller hvad der ligger dig på sinde. Jeg spørger ind og guider samtalen."
       },
       {
         "n": "03",
@@ -88,7 +88,7 @@
       {
         "n": "04",
         "title": "At gå videre",
-        "body": "Vi runder. Du tager hjem med en lille forandring — sjældent færdig, altid i gang."
+        "body": "Vi runder af. Du tager hjem med en lille forandring — sjældent færdig, i gang på din rejse."
       }
     ]
   },
@@ -97,12 +97,12 @@
     "items": [
       "har svært ved at mærke din lyst",
       "skal lære at sige nej før du kan sige ja",
-      "er kommet ud som queer og vil udforske hvad det betyder i kroppen",
-      "er i et åbent eller polyamorøst forhold og har brug for en tredje stemme",
-      "har haft en grænse overskredet — nyligt eller for længe siden"
+      "springer ud som queer og vil udforske hvad det betyder for dig",
+      "er i et åbent eller polyamorøst forhold og har brug for en terapeut, der forstår",
+      "har haft en grænse overskredet — for nyligt eller for længe siden"
     ]
   },
-  "pillQuote": "Klare linjer for, hvordan vi må og ikke må tale, røre eller gøre, tillader en autentisk fremstilling af intime relationer på skærmen.",
+  "pillQuote": "At få gennemgået scener omhyggeligt, så skuespillere og instruktør har afstemt hvad der skal ske på optagelse",
   "forWork": {
     "label": "Skriv til mig hvis I —",
     "items": [
