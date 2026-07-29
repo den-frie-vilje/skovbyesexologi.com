@@ -1,26 +1,27 @@
 {
   "slug": "undervisning",
   "number": "04",
+  "chapter": "konsulent",
   "title": "Seksualundervisning",
   "kicker": "unge · grupper · workshops",
   "blurb": "Biologi, psykologi og kultur — sammenvævet. Et sprog for grænser, lyster og behov uden skam.",
-  "body": "## Mere end *biologi*\n\nEleverne kender tit mekanikken i forvejen. Det, der mangler, er ord for det, der sker mellem mennesker: ophidselse, samtykke, berøring og de grænser, der flytter sig undervejs.\n\n## Ingen skal have *styr* på det\n\nVi taler også om samleje og pornografi, og om alt det, der ellers er svært at sige højt. Ikke som en pensumliste, der skal overstås, men som en samtale, hvor tvivl er i orden. Formen tilpasses gruppen og rammen.",
-  "bullets": ["Ophidselse", "Samtykke", "Berøring", "Samleje", "Samtale", "Pornografi"],
-  "showDetailBullets": false,
-  "testimonials": [
-    {
-      "quote": "[mock] Min klasse spurgte mere i det forløb end i et helt semesters biologi.",
-      "source": "[mock] Lærer, gymnasium"
-    },
-    {
-      "quote": "[mock] Formatet var ikke akavet — eleverne var med hele vejen. Det var første gang jeg oplevede det.",
-      "source": "[mock] Skolesundhedsplejerske"
-    },
-    {
-      "quote": "[mock] Efter forløbet havde vi en ny ramme at tale om grænser og samtykke i. Signe gav os sproget.",
-      "source": "[mock] Elev, 10. klasse"
-    }
+  "body": "## Mere end _biologi_\n\nEleverne kender tit mekanikken i forvejen. Det, der mangler, er ord for det, der sker mellem mennesker: ophidselse, samtykke, berøring og de grænser, der flytter sig undervejs.\n\n## Ingen skal have _styr_ på det\n\nVi taler også om samleje og pornografi, og om alt det, der ellers er svært at sige højt. Ikke som en pensumliste, der skal overstås, men som en samtale, hvor tvivl er i orden. Formen tilpasses gruppen og rammen.",
+  "bullets": [
+    "Ophidselse",
+    "Samtykke",
+    "Berøring",
+    "Sex",
+    "Samtale",
+    "Pornografi"
   ],
-  "chapter": "konsulent",
-  "stage": { "bubble": "fullBleed", "drops": "offstage", "gem": "offstage", "intensity": 1.00 }
+  "showDetailBullets": false,
+  "supportsLabel": "",
+  "testimonials": [],
+  "studiosLabel": "",
+  "stage": {
+    "bubble": "fullBleed",
+    "drops": "offstage",
+    "gem": "offstage",
+    "intensity": 1
+  }
 }
