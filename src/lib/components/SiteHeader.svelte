@@ -310,9 +310,13 @@
     baseline translate.
   */
   .o-dot[data-dot='0'] {
+    /* The shake layer runs longer than the open (3s vs 2.4s) —
+       the tremble needs its time, and the relief needs its
+       exhale. It still finishes before the settle (last dot-open
+       ends at 3.2s) drops the story animations. */
     animation:
       dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
-      dot-shake 2.4s linear both;
+      dot-shake 3s linear both;
   }
   .o-dot[data-dot='1'] {
     animation:
@@ -403,41 +407,61 @@
     }
   }
 
-  /* Act 1 — anxious → calm: rapid tremble as the core opens
-     (72ms half-cycles at 2.4s), both frequency and amplitude
-     decaying to rest. */
+  /* Act 1 — anxiety, then relief. The tremble is fast at first
+     (90ms half-cycles) and runs long, frequency and amplitude
+     decaying while the dot stays subtly CONTRACTED (0.97 —
+     anxiety is tension). Then the exhale: a held beat, a slump —
+     it drops and loosens past neutral like a sigh — and a gentle
+     rise back to rest. Jitter runs on the animation's linear
+     base; the relief segments carry their own soft easings. */
   @keyframes dot-shake {
     0%,
     12% {
-      transform: translateY(0.014em) translateX(0);
+      transform: translateY(0.014em) translateX(0) scale(1);
     }
     15% {
-      transform: translateY(0.014em) translateX(-0.06em);
+      transform: translateY(0.014em) translateX(-0.06em) scale(0.97);
     }
     18% {
-      transform: translateY(0.014em) translateX(0.055em);
+      transform: translateY(0.014em) translateX(0.055em) scale(0.97);
     }
     21% {
-      transform: translateY(0.014em) translateX(-0.05em);
+      transform: translateY(0.014em) translateX(-0.05em) scale(0.97);
     }
-    24% {
-      transform: translateY(0.014em) translateX(0.045em);
+    25% {
+      transform: translateY(0.014em) translateX(0.045em) scale(0.97);
     }
-    28% {
-      transform: translateY(0.014em) translateX(-0.035em);
+    29% {
+      transform: translateY(0.014em) translateX(-0.035em) scale(0.97);
     }
-    33% {
-      transform: translateY(0.014em) translateX(0.025em);
+    34% {
+      transform: translateY(0.014em) translateX(0.025em) scale(0.97);
     }
-    39% {
-      transform: translateY(0.014em) translateX(-0.015em);
+    40% {
+      transform: translateY(0.014em) translateX(-0.018em) scale(0.97);
     }
-    46% {
-      transform: translateY(0.014em) translateX(0.008em);
+    47% {
+      transform: translateY(0.014em) translateX(0.01em) scale(0.97);
     }
-    58%,
+    55% {
+      transform: translateY(0.014em) translateX(-0.005em) scale(0.97);
+    }
+    /* the beat before the exhale — still, still tense */
+    60% {
+      transform: translateY(0.014em) translateX(0) scale(0.965);
+      animation-timing-function: ease-out;
+    }
+    /* the exhale: weight drops, everything loosens past neutral */
+    74% {
+      transform: translateY(0.074em) translateX(0) scale(1.035);
+      animation-timing-function: ease-in-out;
+    }
+    88% {
+      transform: translateY(0.024em) translateX(0) scale(1.005);
+      animation-timing-function: ease-in-out;
+    }
     100% {
-      transform: translateY(0.014em) translateX(0);
+      transform: translateY(0.014em) translateX(0) scale(1);
     }
   }
 
