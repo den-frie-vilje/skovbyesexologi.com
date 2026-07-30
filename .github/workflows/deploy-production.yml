@@ -245,7 +245,7 @@ jobs:
       (needs.detect-changes.outputs.content-only == 'true' ||
        (needs.verify-signatures.result == 'success' &&
         needs.approve.result == 'success'))
-    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-sign.yml@main
+    uses: den-frie-vilje/nas-sites/.github/workflows/build-and-sign.yml@v1
     with:
       environment: production
       dockerfile: deploy/Dockerfile
