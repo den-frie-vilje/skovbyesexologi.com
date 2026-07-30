@@ -1,9 +1,11 @@
 {
   "slug": "intimitetskoordinering",
   "number": "02",
+  "chapter": "konsulent",
   "title": "Intimitetskoordinering",
   "kicker": "film · tv · teater",
   "blurb": "Scener med fysisk intimitet skal håndteres med omhu, professionalisme og respekt for alle involverede.",
+  "body": "",
   "bullets": [
     "Forberedende samtaler med producent, instruktør og medvirkende",
     "Koreografi af intime scener",
@@ -11,32 +13,13 @@
     "Skabelse af trygge rammer på settet",
     "Opfølgning efter scenen"
   ],
-  "testimonials": [
-    {
-      "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
-      "source": "Michael Panduro, filminstruktør"
-    },
-    {
-      "quote": "[mock] Vores skuespillere mødte op næste dag uden den sædvanlige ængstelighed omkring intime scener. Det ændrede hele settet.",
-      "source": "[mock] Produktionsleder, tv-serie"
-    },
-    {
-      "quote": "[mock] Signe forberedte vores instruktør og medvirkende uden at være i vejen. En rolig, klar stemme i et område, der ofte er forvirret.",
-      "source": "[mock] Teaterchef"
-    },
-    {
-      "quote": "[mock] Hun lagde koreografien frem som en danseserie — alle vidste, hvad de gjorde, inden vi rullede.",
-      "source": "[mock] 1. instruktørassistent"
-    },
-    {
-      "quote": "[mock] Det var første gang i min karriere, at en intim scene ikke føltes som et forhandlingsrum bagefter. Signe gjorde forberedelsen til selve arbejdet.",
-      "source": "[mock] Skuespiller"
-    },
-    {
-      "quote": "[mock] Eftersamtalen med casten var det, der for alvor overraskede mig. Ingen skulle præstere at være okay.",
-      "source": "[mock] Instruktør, kortfilm"
-    }
-  ],
+  "supportsLabel": "",
+  "testimonials": [],
+  "cta": {
+    "label": "Kom i kontakt",
+    "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
+    "kind": "primary"
+  },
   "studiosLabel": "Tidligere samarbejder",
   "studios": [
     {
@@ -48,13 +31,32 @@
       "name": "Nordisk Film",
       "logo": "/img/studios/nordisk-film.svg",
       "url": "https://www.nordiskfilm.com"
+    },
+    {
+      "name": "Den Danske Filmskole",
+      "logo": "/img/studios/filmskolen-logo.svg",
+      "url": "https://www.filmskolen.dk"
+    },
+    {
+      "name": "Får302",
+      "logo": "/img/studios/faar302-logo.svg",
+      "url": "https://www.faar302.dk"
+    },
+    {
+      "name": "Makropol",
+      "logo": "/img/studios/makropol-logo.svg",
+      "url": "https://makropol.dk"
+    },
+    {
+      "name": "Bedside Productions",
+      "logo": "/img/studios/bedside-productions-logo.svg",
+      "url": "https://www.bedside-productions.com"
     }
   ],
-  "cta": {
-    "label": "Kom i kontakt",
-    "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
-    "kind": "primary"
-  },
-  "chapter": "konsulent",
-  "stage": { "bubble": "offstage", "drops": "topRightMed", "gem": "offstage", "intensity": 1.15 }
+  "stage": {
+    "bubble": "offstage",
+    "drops": "topRightMed",
+    "gem": "offstage",
+    "intensity": 1.15
+  }
 }

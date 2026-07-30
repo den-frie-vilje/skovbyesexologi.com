@@ -3,7 +3,7 @@
 
   A one-button "push staging → main" page for non-technical editors.
   Sveltia CMS writes her edits to the `staging` branch; GH Actions
-  redeploys signe.denfrievilje.dk within ~2 min; she reviews there,
+  redeploys skovbyesexologi-com.stage.denfrievilje.dk within ~2 min; she reviews there,
   and when ready comes to this page and clicks "Publish to
   production" to merge staging into main. GH Actions then deploys
   skovbyesexologi.com from main.
@@ -67,14 +67,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { env } from '$env/dynamic/public';
+  import { PUBLIC_GITHUB_REPO } from '$env/static/public';
 
   /*
     Configuration pulled from the public env (so the same route
     ships on both staging and production builds without hardcoding
-    the repo name). Both values MUST be set for this page to work.
+    the repo name). Static env for build-time determinism — the
+    dynamic variant resolves from the build process's environment,
+    not the `.env.[mode]` files (see structured-data.ts).
   */
-  const REPO = env.PUBLIC_GITHUB_REPO ?? '';
+  const REPO = PUBLIC_GITHUB_REPO;
   /** Branch Sveltia writes to. Lands in staging first. */
   const HEAD_BRANCH = 'staging';
   /** Branch that production deploys from. Merge target. */
@@ -290,7 +292,7 @@
     <p class="subtitle">
       Changes saved via <a href="/admin">the admin editor</a> land first on
       <strong>staging</strong>
-      (signe.denfrievilje.dk) for review. When you're ready for the changes to go
+      (skovbyesexologi-com.stage.denfrievilje.dk) for review. When you're ready for the changes to go
       live on <strong>skovbyesexologi.com</strong>, click the button below.
     </p>
   </header>

@@ -8,6 +8,16 @@
   site; deep-linking happens via URL, not an in-page menu). Using
   `<nav>` with no links confused assistive tech in a prior axe run.
 
+  THE BRAND MARK (settled 2026-07-30 after a picker-driven
+  exploration of ~13 candidates): "SKOVBYE SEXOLOGI" in Space
+  Grotesk 700 caps with the three O's as circles. On mount the O's
+  start as solid ink discs and bloom open staggered — a chartreuse
+  core grows from each centre as the inner border thins to the
+  type's stroke weight, then the neon fades, resting on outline
+  O's. Hover/focus quotes the CTA buttons' hovered state: a
+  borderless chartreuse rectangle, dark-green type, and the rings
+  growing (via inset shadow) until the O's are solid.
+
   Relies on the design tokens declared on `.app-shell` — the root wrapper
   of every page that consumes this component.
 -->
@@ -17,7 +27,7 @@
   import type { Locale, NavLink } from '$lib/content';
 
   interface Props {
-    /** Brand-owner name, e.g. "Signe Skovbye". */
+    /** Brand name, e.g. "Skovbye Sexologi". */
     name: string;
     /** City / tagline beside the name, e.g. "København". */
     city: string;
@@ -57,16 +67,48 @@
     burgerCloseLabel,
     burgerMenuLabel
   }: Props = $props();
+
+  /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]:
+     every o/O renders as a circle; `dot` numbers them (0,1,2) so
+     their opening animation staggers. */
+  const dotTokens = $derived.by(() => {
+    let dot = 0;
+    return name
+      .split(/([oO])/)
+      .filter((t) => t !== '')
+      .map((t) => (t === 'o' || t === 'O' ? { dot: dot++, text: '' } : { dot: -1, text: t }));
+  });
+  const dotCount = $derived(dotTokens.filter((t) => t.dot >= 0).length);
+
+  /*
+    The intro animation's fill-mode would keep overriding the
+    dots' hover styles forever — so once every dot has finished
+    its (staggered) opening, `dotsSettled` drops the animations
+    entirely (which also cues the third dot's blink) and the
+    CTA-quoting hover can transition freely. Each dot carries
+    story layers (shake / bounce / eyelid) that fire their own
+    animationend — only `dot-open` counts toward settling (the
+    name arrives scope-prefixed, hence `includes`). The counter
+    only ever needs to reach dotCount once: a locale switch
+    re-renders the spans, and `settled` correctly keeps the
+    intro from replaying mid-session.
+  */
+  let dotsSettled = $state(false);
+  let settledCount = 0;
+  function onDotAnimationEnd(e: AnimationEvent) {
+    if (!e.animationName.includes('dot-open')) return;
+    if (++settledCount >= dotCount) dotsSettled = true;
+  }
 </script>
 
 <!--
   Brand mark on the left is a link to the current locale's
-  homepage — invisible styling so the header reads as pure
-  typography but clicks land on `/` (or `/en`). The city sits
-  beside it as plain metadata, intentionally NOT inside the
-  link — the city is a tagline, not a destination; making the
-  whole row clickable was confusing users who expected the city
-  label to behave differently from the brand mark.
+  homepage — the mark itself is aria-hidden (the O's are not
+  letters), so the anchor carries the real name for assistive
+  tech. The city sits beside it as plain metadata, intentionally
+  NOT inside the link — the city is a tagline, not a destination;
+  making the whole row clickable was confusing users who expected
+  the city label to behave differently from the brand mark.
 -->
 <header class="top">
   <!--
@@ -78,7 +120,17 @@
     the affordance that restores scroll (see
     `$lib/nav/backNav.svelte.ts`).
   -->
-  <a class="top-link" href={homeHref}>{name}</a>
+  <a class="top-link" href={homeHref} aria-label={name}>
+    <span class="dots-visual" class:settled={dotsSettled} aria-hidden="true">
+      {#each dotTokens as tok, i (i)}
+        {#if tok.dot >= 0}
+          <span class="o-dot" data-dot={tok.dot} onanimationend={onDotAnimationEnd}></span>
+        {:else}
+          <span class="dot-seg">{tok.text}</span>
+        {/if}
+      {/each}
+    </span>
+  </a>
   <span class="mark-meta">{city}</span>
   {#if currentLocale && altLocale && altHref}
     <LocaleSwitcher {currentLocale} {altLocale} {altHref} />
@@ -123,17 +175,389 @@
     z-index: 110;
     border-bottom: 1px solid var(--rule);
   }
+
   /*
-    Invisible clickable brand mark on the left. `text-decoration:
-    none` + `color: inherit` keep it visually plain; the
-    `:focus-visible` outline from app.css still lands on the
-    anchor so keyboard users get a clear indicator.
+    The brand mark. `:focus-visible` gets the same treatment as
+    hover on top of app.css's global focus ring.
+
+    Hover quotes the CTA buttons' hovered state: a borderless
+    chartreuse rectangle (their 2px radius), dark-green
+    typography, dark-green-filled O's — accent on chartreuse
+    measures 5.42:1. Padding + equal negative margins paint the
+    box outward without moving the mark or growing the header
+    row.
   */
   .top-link {
     text-decoration: none;
     color: var(--text);
-    font-weight: 500;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    /*
+      "Iris" spring — a damped, fleshy settle for the dot
+      geometry: overshoots ~12% past the target, contracts, and
+      ripples once faintly before resting (a pupil adjusting to
+      light). Only ever applied to GEOMETRY (border-width, shadow
+      spread) — colours keep plain ease, where overshoot reads as
+      a glitch. The bezier is the fallback for engines without
+      linear() (single soft overshoot, no ripple); the @supports
+      block below upgrades it — a second declaration wouldn't
+      work, custom properties aren't syntax-validated at parse.
+    */
+    --ease-flesh: cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 0.5em 0.55em 0.45em;
+    margin: -0.5em -0.55em -0.45em;
+    border-radius: 2px;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
   }
+  @supports (animation-timing-function: linear(0, 1)) {
+    .top-link {
+      --ease-flesh: linear(
+        0,
+        0.42 12%,
+        0.81 22%,
+        1.05 34%,
+        1.12 42%,
+        1.08 52%,
+        0.99 66%,
+        0.97 76%,
+        1 88%,
+        1
+      );
+    }
+  }
+  .top-link:hover,
+  .top-link:focus-visible {
+    background-color: var(--highlight);
+    color: var(--accent);
+  }
+
+  .dots-visual {
+    display: inline-block;
+  }
+  /* Inter-token tracking — letter-spacing doesn't apply between
+     inline-block boxes, so the rhythm is carried by margins. */
+  .dots-visual > :global(* + *) {
+    margin-left: 0.2em;
+  }
+  .dot-seg {
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: bottom;
+    letter-spacing: 0.2em;
+    /* An inline-block's width includes the trailing letter-space;
+       pull the next token back so token gaps equal the intra-
+       segment tracking. */
+    margin-right: -0.2em;
+  }
+
+  .o-dot {
+    display: inline-block;
+    /* Pixel-perfect against the real glyph, measured via canvas
+       measureText('O') in the rendered font (Space Grotesk 700
+       @ 11.52px): ink box 6.64×8.39px — asc 8.23 above baseline,
+       0.16px round-shape overshoot below. The dot stays a CIRCLE
+       (the brand gesture) at the O's ink height plus Ole's 0.5px
+       optical size-up (0.771em), anchored via the inline-block
+       baseline rule — an empty inline-block's baseline is its
+       bottom margin edge, so with default vertical-align the
+       dot's bottom sits exactly ON the text baseline; the 0.014em
+       translate adds the font's own below-baseline overshoot.
+       Verified in-DOM: bottom at 0.00px delta against the O's ink
+       bottom, the size-up growing upward only.
+
+       Static values are the RESTING state (outline O, transparent
+       counter) — keyframes override during the intro, and
+       reduced-motion (animation: none) lands on the finished mark
+       directly. Border-box keeps the outer circle constant while
+       the border thins inward.
+
+       Hover-fill mechanics: the border NEVER changes — the
+       constant 0.14em ring owns the outer edge in every state,
+       so the silhouette can't drift by even a fraction of a
+       pixel (a border grown past the radius rasterizes as a
+       filled path whose antialiased edge paints ~half a device
+       pixel wider than the stroked ring — measured on the
+       fine-tuned O). The fill is an INSET box-shadow growing
+       inward from the ring's inner edge; inset shadows are
+       clipped to the padding box by spec, so overpaint is
+       impossible by construction. */
+    width: 0.771em;
+    height: 0.771em;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: transparent;
+    border: 0.14em solid currentColor;
+    transform: translateY(0.014em);
+    box-shadow: inset 0 0 0 0 currentColor;
+    transition: box-shadow 0.4s var(--ease-flesh);
+  }
+  /*
+    THE STORY (staggered 0.3s, left→right): each O opens with its
+    own temperament, layered on the shared `dot-open`
+    (border-thinning + chartreuse fade) —
+      1. opens trembling, the jitter dying out as it rests;
+      2. opens with a small physical bounce as it lands;
+      3. opens as an EYE — a solid slit widening (scaleY) around
+         an accent pupil (radial-gradient) — and, once all three
+         have settled, blinks once and sheds the pupil.
+    Story layers own `transform` per dot (dot-open never animates
+    transform), and every transform frame carries the 0.014em
+    baseline translate.
+  */
+  .o-dot[data-dot='0'] {
+    /* The shake layer runs longer than the open (3s vs 2.4s) —
+       the tremble needs its time, and the relief needs its
+       exhale. It still finishes before the settle (last dot-open
+       ends at 3.2s) drops the story animations. */
+    animation:
+      dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-shake 3s linear both;
+  }
+  /* SEQUENTIAL acts guide the eye left→right: each O stays a
+     solid filled disc (the delayed animations' first frame, held
+     by `both` fill) until its own turn — the roll starts as the
+     tremble's last fade becomes imperceptible, the eye after the
+     roll has settled. */
+  .o-dot[data-dot='1'] {
+    animation:
+      dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-sway 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 1.7s, 1.7s;
+  }
+  .o-dot[data-dot='2'] {
+    animation: dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 3.6s;
+    position: relative;
+  }
+  /*
+    The eye's interior — a pseudo layer INSIDE the ring (inset
+    just past the border) so the circle itself never deforms:
+    a solid ink EYELID (a slab slid by background-position —
+    length-based, animates smoothly cross-browser, unlike
+    gradient-stop interpolation) over an accent pupil. The lid
+    parts upward as the core opens; the blink slides it down and
+    up again; the final settle fades the whole interior away
+    (opacity), leaving the plain O.
+  */
+  .o-dot[data-dot='2']::after {
+    content: '';
+    position: absolute;
+    inset: 0.1em;
+    border-radius: 50%;
+    background-image:
+      linear-gradient(var(--text), var(--text)),
+      radial-gradient(circle closest-side, var(--accent) 0 46%, transparent 47% 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    /* Rest value: lid parked above (open). */
+    background-position:
+      0 -0.7em,
+      center;
+    animation: eye-lid-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 3.6s;
+  }
+  /* The O's fill by the ring visually growing inward until solid
+     — the intro's opening gesture in reverse, all three
+     synchronously. The spread (0.3em) exceeds the inner radius
+     (0.255em after border), so the shadow closes at the centre;
+     currentColor keeps ring + fill tracking the type's colour
+     transition for free. */
+  .top-link:hover .o-dot,
+  .top-link:focus-visible .o-dot {
+    box-shadow: inset 0 0 0 0.3em currentColor;
+  }
+  /* Once the staggered intro has finished, drop the animations so
+     their fill-mode stops outranking the hover styles above. */
+  .dots-visual.settled .o-dot {
+    animation: none;
+  }
+  /* …except the third dot's INTERIOR, whose settling IS the
+     finale: the lid sweeps down and back up once, then the whole
+     eye (lid + pupil) fades out, leaving the plain O. The blink
+     lives on the pseudo, so the settled animation-none rule
+     above doesn't touch it. */
+  .dots-visual.settled .o-dot[data-dot='2']::after {
+    animation: eye-blink 1.2s ease-in-out 0.4s both;
+  }
+
+  /* Intro: solid ink disc (border ≈ over the radius — exactly
+     half computed to a sub-pixel chartreuse pinhole) → the
+     chartreuse core opens from the centre as the inner border
+     thins, on the Iris spring (the core blooms slightly past its
+     final size and contracts) → hold the ringed-neon beat → the
+     chartreuse fades once the stroke matches the type's weight.
+     Timing functions are per-keyframe: the spring drives only
+     the geometry segment; the colour fade keeps plain ease. */
+  @keyframes dot-open {
+    0%,
+    12% {
+      border-width: 0.42em;
+      background-color: var(--highlight);
+      animation-timing-function: var(--ease-flesh);
+    }
+    58%,
+    70% {
+      border-width: 0.14em;
+      background-color: var(--highlight);
+      animation-timing-function: ease;
+    }
+    100% {
+      border-width: 0.14em;
+      background-color: transparent;
+    }
+  }
+
+  /* Act 1 — anxiety finding rest. The tremble is fast at first
+     (90ms half-cycles) and runs LONG — frequency and amplitude
+     decaying all the way out while the tension (a subtle 0.97
+     contraction) releases gradually along the same curve. No
+     sigh, no gesture: the rest simply arrives. */
+  @keyframes dot-shake {
+    0%,
+    12% {
+      transform: translateY(0.014em) translateX(0) scale(1);
+    }
+    15% {
+      transform: translateY(0.014em) translateX(-0.06em) scale(0.97);
+    }
+    18% {
+      transform: translateY(0.014em) translateX(0.055em) scale(0.97);
+    }
+    21% {
+      transform: translateY(0.014em) translateX(-0.05em) scale(0.97);
+    }
+    25% {
+      transform: translateY(0.014em) translateX(0.045em) scale(0.97);
+    }
+    29% {
+      transform: translateY(0.014em) translateX(-0.038em) scale(0.97);
+    }
+    34% {
+      transform: translateY(0.014em) translateX(0.03em) scale(0.972);
+    }
+    40% {
+      transform: translateY(0.014em) translateX(-0.024em) scale(0.975);
+    }
+    46% {
+      transform: translateY(0.014em) translateX(0.018em) scale(0.978);
+    }
+    53% {
+      transform: translateY(0.014em) translateX(-0.013em) scale(0.982);
+    }
+    60% {
+      transform: translateY(0.014em) translateX(0.009em) scale(0.986);
+    }
+    68% {
+      transform: translateY(0.014em) translateX(-0.006em) scale(0.99);
+    }
+    76% {
+      transform: translateY(0.014em) translateX(0.004em) scale(0.994);
+    }
+    84% {
+      transform: translateY(0.014em) translateX(-0.002em) scale(0.997);
+    }
+    92%,
+    100% {
+      transform: translateY(0.014em) translateX(0) scale(1);
+    }
+  }
+
+  /* Act 2 — slutty (per direction, and on-brand): not a bounce
+     but a ROLL. It swells slowly, shifts its weight out of phase
+     — stretching tall, then wide, a grind rather than a pulse —
+     lingers at the peak a beat too long, and releases slowly.
+     The scaleX/scaleY phase offset is what reads as body
+     language; every frame eases in-out so nothing ever snaps. */
+  @keyframes dot-sway {
+    0%,
+    40% {
+      transform: translateY(0.014em) translateX(0) scale(1, 1);
+      animation-timing-function: ease-in-out;
+    }
+    52% {
+      transform: translateY(0.014em) translateX(0.02em) scale(1.08, 1.22);
+      animation-timing-function: ease-in-out;
+    }
+    64% {
+      transform: translateY(0.014em) translateX(0.05em) scale(1.24, 1.1);
+      animation-timing-function: ease-in-out;
+    }
+    76% {
+      transform: translateY(0.014em) translateX(-0.04em) scale(1.14, 1.18);
+      animation-timing-function: ease-in-out;
+    }
+    88% {
+      transform: translateY(0.014em) translateX(0.01em) scale(1.03, 1.05);
+      animation-timing-function: ease-in-out;
+    }
+    100% {
+      transform: translateY(0.014em) translateX(0) scale(1, 1);
+    }
+  }
+
+  /* Act 3 — the eyelid parts upward as the core opens; the
+     circle itself never deforms. As the chartreuse fades
+     (70-100% of the same window), the iris drifts LEFT — the eye
+     looks away while the neon dies — and holds that glance into
+     the beat before the blink (fill-mode carries it). */
+  @keyframes eye-lid-open {
+    0%,
+    12% {
+      background-position:
+        0 0,
+        center;
+    }
+    58%,
+    70% {
+      background-position:
+        0 -0.7em,
+        center;
+    }
+    100% {
+      background-position:
+        0 -0.7em,
+        -0.14em 50%;
+    }
+  }
+
+  /* Finale — picks up the leftward glance the intro left behind:
+     holds it a moment, the lid closes over it, and the reopen
+     resets the gaze to centre; then the whole interior fades and
+     the eye becomes a plain O. */
+  @keyframes eye-blink {
+    0%,
+    12% {
+      background-position:
+        0 -0.7em,
+        -0.14em 50%;
+      opacity: 1;
+    }
+    30% {
+      background-position:
+        0 0,
+        -0.14em 50%;
+    }
+    48% {
+      background-position:
+        0 -0.7em,
+        center;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      background-position:
+        0 -0.7em,
+        center;
+      opacity: 0;
+    }
+  }
+
   /*
     City label sits immediately after the brand mark — reads as
     part of the address line "Skovbye Sexologi, København". Not
@@ -173,6 +597,20 @@
     }
     .mark-meta {
       display: inline;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Straight to the resting mark: no story, no blink — and the
+       eye interior goes too (it only exists to be shed). */
+    .o-dot,
+    .o-dot[data-dot='2']::after,
+    .dots-visual.settled .o-dot[data-dot='2']::after {
+      animation: none;
+      transition: none;
+    }
+    .o-dot[data-dot='2']::after {
+      opacity: 0;
     }
   }
 </style>

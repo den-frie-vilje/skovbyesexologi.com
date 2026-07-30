@@ -24,18 +24,19 @@
 
 import type { Bio, Contact, Locale, Service, Site } from '$lib/content';
 import { markdownToPlainText } from '$lib/markdown';
-import { env } from '$env/dynamic/public';
+import { PUBLIC_SITE_URL } from '$env/static/public';
 
 /*
-  Reading PUBLIC_SITE_URL via `$env/dynamic/public` instead of the
-  static variant: the static import fails at dev boot when no
-  `.env.development` is on disk, because SvelteKit refuses to emit
-  an export for a var that isn't declared at build time. Dynamic
-  env proxies `process.env`, so a missing value is `undefined`
-  rather than a hard module error — the fallback below then kicks
-  in and dev works out of the box. Production + staging builds
-  still read their respective `.env.[mode]` files at build time,
-  so the canonical URL is baked into the prerendered output.
+  `$env/static/public`, not dynamic. Static env is sourced from
+  the `.env.[mode]` files at build time and hard-fails on a
+  missing declaration — the committed `.env.development` satisfies
+  dev — so a build can never silently fall back to the production
+  default below. The dynamic variant resolves from the build
+  process's environment instead of the mode files, which turns a
+  mis-applied mode into silently-wrong baked output (2026-07-29:
+  staging images had been shipping production robots.txt + sitemap
+  origin — the Dockerfile's `pnpm build -- --mode` was swallowing
+  the mode flag, and the dynamic fallback masked it).
 */
 function normalizeSiteUrl(raw: string | undefined): string {
   const fallback = 'https://skovbyesexologi.com';
@@ -43,7 +44,7 @@ function normalizeSiteUrl(raw: string | undefined): string {
   return value.replace(/\/+$/, '');
 }
 
-export const SITE_URL = normalizeSiteUrl(env.PUBLIC_SITE_URL);
+export const SITE_URL = normalizeSiteUrl(PUBLIC_SITE_URL);
 
 /** Per-locale detail-page URL for a service. DA lives at
  *  `/ydelser/{da-slug}`, EN at `/en/services/{en-slug}`. */

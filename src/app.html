@@ -5,6 +5,11 @@
     <link rel="icon" href="%sveltekit.assets%/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
+    <!-- Build identity for the pull-only deploy model (DFV canonical): CI passes PUBLIC_GIT_SHA as
+         a build arg and the live page is the only trustworthy statement of what's deployed. Empty
+         in local dev builds. NOTE: sveltekit.env names here must start with PUBLIC_ even inside
+         comments — the template scanner parses them. -->
+    <meta name="git-sha" content="%sveltekit.env.PUBLIC_GIT_SHA%" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -25,20 +25,7 @@
     "Tryghed",
     "Sexliv"
   ],
-  "testimonials": [
-    {
-      "quote": "[mock] Jeg havde aldrig talt med nogen om mit sexliv. Signe skabte det første rum, hvor det ikke var pinligt.",
-      "source": "[mock] Solo-klient, 34"
-    },
-    {
-      "quote": "[mock] Vi gik som par og troede, vi skulle have redskaber. Det, vi fik, var at mærke, at vi var okay.",
-      "source": "[mock] Par, København"
-    },
-    {
-      "quote": "[mock] Psykomotorikken overraskede mig — jeg forstod først bagefter hvor meget kroppen havde holdt på.",
-      "source": "[mock] Terapiklient"
-    }
-  ],
+  "testimonials": [],
   "cta": {
     "label": "Book en tid",
     "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
