@@ -117,17 +117,9 @@
   const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
 
   /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]
-     for the dots variant: every o/O renders as a filled dot; the
-     text segments between them open as invisible spacers first
-     (moving the dots apart), then fade in staggered left→right —
-     `i` drives each segment's fade delay. */
-  const dotTokens = $derived.by(() => {
-    let seg = 0;
-    return name
-      .split(/([oO])/)
-      .filter((t) => t !== '')
-      .map((t) => (t === 'o' || t === 'O' ? { dot: true, text: '', i: -1 } : { dot: false, text: t, i: seg++ }));
-  });
+     for the dots variant: every o/O renders as a filled dot, the
+     text segments between them expand during the intro. */
+  const nameTokens = $derived(name.split(/([oO])/).filter((t) => t !== ''));
 
   /*
     The URL is the single source of truth for the demo state; the
@@ -202,11 +194,11 @@
       <!-- The anchor carries aria-label={name}; this construction
            is visual-only (the O's are not letters here). -->
       <span class="dots-visual" aria-hidden="true">
-        {#each dotTokens as tok, i (i)}
-          {#if tok.dot}
+        {#each nameTokens as tok, i (i)}
+          {#if tok === 'o' || tok === 'O'}
             <span class="o-dot"></span>
           {:else}
-            <span class="dot-seg" style="--seg-i: {tok.i}">{tok.text}</span>
+            <span class="dot-seg">{tok}</span>
           {/if}
         {/each}
       </span>
@@ -513,22 +505,19 @@
   @media (prefers-reduced-motion: reduce) {
     .logo-stampintro,
     .logo-stampintro .stamp-text,
-    .logo-dots,
-    .logo-dots .dots-visual,
-    .logo-dots .dot-seg,
-    .logo-dots .o-dot {
+    .logo-dots .dot-seg {
       animation: none;
     }
   }
 
-  /* M — the three O's as filled dots. Intro, two beats on the
-     bare header (no plate): the three ringed chartreuse dots
-     appear as a tight cluster and glide apart as the text
-     segments open — invisible — between them; only once the room
-     exists does the type fade in, staggered left→right. The ink
-     ring is on the discs from the start: bare chartreuse on the
-     cream surface measures 1.14:1, so unringed gliding dots
-     would be invisible. */
+  /* M — the three O's as filled dots. Intro on the bare header
+     (no plate): the three ringed chartreuse dots start as a
+     tight cluster and the type unfurls between them — each
+     segment's box grows and reveals its letters as it opens
+     (short segments settle first, the long one keeps
+     travelling). The ink ring is on the discs from the start:
+     bare chartreuse on the cream surface measures 1.14:1, so
+     unringed dots would be invisible. */
   .logo-dots {
     font-family: var(--font-display);
     font-size: 0.72rem;
@@ -553,13 +542,7 @@
        pull the next token back so token gaps equal the intra-
        segment tracking. */
     margin-right: -0.2em;
-    /* Beat 1 opens the space (max-width, shared timing); beat 2
-       fades the type in, 0.35s later per segment (--seg-i set
-       inline), only after the dots have moved apart. */
-    animation:
-      dots-open 3.6s cubic-bezier(0.22, 1, 0.36, 1) both,
-      dots-fade 0.8s ease-out both;
-    animation-delay: 0s, calc(1.5s + var(--seg-i, 0) * 0.35s);
+    animation: dots-open 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .logo-dots .o-dot {
     display: inline-block;
@@ -582,30 +565,15 @@
     border: 0.14em solid var(--text);
     vertical-align: bottom;
     transform: translateY(-0.16em);
-    animation: dots-fade 0.45s ease-out both;
   }
-  /* Beat 1 — the room opens. Hold the cluster for a beat, then
-     the segments' boxes grow (ease-out: short segments settle
-     first, the long one keeps travelling), all while their text
-     is still transparent. */
   @keyframes dots-open {
     0%,
-    12% {
+    15% {
       max-width: 0;
     }
-    48%,
+    55%,
     100% {
       max-width: 16ch;
-    }
-  }
-  /* Beat 2 — the type arrives in the opened room (per-segment
-     delay staggers it left→right). Also the dots' own entrance. */
-  @keyframes dots-fade {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
     }
   }
 
