@@ -317,7 +317,7 @@
   .o-dot[data-dot='1'] {
     animation:
       dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
-      dot-bounce 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+      dot-sway 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.4s, 0.4s;
   }
   .o-dot[data-dot='2'] {
@@ -441,28 +441,36 @@
     }
   }
 
-  /* Act 2 — a heavy, soft landing: low amplitude, lazy rise,
-     long settle — viscous rather than elastic. */
-  @keyframes dot-bounce {
+  /* Act 2 — slutty (per direction, and on-brand): not a bounce
+     but a ROLL. It swells slowly, shifts its weight out of phase
+     — stretching tall, then wide, a grind rather than a pulse —
+     lingers at the peak a beat too long, and releases slowly.
+     The scaleX/scaleY phase offset is what reads as body
+     language; every frame eases in-out so nothing ever snaps. */
+  @keyframes dot-sway {
     0%,
-    55% {
-      transform: translateY(0.014em) scale(1);
+    40% {
+      transform: translateY(0.014em) scale(1, 1);
       animation-timing-function: ease-in-out;
     }
-    68% {
-      transform: translateY(0.014em) scale(1.065);
+    52% {
+      transform: translateY(0.014em) scale(1.04, 1.1);
       animation-timing-function: ease-in-out;
     }
-    80% {
-      transform: translateY(0.014em) scale(0.975);
+    64% {
+      transform: translateY(0.014em) scale(1.1, 1.05);
       animation-timing-function: ease-in-out;
     }
-    91% {
-      transform: translateY(0.014em) scale(1.008);
+    76% {
+      transform: translateY(0.014em) scale(1.06, 1.08);
+      animation-timing-function: ease-in-out;
+    }
+    88% {
+      transform: translateY(0.014em) scale(1.015, 1.02);
       animation-timing-function: ease-in-out;
     }
     100% {
-      transform: translateY(0.014em) scale(1);
+      transform: translateY(0.014em) scale(1, 1);
     }
   }
 
