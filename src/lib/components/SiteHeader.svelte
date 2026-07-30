@@ -84,14 +84,19 @@
     The intro animation's fill-mode would keep overriding the
     dots' hover styles forever — so once every dot has finished
     its (staggered) opening, `dotsSettled` drops the animations
-    entirely and the CTA-quoting hover can transition freely.
-    The counter only ever needs to reach dotCount once: a locale
-    switch re-renders the spans, and `settled` correctly keeps
-    the intro from replaying mid-session.
+    entirely (which also cues the third dot's blink) and the
+    CTA-quoting hover can transition freely. Each dot carries
+    story layers (shake / bounce / eyelid) that fire their own
+    animationend — only `dot-open` counts toward settling (the
+    name arrives scope-prefixed, hence `includes`). The counter
+    only ever needs to reach dotCount once: a locale switch
+    re-renders the spans, and `settled` correctly keeps the
+    intro from replaying mid-session.
   */
   let dotsSettled = $state(false);
   let settledCount = 0;
-  function onDotSettled() {
+  function onDotAnimationEnd(e: AnimationEvent) {
+    if (!e.animationName.includes('dot-open')) return;
     if (++settledCount >= dotCount) dotsSettled = true;
   }
 </script>
@@ -119,7 +124,7 @@
     <span class="dots-visual" class:settled={dotsSettled} aria-hidden="true">
       {#each dotTokens as tok, i (i)}
         {#if tok.dot >= 0}
-          <span class="o-dot" style="--dot-i: {tok.dot}" onanimationend={onDotSettled}></span>
+          <span class="o-dot" data-dot={tok.dot} onanimationend={onDotAnimationEnd}></span>
         {:else}
           <span class="dot-seg">{tok.text}</span>
         {/if}
@@ -290,11 +295,43 @@
     transform: translateY(0.014em);
     box-shadow: inset 0 0 0 0 currentColor;
     transition: box-shadow 0.4s var(--ease-flesh);
-    /* Staggered: each O opens 0.3s after the previous (with
-       `both` fill the later dots hold the solid-disc first frame
-       while they wait). */
-    animation: dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(var(--dot-i, 0) * 0.3s);
+  }
+  /*
+    THE STORY (staggered 0.3s, left→right): each O opens with its
+    own temperament, layered on the shared `dot-open`
+    (border-thinning + chartreuse fade) —
+      1. opens trembling, the jitter dying out as it rests;
+      2. opens with a small physical bounce as it lands;
+      3. opens as an EYE — a solid slit widening (scaleY) around
+         an accent pupil (radial-gradient) — and, once all three
+         have settled, blinks once and sheds the pupil.
+    Story layers own `transform` per dot (dot-open never animates
+    transform), and every transform frame carries the 0.014em
+    baseline translate.
+  */
+  .o-dot[data-dot='0'] {
+    animation:
+      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-shake 2s linear both;
+  }
+  .o-dot[data-dot='1'] {
+    animation:
+      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-bounce 2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.3s, 0.3s;
+  }
+  .o-dot[data-dot='2'] {
+    animation:
+      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
+      eye-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.6s, 0.6s;
+    /* The pupil — sized to sit inside the ring; visible from the
+       moment the core opens, held until the blink sheds it. */
+    background-image: radial-gradient(
+      circle closest-side,
+      var(--accent) 0 32%,
+      transparent 33% 100%
+    );
   }
   /* The O's fill by the ring visually growing inward until solid
      — the intro's opening gesture in reverse, all three
@@ -310,6 +347,12 @@
      their fill-mode stops outranking the hover styles above. */
   .dots-visual.settled .o-dot {
     animation: none;
+  }
+  /* …except the third dot, whose settling IS the finale: one
+     blink (lid squeeze), shedding the pupil on the way out.
+     Equal specificity to the rule above — source order wins. */
+  .dots-visual.settled .o-dot[data-dot='2'] {
+    animation: eye-blink 1.1s ease-in-out 0.4s both;
   }
 
   /* Intro: solid ink disc (border ≈ over the radius — exactly
@@ -336,6 +379,109 @@
     100% {
       border-width: 0.14em;
       background-color: transparent;
+    }
+  }
+
+  /* Act 1 — trembling open: horizontal jitter through the
+     opening window (12-58%), amplitude decaying to rest. */
+  @keyframes dot-shake {
+    0%,
+    12% {
+      transform: translateY(0.014em) translateX(0);
+    }
+    18% {
+      transform: translateY(0.014em) translateX(-0.055em);
+    }
+    24% {
+      transform: translateY(0.014em) translateX(0.05em);
+    }
+    30% {
+      transform: translateY(0.014em) translateX(-0.04em);
+    }
+    36% {
+      transform: translateY(0.014em) translateX(0.03em);
+    }
+    42% {
+      transform: translateY(0.014em) translateX(-0.02em);
+    }
+    48% {
+      transform: translateY(0.014em) translateX(0.01em);
+    }
+    58%,
+    100% {
+      transform: translateY(0.014em) translateX(0);
+    }
+  }
+
+  /* Act 2 — the landing bounce, right as its core finishes
+     opening. */
+  @keyframes dot-bounce {
+    0%,
+    55% {
+      transform: translateY(0.014em) scale(1);
+    }
+    63% {
+      transform: translateY(0.014em) scale(1.14);
+    }
+    71% {
+      transform: translateY(0.014em) scale(0.94);
+    }
+    79% {
+      transform: translateY(0.014em) scale(1.04);
+    }
+    88%,
+    100% {
+      transform: translateY(0.014em) scale(1);
+    }
+  }
+
+  /* Act 3 — the eye: a solid slit that widens open around the
+     pupil as the core opens. */
+  @keyframes eye-open {
+    0%,
+    12% {
+      transform: translateY(0.014em) scaleY(0.12);
+    }
+    58% {
+      transform: translateY(0.014em) scaleY(1.06);
+    }
+    70%,
+    100% {
+      transform: translateY(0.014em) scaleY(1);
+    }
+  }
+
+  /* Finale — one blink, and the pupil dissolves on the reopen
+     (same gradient structure, colour → transparent, so the
+     interpolation is smooth). Forwards fill = the resting plain
+     O. */
+  @keyframes eye-blink {
+    0% {
+      transform: translateY(0.014em) scaleY(1);
+      background-image: radial-gradient(
+        circle closest-side,
+        var(--accent) 0 32%,
+        transparent 33% 100%
+      );
+    }
+    22% {
+      transform: translateY(0.014em) scaleY(0.06);
+    }
+    45% {
+      transform: translateY(0.014em) scaleY(1);
+      background-image: radial-gradient(
+        circle closest-side,
+        var(--accent) 0 32%,
+        transparent 33% 100%
+      );
+    }
+    100% {
+      transform: translateY(0.014em) scaleY(1);
+      background-image: radial-gradient(
+        circle closest-side,
+        transparent 0 32%,
+        transparent 33% 100%
+      );
     }
   }
 
@@ -382,9 +528,15 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .o-dot {
+    /* Straight to the resting mark: no story, no blink — and the
+       pupil gradient goes too (it only exists to be shed). */
+    .o-dot,
+    .dots-visual.settled .o-dot[data-dot='2'] {
       animation: none;
       transition: none;
+    }
+    .o-dot[data-dot='2'] {
+      background-image: none;
     }
   }
 </style>
