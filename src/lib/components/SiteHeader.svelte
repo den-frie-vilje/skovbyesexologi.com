@@ -22,7 +22,7 @@
   /*
     ── LOGOTYPE DEMO (temporary) ─────────────────────────────────
     Signe wants a stronger, logotype-like brand mark. Until one is
-    picked, the header can render five candidate treatments; append
+    picked, the header can render the candidate treatments below; append
     `?logotype` to any URL to get a floating picker (e.g.
     `/?logotype` or `/?logotype=serif`). The choice is written back
     to the URL so it survives reload and can be shared. Default —
@@ -30,14 +30,28 @@
     changes for normal visitors. Once a variant is chosen, delete
     the losers + this switcher and hard-wire the winner.
   */
-  const LOGO_VARIANTS = ['current', 'serif', 'stacked', 'contrast', 'signature'] as const;
+  const LOGO_VARIANTS = [
+    'current',
+    'serif',
+    'stacked',
+    'contrast',
+    'signature',
+    'monogram',
+    'highlight',
+    'lowercase',
+    'stamp'
+  ] as const;
   type LogoVariant = (typeof LOGO_VARIANTS)[number];
   const variantLabels: Record<LogoVariant, string> = {
     current: 'Nuværende',
     serif: 'Serif',
     stacked: 'Stablet',
     contrast: 'Kontrast',
-    signature: 'Signatur'
+    signature: 'Signatur',
+    monogram: 'Monogram',
+    highlight: 'Markeret',
+    lowercase: 'Minuskel',
+    stamp: 'Stempel'
   };
 
   interface Props {
@@ -89,6 +103,8 @@
     const words = name.trim().split(/\s+/);
     return { first: words[0] ?? name, rest: words.slice(1).join(' ') };
   });
+  /* "Skovbye Sexologi" → "SS" for the monogram variant. */
+  const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
 
   /*
     The URL is the single source of truth for the demo state; the
@@ -143,7 +159,16 @@
       <strong>{nameParts.first}</strong><span class="thin">{nameParts.rest}</span>
     {:else if logoVariant === 'signature'}
       {name}<span class="sig-dot" aria-hidden="true">.</span>
+    {:else if logoVariant === 'monogram'}
+      <span class="mono-mark" aria-hidden="true">{initials}</span>
+      <span class="mono-name">{name}</span>
+    {:else if logoVariant === 'highlight'}
+      {nameParts.first} <span class="hl">{nameParts.rest}</span>
+    {:else if logoVariant === 'lowercase'}
+      {name}<span class="lc-dot" aria-hidden="true">.</span>
     {:else}
+      <!-- `current` and `stamp` render the plain name — the
+           variant class alone carries the stamp's box. -->
       {name}
     {/if}
   </a>
@@ -287,6 +312,68 @@
     font-style: normal;
     font-weight: 600;
     color: oklch(0.82 0.22 115);
+  }
+
+  /* E — italic-serif SS monogram beside the mono name; the mark
+     carries the identity, so it survives any size. */
+  .logo-monogram {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .logo-monogram .mono-mark {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.35rem;
+    font-weight: 600;
+    /* Tight negative tracking pulls the two S's into a single
+       interlocked mark rather than two letters. */
+    letter-spacing: -0.12em;
+    line-height: 1;
+    text-transform: none;
+  }
+  .logo-monogram .mono-name {
+    letter-spacing: 0.16em;
+  }
+
+  /* F — the hero's chartreuse highlighter swipe on the second
+     word: the site's core accent gesture applied to the mark. */
+  .logo-highlight {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    line-height: 1;
+  }
+  .logo-highlight .hl {
+    font-style: italic;
+    background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
+    padding: 0 0.08em;
+  }
+
+  /* G — all-lowercase Fraunces, warm and contemporary, closed by
+     the accent dot. */
+  .logo-lowercase {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    text-transform: lowercase;
+    line-height: 1;
+  }
+  .logo-lowercase .lc-dot {
+    color: oklch(0.82 0.22 115);
+  }
+
+  /* H — hairline stamp: the mono caps boxed like a credential
+     label. Inherits the header's mono + uppercase. */
+  .logo-stamp {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    border: 1px solid currentColor;
+    padding: 0.5em 0.75em 0.42em;
+    line-height: 1;
   }
   /*
     City label sits immediately after the brand mark — reads as
