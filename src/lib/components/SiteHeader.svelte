@@ -505,19 +505,19 @@
   @media (prefers-reduced-motion: reduce) {
     .logo-stampintro,
     .logo-stampintro .stamp-text,
-    .logo-dots .dot-seg {
+    .logo-dots .o-dot {
       animation: none;
     }
   }
 
-  /* M — the three O's as filled dots. Intro on the bare header
-     (no plate): the three ringed chartreuse dots start as a
-     tight cluster and the type unfurls between them — each
-     segment's box grows and reveals its letters as it opens
-     (short segments settle first, the long one keeps
-     travelling). The ink ring is on the discs from the start:
-     bare chartreuse on the cream surface measures 1.14:1, so
-     unringed dots would be invisible. */
+  /* M — the three O's as dots. The logotype stands fully
+     established from the first frame; the intro lives entirely
+     in the O's: each starts as a SOLID dark-green disc (a
+     border-box circle whose border is as thick as its radius),
+     a chartreuse core opens from the centre as that inner
+     border thins outward, and once the stroke has thinned to
+     the type's own weight the chartreuse fades away — resting
+     on true outline O's. */
   .logo-dots {
     font-family: var(--font-display);
     font-size: 0.72rem;
@@ -545,7 +545,6 @@
        pull the next token back so token gaps equal the intra-
        segment tracking. */
     margin-right: -0.2em;
-    animation: dots-open 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .logo-dots .o-dot {
     display: inline-block;
@@ -556,27 +555,44 @@
        ~0.29em below the baseline). Both values measured against
        a probe "O" glyph, not eyeballed.
 
-       The disc is chartreuse with an ink ring (stroke ≈ the
-       grotesk O's, border-box so the neon counter matches a real
-       O's counter) — an O with a neon counter, worn from the
-       first frame through rest. */
+       Static values are the RESTING state (outline O: stroke ≈
+       the grotesk O's at this size, transparent counter) — the
+       keyframes override them during the intro, and
+       reduced-motion (animation: none) lands on the finished
+       mark directly. Border-box keeps the outer circle constant
+       while the border thins inward. */
     width: 0.76em;
     height: 0.76em;
     box-sizing: border-box;
     border-radius: 50%;
-    background: var(--highlight);
+    background: transparent;
     border: 0.14em solid var(--accent);
     vertical-align: bottom;
     transform: translateY(-0.16em);
+    animation: dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  @keyframes dots-open {
+  /* Solid disc (border = radius, chartreuse hidden beneath it) →
+     the core opens as the border thins → hold the ringed-neon
+     beat → the chartreuse fades once the stroke matches the
+     type's weight. */
+  @keyframes dot-open {
     0%,
-    15% {
-      max-width: 0;
+    12% {
+      /* Slightly over half the 0.76em diameter: computed border
+         widths snap to device pixels, and exactly-half left a
+         sub-pixel chartreuse pinhole at the centre (measured 4px
+         computed vs the 4.4px radius). */
+      border-width: 0.42em;
+      background-color: var(--highlight);
     }
-    55%,
+    58%,
+    70% {
+      border-width: 0.14em;
+      background-color: var(--highlight);
+    }
     100% {
-      max-width: 16ch;
+      border-width: 0.14em;
+      background-color: transparent;
     }
   }
 
