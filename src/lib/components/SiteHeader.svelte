@@ -327,11 +327,11 @@
     animation:
       dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
       dot-sway 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 2.9s, 2.9s;
+    animation-delay: 1.7s, 1.7s;
   }
   .o-dot[data-dot='2'] {
     animation: dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 5.2s;
+    animation-delay: 3.6s;
     position: relative;
   }
   /*
@@ -359,7 +359,7 @@
       0 -0.7em,
       center;
     animation: eye-lid-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 5.2s;
+    animation-delay: 3.6s;
   }
   /* The O's fill by the ring visually growing inward until solid
      — the intro's opening gesture in reverse, all three
