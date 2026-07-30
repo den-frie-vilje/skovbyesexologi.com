@@ -117,9 +117,15 @@
   const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
 
   /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]
-     for the dots variant: every o/O renders as a filled dot, the
-     text segments between them expand during the intro. */
-  const nameTokens = $derived(name.split(/([oO])/).filter((t) => t !== ''));
+     for the dots variant: every o/O renders as a circle; `dot`
+     numbers them (0,1,2) so their opening animation staggers. */
+  const dotTokens = $derived.by(() => {
+    let dot = 0;
+    return name
+      .split(/([oO])/)
+      .filter((t) => t !== '')
+      .map((t) => (t === 'o' || t === 'O' ? { dot: dot++, text: '' } : { dot: -1, text: t }));
+  });
 
   /*
     The URL is the single source of truth for the demo state; the
@@ -194,11 +200,11 @@
       <!-- The anchor carries aria-label={name}; this construction
            is visual-only (the O's are not letters here). -->
       <span class="dots-visual" aria-hidden="true">
-        {#each nameTokens as tok, i (i)}
-          {#if tok === 'o' || tok === 'O'}
-            <span class="o-dot"></span>
+        {#each dotTokens as tok, i (i)}
+          {#if tok.dot >= 0}
+            <span class="o-dot" style="--dot-i: {tok.dot}"></span>
           {:else}
-            <span class="dot-seg">{tok}</span>
+            <span class="dot-seg">{tok.text}</span>
           {/if}
         {/each}
       </span>
@@ -523,9 +529,6 @@
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
-    /* Dark green type (and matching rings below) — 5.56:1 on the
-       cream surface, measured. */
-    color: var(--accent);
   }
   .logo-dots .dots-visual {
     display: inline-block;
@@ -566,10 +569,14 @@
     box-sizing: border-box;
     border-radius: 50%;
     background: transparent;
-    border: 0.14em solid var(--accent);
+    border: 0.14em solid currentColor;
     vertical-align: bottom;
     transform: translateY(-0.16em);
+    /* Staggered: each O opens 0.3s after the previous (with
+       `both` fill the later dots hold the solid-disc first frame
+       while they wait). */
     animation: dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--dot-i, 0) * 0.3s);
   }
   /* Solid disc (border = radius, chartreuse hidden beneath it) →
      the core opens as the border thins → hold the ringed-neon
