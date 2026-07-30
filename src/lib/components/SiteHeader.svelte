@@ -523,6 +523,9 @@
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
+    /* Dark green type (and matching rings below) — 5.56:1 on the
+       cream surface, measured. */
+    color: var(--accent);
   }
   .logo-dots .dots-visual {
     display: inline-block;
@@ -562,7 +565,7 @@
     box-sizing: border-box;
     border-radius: 50%;
     background: var(--highlight);
-    border: 0.14em solid var(--text);
+    border: 0.14em solid var(--accent);
     vertical-align: bottom;
     transform: translateY(-0.16em);
   }
