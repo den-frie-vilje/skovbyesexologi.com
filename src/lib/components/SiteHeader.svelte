@@ -569,17 +569,19 @@
        reduced-motion (animation: none) lands on the finished mark
        directly. Border-box keeps the outer circle constant while
        the border thins inward. */
-    width: 0.728em;
-    height: 0.728em;
+    /* O ink height is 0.728em (8.39px); +0.0434em (0.5px) is
+       Ole's optical size-up. The bottom stays pinned on the
+       baseline (inline-block anchoring), so the extra height
+       goes upward. */
+    width: 0.771em;
+    height: 0.771em;
     box-sizing: border-box;
     border-radius: 50%;
     background: transparent;
     border: 0.14em solid currentColor;
-    /* 0.014em puts the dot mathematically on the O's ink box
-       (incl. its below-baseline overshoot); the extra −0.0434em
-       (0.5px) is Ole's optical correction — a filled/ringed
-       circle reads lower than the O's thin bowl at this size. */
-    transform: translateY(-0.03em);
+    /* Sits the dot's bottom on the O's ink bottom — the baseline
+       plus the font's own 0.014em below-baseline overshoot. */
+    transform: translateY(0.014em);
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
