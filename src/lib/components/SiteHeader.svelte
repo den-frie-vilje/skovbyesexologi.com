@@ -566,10 +566,15 @@
     background-color: var(--highlight);
     color: var(--accent);
   }
+  /* The O's fill by GROWING the ring inward until solid — the
+     intro's opening gesture in reverse, all three synchronously
+     (border-box keeps the outer circle constant; 0.42em is over
+     the radius, so the borders meet at the centre). Border colour
+     rides currentColor, so it tracks the type's colour transition
+     for free. */
   .logo-dots:hover .o-dot,
   .logo-dots:focus-visible .o-dot {
-    background-color: var(--accent);
-    border-color: var(--accent);
+    border-width: 0.42em;
   }
   /* Once the staggered intro has finished, drop the animations so
      their fill-mode stops outranking the hover styles above. */
@@ -628,9 +633,7 @@
     /* Sits the dot's bottom on the O's ink bottom — the baseline
        plus the font's own 0.014em below-baseline overshoot. */
     transform: translateY(0.014em);
-    transition:
-      background-color 0.25s ease,
-      border-color 0.25s ease;
+    transition: border-width 0.25s ease;
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
