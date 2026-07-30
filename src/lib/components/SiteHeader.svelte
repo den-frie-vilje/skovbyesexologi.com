@@ -8,64 +8,26 @@
   site; deep-linking happens via URL, not an in-page menu). Using
   `<nav>` with no links confused assistive tech in a prior axe run.
 
+  THE BRAND MARK (settled 2026-07-30 after a picker-driven
+  exploration of ~13 candidates): "SKOVBYE SEXOLOGI" in Space
+  Grotesk 700 caps with the three O's as circles. On mount the O's
+  start as solid ink discs and bloom open staggered — a chartreuse
+  core grows from each centre as the inner border thins to the
+  type's stroke weight, then the neon fades, resting on outline
+  O's. Hover/focus quotes the CTA buttons' hovered state: a
+  borderless chartreuse rectangle, dark-green type, and the rings
+  growing (via inset shadow) until the O's are solid.
+
   Relies on the design tokens declared on `.app-shell` — the root wrapper
   of every page that consumes this component.
 -->
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import BurgerNav from './BurgerNav.svelte';
   import LocaleSwitcher from './LocaleSwitcher.svelte';
   import type { Locale, NavLink } from '$lib/content';
 
-  /*
-    ── LOGOTYPE DEMO (temporary) ─────────────────────────────────
-    Signe wants a stronger, logotype-like brand mark. Until one is
-    picked, the header can render the candidate treatments below; append
-    `?logotype` to any URL to get a floating picker (e.g.
-    `/?logotype` or `/?logotype=serif`). The choice is written back
-    to the URL so it survives reload and can be shared. Default —
-    with no query param — is the pre-existing mono mark, so nothing
-    changes for normal visitors. Once a variant is chosen, delete
-    the losers + this switcher and hard-wire the winner.
-  */
-  const LOGO_VARIANTS = [
-    'current',
-    'serif',
-    'stacked',
-    'contrast',
-    'signature',
-    'monogram',
-    'highlight',
-    'lowercase',
-    'stamp',
-    'block',
-    'stampduo',
-    'greenstack',
-    'stampintro',
-    'dots'
-  ] as const;
-  type LogoVariant = (typeof LOGO_VARIANTS)[number];
-  const variantLabels: Record<LogoVariant, string> = {
-    current: 'Nuværende',
-    serif: 'Serif',
-    stacked: 'Stablet',
-    contrast: 'Kontrast',
-    signature: 'Signatur',
-    monogram: 'Monogram',
-    highlight: 'Markeret',
-    lowercase: 'Minuskel',
-    stamp: 'Stempel',
-    block: 'Blok',
-    stampduo: 'Dobbeltstempel',
-    greenstack: 'Grøn stak',
-    stampintro: 'Stempel intro',
-    dots: 'Prikker'
-  };
-
   interface Props {
-    /** Brand-owner name, e.g. "Signe Skovbye". */
+    /** Brand name, e.g. "Skovbye Sexologi". */
     name: string;
     /** City / tagline beside the name, e.g. "København". */
     city: string;
@@ -106,19 +68,9 @@
     burgerMenuLabel
   }: Props = $props();
 
-  /* "Skovbye Sexologi" → first word + rest, so the variants can
-     treat the two halves differently. Falls back gracefully for a
-     single-word name. */
-  const nameParts = $derived.by(() => {
-    const words = name.trim().split(/\s+/);
-    return { first: words[0] ?? name, rest: words.slice(1).join(' ') };
-  });
-  /* "Skovbye Sexologi" → "SS" for the monogram variant. */
-  const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
-
-  /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]
-     for the dots variant: every o/O renders as a circle; `dot`
-     numbers them (0,1,2) so their opening animation staggers. */
+  /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]:
+     every o/O renders as a circle; `dot` numbers them (0,1,2) so
+     their opening animation staggers. */
   const dotTokens = $derived.by(() => {
     let dot = 0;
     return name
@@ -133,49 +85,25 @@
     dots' hover styles forever — so once every dot has finished
     its (staggered) opening, `dotsSettled` drops the animations
     entirely and the CTA-quoting hover can transition freely.
+    The counter only ever needs to reach dotCount once: a locale
+    switch re-renders the spans, and `settled` correctly keeps
+    the intro from replaying mid-session.
   */
   let dotsSettled = $state(false);
   let settledCount = 0;
   function onDotSettled() {
     if (++settledCount >= dotCount) dotsSettled = true;
   }
-
-  /*
-    The URL is the single source of truth for the demo state; the
-    pills below write it back via `replaceState`, which `page.url`
-    reacts to. `browser`-guarded because prerender forbids reading
-    `url.searchParams` — the static HTML always ships the default
-    mark and the picker appears only after hydration.
-  */
-  const showLogoPicker = $derived(browser && page.url.searchParams.has('logotype'));
-  const logoVariant = $derived.by((): LogoVariant => {
-    if (!browser) return 'current';
-    const v = page.url.searchParams.get('logotype');
-    return v && (LOGO_VARIANTS as readonly string[]).includes(v) ? (v as LogoVariant) : 'current';
-  });
-
-  /* `goto`, not shallow `replaceState`: shallow routing only sets
-     `page.state` — `page.url` (which `logoVariant` derives from)
-     reacts to real navigations only. */
-  function pickLogoVariant(v: LogoVariant) {
-    /* Re-arm the dots intro — the spans remount but this counter
-       lives on the component. */
-    settledCount = 0;
-    dotsSettled = false;
-    const url = new URL(page.url);
-    url.searchParams.set('logotype', v);
-    goto(url, { replaceState: true, keepFocus: true, noScroll: true });
-  }
 </script>
 
 <!--
   Brand mark on the left is a link to the current locale's
-  homepage — invisible styling so the header reads as pure
-  typography but clicks land on `/` (or `/en`). The city sits
-  beside it as plain metadata, intentionally NOT inside the
-  link — the city is a tagline, not a destination; making the
-  whole row clickable was confusing users who expected the city
-  label to behave differently from the brand mark.
+  homepage — the mark itself is aria-hidden (the O's are not
+  letters), so the anchor carries the real name for assistive
+  tech. The city sits beside it as plain metadata, intentionally
+  NOT inside the link — the city is a tagline, not a destination;
+  making the whole row clickable was confusing users who expected
+  the city label to behave differently from the brand mark.
 -->
 <header class="top">
   <!--
@@ -187,49 +115,16 @@
     the affordance that restores scroll (see
     `$lib/nav/backNav.svelte.ts`).
   -->
-  <a
-    class="top-link logo-{logoVariant}"
-    href={homeHref}
-    aria-label={logoVariant === 'dots' ? name : undefined}
-  >
-    {#if logoVariant === 'serif'}
-      {nameParts.first} <em>{nameParts.rest}</em>
-    {:else if logoVariant === 'stacked'}
-      <span class="stack-line">{nameParts.first}</span>
-      <span class="stack-line">{nameParts.rest}</span>
-    {:else if logoVariant === 'contrast'}
-      <strong>{nameParts.first}</strong><span class="thin">{nameParts.rest}</span>
-    {:else if logoVariant === 'signature'}
-      {name}<span class="sig-dot" aria-hidden="true">.</span>
-    {:else if logoVariant === 'monogram'}
-      <span class="mono-mark" aria-hidden="true">{initials}</span>
-      <span class="mono-name">{name}</span>
-    {:else if logoVariant === 'highlight'}
-      {nameParts.first} <span class="hl">{nameParts.rest}</span>
-    {:else if logoVariant === 'lowercase'}
-      {name}<span class="lc-dot" aria-hidden="true">.</span>
-    {:else if logoVariant === 'block' || logoVariant === 'greenstack'}
-      <span class="stack-line">{nameParts.first}</span>
-      <span class="stack-line stack-tail">{nameParts.rest}</span>
-    {:else if logoVariant === 'stampintro'}
-      <span class="stamp-text">{name}</span>
-    {:else if logoVariant === 'dots'}
-      <!-- The anchor carries aria-label={name}; this construction
-           is visual-only (the O's are not letters here). -->
-      <span class="dots-visual" class:settled={dotsSettled} aria-hidden="true">
-        {#each dotTokens as tok, i (i)}
-          {#if tok.dot >= 0}
-            <span class="o-dot" style="--dot-i: {tok.dot}" onanimationend={onDotSettled}></span>
-          {:else}
-            <span class="dot-seg">{tok.text}</span>
-          {/if}
-        {/each}
-      </span>
-    {:else}
-      <!-- `current`, `stamp` and `stampduo` render the plain name —
-           the variant class alone carries the box / fill. -->
-      {name}
-    {/if}
+  <a class="top-link" href={homeHref} aria-label={name}>
+    <span class="dots-visual" class:settled={dotsSettled} aria-hidden="true">
+      {#each dotTokens as tok, i (i)}
+        {#if tok.dot >= 0}
+          <span class="o-dot" style="--dot-i: {tok.dot}" onanimationend={onDotSettled}></span>
+        {:else}
+          <span class="dot-seg">{tok.text}</span>
+        {/if}
+      {/each}
+    </span>
   </a>
   <span class="mark-meta">{city}</span>
   {#if currentLocale && altLocale && altHref}
@@ -244,22 +139,6 @@
     />
   {/if}
 </header>
-
-{#if showLogoPicker}
-  <!-- Temporary demo control — see the LOGOTYPE DEMO note above. -->
-  <div class="logo-picker" role="group" aria-label="Logotype-varianter (demo)">
-    {#each LOGO_VARIANTS as v (v)}
-      <button
-        type="button"
-        aria-pressed={logoVariant === v}
-        class:active={logoVariant === v}
-        onclick={() => pickLogoVariant(v)}
-      >
-        {variantLabels[v]}
-      </button>
-    {/each}
-  </div>
-{/if}
 
 <style>
   .top {
@@ -291,269 +170,38 @@
     z-index: 110;
     border-bottom: 1px solid var(--rule);
   }
+
   /*
-    Invisible clickable brand mark on the left. `text-decoration:
-    none` + `color: inherit` keep it visually plain; the
-    `:focus-visible` outline from app.css still lands on the
-    anchor so keyboard users get a clear indicator.
+    The brand mark. `:focus-visible` gets the same treatment as
+    hover on top of app.css's global focus ring.
+
+    Hover quotes the CTA buttons' hovered state: a borderless
+    chartreuse rectangle (their 2px radius), dark-green
+    typography, dark-green-filled O's — accent on chartreuse
+    measures 5.42:1. Padding + equal negative margins paint the
+    box outward without moving the mark or growing the header
+    row.
   */
   .top-link {
     text-decoration: none;
     color: var(--text);
-    font-weight: 500;
     white-space: nowrap;
-  }
-
-  /*
-    ── Logotype candidates (see LOGOTYPE DEMO note in <script>) ──
-    Every variant draws only on families already in the page's
-    Google-Fonts payload; sizes are tuned so the widest variant +
-    DA|EN toggle + burger still fit a 375px viewport (the city is
-    hidden below 720px).
-  */
-
-  /* A — the name-section echo: Fraunces roman + italic. */
-  .logo-serif {
-    font-family: var(--font-serif);
-    font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    text-transform: none;
-    line-height: 1;
-  }
-  .logo-serif em {
-    font-style: italic;
-    font-weight: 500;
-  }
-
-  /* B — stacked caps lockup, fashion-label compact. */
-  .logo-stacked {
-    display: flex;
-    flex-direction: column;
-    font-family: var(--font-display);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.32em;
-    line-height: 1.45;
-  }
-  .stack-line {
-    display: block;
-  }
-
-  /* C — one-line caps, bold ⁄ regular weight contrast. */
-  .logo-contrast {
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    letter-spacing: 0.22em;
-    line-height: 1;
-  }
-  .logo-contrast strong {
-    font-weight: 700;
-  }
-  .logo-contrast .thin {
-    /* Space Grotesk ships 400/500/700 here — 400 is the light pole. */
-    font-weight: 400;
-    margin-left: 0.5em;
-  }
-
-  /* D — Instrument Serif italic, signature-like, with the hero's
-     accent dot. */
-  .logo-signature {
-    font-family: var(--font-humanist);
-    font-style: italic;
-    font-size: 1.25rem;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    text-transform: none;
-    line-height: 1;
-  }
-  .logo-signature .sig-dot {
-    font-style: normal;
-    font-weight: 600;
-    color: oklch(0.82 0.22 115);
-  }
-
-  /* E — italic-serif SS monogram beside the mono name; the mark
-     carries the identity, so it survives any size. */
-  .logo-monogram {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .logo-monogram .mono-mark {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.35rem;
-    font-weight: 600;
-    /* Tight negative tracking pulls the two S's into a single
-       interlocked mark rather than two letters. */
-    letter-spacing: -0.12em;
-    line-height: 1;
-    text-transform: none;
-  }
-  .logo-monogram .mono-name {
-    letter-spacing: 0.16em;
-  }
-
-  /* F — the hero's chartreuse highlighter swipe on the second
-     word: the site's core accent gesture applied to the mark. */
-  .logo-highlight {
-    font-family: var(--font-serif);
-    font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    text-transform: none;
-    line-height: 1;
-  }
-  .logo-highlight .hl {
-    font-style: italic;
-    background: linear-gradient(180deg, transparent 66%, var(--highlight) 66%);
-    padding: 0 0.08em;
-  }
-
-  /* G — all-lowercase Fraunces, warm and contemporary, closed by
-     the accent dot. */
-  .logo-lowercase {
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    text-transform: lowercase;
-    line-height: 1;
-  }
-  .logo-lowercase .lc-dot {
-    color: oklch(0.82 0.22 115);
-  }
-
-  /* H — hairline stamp: the mono caps boxed like a credential
-     label. Inherits the header's mono + uppercase. */
-  .logo-stamp {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    border: 1px solid currentColor;
-    padding: 0.5em 0.75em 0.42em;
-    line-height: 1;
-  }
-
-  /* I — the stack with SEXOLOGI on a solid neon block: the
-     highlighter gesture in masthead form. City goes dark green
-     to tie the pair (see the ≥720px block below). */
-  .logo-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-family: var(--font-display);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.32em;
-    line-height: 1.45;
-  }
-  .logo-block .stack-tail {
-    background: var(--highlight);
-    padding: 0.14em 0.1em 0.14em 0.42em;
-    margin-top: 0.12em;
-    line-height: 1.15;
-  }
-
-  /* J — twin stamps: the name filled dark green; København (≥720)
-     answers as a hairline-outline stamp in the same green. */
-  .logo-stampduo {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    padding: 0.55em 0.8em 0.47em;
-    line-height: 1;
-    background: var(--accent);
-    color: var(--surface);
-    /* Transparent border so this box and the city's outlined twin
-       (which carries a real 1px border) are exactly equal height. */
-    border: 1px solid transparent;
-  }
-
-  /* L — the stamp, stamped: an intro that establishes the mark on
-     a dark-green plate with a chartreuse rim, wipes the name in
-     left-to-right in neon, then drains everything to the resting
-     black hairline stamp. Runs once when the variant mounts (and
-     re-runs on each picker switch, since the class re-applies). */
-  .logo-stampintro {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    padding: 0.5em 0.75em 0.42em;
-    line-height: 1;
-    border: 1px solid currentColor;
-    animation: stamp-intro-box 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  .logo-stampintro .stamp-text {
-    display: inline-block;
-    animation: stamp-intro-text 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  /* Sequencing rule (measured, not guessed): the text turns ink
-     WHILE the plate is still green (ink-on-green 3.1:1, a brief
-     decorative beat), and only then does the plate drain around
-     the black text — neon text never crosses the cream surface
-     (that crossing measured as low as 1.96:1 in an earlier cut). */
-  @keyframes stamp-intro-box {
-    0% {
-      opacity: 0;
-      background-color: var(--accent);
-      border-color: var(--highlight);
-    }
-    8% {
-      opacity: 1;
-    }
-    70% {
-      background-color: var(--accent);
-      border-color: var(--highlight);
-    }
-    100% {
-      background-color: transparent;
-      border-color: var(--text);
-    }
-  }
-  @keyframes stamp-intro-text {
-    0%,
-    18% {
-      clip-path: inset(0 100% 0 0);
-      color: var(--highlight);
-    }
-    55% {
-      clip-path: inset(0 0 0 0);
-      color: var(--highlight);
-    }
-    68%,
-    100% {
-      clip-path: inset(0 0 0 0);
-      color: var(--text);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .logo-stampintro,
-    .logo-stampintro .stamp-text,
-    .logo-dots .o-dot {
-      animation: none;
-    }
-  }
-
-  /* M — the three O's as dots. The logotype stands fully
-     established from the first frame; the intro lives entirely
-     in the O's: each starts as a SOLID dark-green disc (a
-     border-box circle whose border is as thick as its radius),
-     a chartreuse core opens from the centre as that inner
-     border thins outward, and once the stroke has thinned to
-     the type's own weight the chartreuse fades away — resting
-     on true outline O's. */
-  .logo-dots {
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
     /*
-      Hover quotes the CTA buttons' hovered state: a borderless
-      chartreuse rectangle (their 2px radius), dark-green
-      typography, dark-green-filled O's — accent on chartreuse
-      measures 5.42:1. Padding + equal negative margins paint the
-      box outward without moving the mark or growing the header
-      row.
+      "Iris" spring — a damped, fleshy settle for the dot
+      geometry: overshoots ~12% past the target, contracts, and
+      ripples once faintly before resting (a pupil adjusting to
+      light). Only ever applied to GEOMETRY (border-width, shadow
+      spread) — colours keep plain ease, where overshoot reads as
+      a glitch. The bezier is the fallback for engines without
+      linear() (single soft overshoot, no ripple); the @supports
+      block below upgrades it — a second declaration wouldn't
+      work, custom properties aren't syntax-validated at parse.
     */
+    --ease-flesh: cubic-bezier(0.34, 1.56, 0.64, 1);
     padding: 0.5em 0.55em 0.45em;
     margin: -0.5em -0.55em -0.45em;
     border-radius: 2px;
@@ -561,37 +209,38 @@
       background-color 0.25s ease,
       color 0.25s ease;
   }
-  .logo-dots:hover,
-  .logo-dots:focus-visible {
+  @supports (animation-timing-function: linear(0, 1)) {
+    .top-link {
+      --ease-flesh: linear(
+        0,
+        0.42 12%,
+        0.81 22%,
+        1.05 34%,
+        1.12 42%,
+        1.08 52%,
+        0.99 66%,
+        0.97 76%,
+        1 88%,
+        1
+      );
+    }
+  }
+  .top-link:hover,
+  .top-link:focus-visible {
     background-color: var(--highlight);
     color: var(--accent);
   }
-  /* The O's fill by the ring visually growing inward until solid
-     — the intro's opening gesture in reverse, all three
-     synchronously. The spread (0.3em) exceeds the inner radius
-     (0.255em after border), so the shadow closes at the centre;
-     currentColor keeps ring + fill tracking the type's colour
-     transition for free. */
-  .logo-dots:hover .o-dot,
-  .logo-dots:focus-visible .o-dot {
-    box-shadow: inset 0 0 0 0.3em currentColor;
-  }
-  /* Once the staggered intro has finished, drop the animations so
-     their fill-mode stops outranking the hover styles above. */
-  .logo-dots .dots-visual.settled .o-dot {
-    animation: none;
-  }
-  .logo-dots .dots-visual {
+
+  .dots-visual {
     display: inline-block;
   }
   /* Inter-token tracking — letter-spacing doesn't apply between
      inline-block boxes, so the rhythm is carried by margins. */
-  .logo-dots .dots-visual > :global(* + *) {
+  .dots-visual > :global(* + *) {
     margin-left: 0.2em;
   }
-  .logo-dots .dot-seg {
+  .dot-seg {
     display: inline-block;
-    overflow: hidden;
     white-space: nowrap;
     vertical-align: bottom;
     letter-spacing: 0.2em;
@@ -600,40 +249,29 @@
        segment tracking. */
     margin-right: -0.2em;
   }
-  .logo-dots .o-dot {
+
+  .o-dot {
     display: inline-block;
     /* Pixel-perfect against the real glyph, measured via canvas
        measureText('O') in the rendered font (Space Grotesk 700
        @ 11.52px): ink box 6.64×8.39px — asc 8.23 above baseline,
        0.16px round-shape overshoot below. The dot stays a CIRCLE
-       (the brand gesture) at the O's exact ink HEIGHT:
-       0.728em = 8.39px. Vertical anchoring uses the inline-block
+       (the brand gesture) at the O's ink height plus Ole's 0.5px
+       optical size-up (0.771em), anchored via the inline-block
        baseline rule — an empty inline-block's baseline is its
        bottom margin edge, so with default vertical-align the
        dot's bottom sits exactly ON the text baseline; the 0.014em
        translate adds the font's own below-baseline overshoot.
-       Verified in-DOM: top/bottom within 0.05px of the O's ink
-       box.
+       Verified in-DOM: bottom at 0.00px delta against the O's ink
+       bottom, the size-up growing upward only.
 
        Static values are the RESTING state (outline O, transparent
        counter) — keyframes override during the intro, and
        reduced-motion (animation: none) lands on the finished mark
        directly. Border-box keeps the outer circle constant while
-       the border thins inward. */
-    /* O ink height is 0.728em (8.39px); +0.0434em (0.5px) is
-       Ole's optical size-up. The bottom stays pinned on the
-       baseline (inline-block anchoring), so the extra height
-       goes upward. */
-    width: 0.771em;
-    height: 0.771em;
-    box-sizing: border-box;
-    border-radius: 50%;
-    background: transparent;
-    border: 0.14em solid currentColor;
-    /* Sits the dot's bottom on the O's ink bottom — the baseline
-       plus the font's own 0.014em below-baseline overshoot. */
-    transform: translateY(0.014em);
-    /* Hover-fill mechanics: the border NEVER changes — the
+       the border thins inward.
+
+       Hover-fill mechanics: the border NEVER changes — the
        constant 0.14em ring owns the outer edge in every state,
        so the silhouette can't drift by even a fraction of a
        pixel (a border grown past the radius rasterizes as a
@@ -643,32 +281,57 @@
        inward from the ring's inner edge; inset shadows are
        clipped to the padding box by spec, so overpaint is
        impossible by construction. */
+    width: 0.771em;
+    height: 0.771em;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: transparent;
+    border: 0.14em solid currentColor;
+    transform: translateY(0.014em);
     box-shadow: inset 0 0 0 0 currentColor;
-    transition: box-shadow 0.25s ease;
+    transition: box-shadow 0.4s var(--ease-flesh);
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
     animation: dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--dot-i, 0) * 0.3s);
   }
-  /* Solid disc (border = radius, chartreuse hidden beneath it) →
-     the core opens as the border thins → hold the ringed-neon
-     beat → the chartreuse fades once the stroke matches the
-     type's weight. */
+  /* The O's fill by the ring visually growing inward until solid
+     — the intro's opening gesture in reverse, all three
+     synchronously. The spread (0.3em) exceeds the inner radius
+     (0.255em after border), so the shadow closes at the centre;
+     currentColor keeps ring + fill tracking the type's colour
+     transition for free. */
+  .top-link:hover .o-dot,
+  .top-link:focus-visible .o-dot {
+    box-shadow: inset 0 0 0 0.3em currentColor;
+  }
+  /* Once the staggered intro has finished, drop the animations so
+     their fill-mode stops outranking the hover styles above. */
+  .dots-visual.settled .o-dot {
+    animation: none;
+  }
+
+  /* Intro: solid ink disc (border ≈ over the radius — exactly
+     half computed to a sub-pixel chartreuse pinhole) → the
+     chartreuse core opens from the centre as the inner border
+     thins, on the Iris spring (the core blooms slightly past its
+     final size and contracts) → hold the ringed-neon beat → the
+     chartreuse fades once the stroke matches the type's weight.
+     Timing functions are per-keyframe: the spring drives only
+     the geometry segment; the colour fade keeps plain ease. */
   @keyframes dot-open {
     0%,
     12% {
-      /* Slightly over half the 0.76em diameter: computed border
-         widths snap to device pixels, and exactly-half left a
-         sub-pixel chartreuse pinhole at the centre (measured 4px
-         computed vs the 4.4px radius). */
       border-width: 0.42em;
       background-color: var(--highlight);
+      animation-timing-function: var(--ease-flesh);
     }
     58%,
     70% {
       border-width: 0.14em;
       background-color: var(--highlight);
+      animation-timing-function: ease;
     }
     100% {
       border-width: 0.14em;
@@ -676,21 +339,6 @@
     }
   }
 
-  /* K — the stack in dark green over a thin neon baseline bar;
-     the city (≥720) gets a neon fraction-slash prefix. */
-  .logo-greenstack {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-family: var(--font-display);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.32em;
-    line-height: 1.45;
-    color: var(--accent);
-    border-bottom: 2px solid var(--highlight);
-    padding-bottom: 0.35em;
-  }
   /*
     City label sits immediately after the brand mark — reads as
     part of the address line "Skovbye Sexologi, København". Not
@@ -731,74 +379,12 @@
     .mark-meta {
       display: inline;
     }
-
-    /*
-      Variant-specific København treatments — the city is part of
-      the lockup at this breakpoint, so the green/neon variants
-      style their own suffix. Below 720px the city is hidden and
-      these are inert.
-    */
-    /* Blok: city in the dark green so the pair reads mark + place. */
-    .logo-block ~ .mark-meta {
-      color: var(--accent);
-    }
-    /* Dobbeltstempel: city as the outline twin of the filled stamp. */
-    .logo-stampduo ~ .mark-meta {
-      display: inline-block;
-      font-size: 0.6rem;
-      letter-spacing: 0.18em;
-      line-height: 1;
-      padding: 0.55em 0.8em 0.47em;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-    }
-    /* Grøn stak: neon fraction-slash prefix before the city
-       (darker chartreuse — the glyph-safe neon, same as the hero
-       dot; empty alt string keeps it out of the a11y tree). */
-    .logo-greenstack ~ .mark-meta {
-      color: var(--accent);
-    }
-    .logo-greenstack ~ .mark-meta::before {
-      content: '⁄ ' / '';
-      color: oklch(0.82 0.22 115);
-      font-weight: 700;
-    }
   }
 
-  /* Temporary logotype picker — bottom-left, clear of the
-     bottom-right StickyCta; above the header (110) and CTA (50). */
-  .logo-picker {
-    position: fixed;
-    left: 0.9rem;
-    bottom: 0.9rem;
-    z-index: 200;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    max-width: calc(100vw - 1.8rem);
-    font-family: var(--font-mono);
-  }
-  .logo-picker button {
-    font-family: inherit;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.45rem 0.7rem;
-    border-radius: 999px;
-    border: 1px solid var(--rule);
-    background: var(--surface);
-    color: var(--text-muted);
-    cursor: pointer;
-    transition:
-      color 0.15s ease,
-      background 0.15s ease;
-  }
-  .logo-picker button:hover {
-    color: var(--text);
-  }
-  .logo-picker button.active {
-    background: var(--text);
-    color: var(--surface);
-    border-color: var(--text);
+  @media (prefers-reduced-motion: reduce) {
+    .o-dot {
+      animation: none;
+      transition: none;
+    }
   }
 </style>
