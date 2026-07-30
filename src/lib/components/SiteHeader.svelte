@@ -382,7 +382,7 @@
      lives on the pseudo, so the settled animation-none rule
      above doesn't touch it. */
   .dots-visual.settled .o-dot[data-dot='2']::after {
-    animation: eye-blink 1.6s ease-in-out 0.4s both;
+    animation: eye-blink 1.2s ease-in-out 0.4s both;
   }
 
   /* Intro: solid ink disc (border ≈ over the radius — exactly
@@ -501,7 +501,10 @@
   }
 
   /* Act 3 — the eyelid parts upward as the core opens; the
-     circle itself never deforms. */
+     circle itself never deforms. As the chartreuse fades
+     (70-100% of the same window), the iris drifts LEFT — the eye
+     looks away while the neon dies — and holds that glance into
+     the beat before the blink (fill-mode carries it). */
   @keyframes eye-lid-open {
     0%,
     12% {
@@ -510,38 +513,36 @@
         center;
     }
     58%,
+    70% {
+      background-position:
+        0 -0.7em,
+        center;
+    }
     100% {
-      background-position:
-        0 -0.7em,
-        center;
-    }
-  }
-
-  /* Finale — the iris GLANCES left first (a length-based slide of
-     the pupil layer — the -0.14em brings its edge right up to the
-     ring, a proper side-glance), holds the look, then the lid
-     closes over the leftward gaze; the reopen resets the gaze to
-     centre, and the whole interior fades: the eye becomes a
-     plain O. */
-  @keyframes eye-blink {
-    0% {
-      background-position:
-        0 -0.7em,
-        center;
-      opacity: 1;
-    }
-    18%,
-    35% {
       background-position:
         0 -0.7em,
         -0.14em 50%;
     }
-    45% {
+  }
+
+  /* Finale — picks up the leftward glance the intro left behind:
+     holds it a moment, the lid closes over it, and the reopen
+     resets the gaze to centre; then the whole interior fades and
+     the eye becomes a plain O. */
+  @keyframes eye-blink {
+    0%,
+    12% {
+      background-position:
+        0 -0.7em,
+        -0.14em 50%;
+      opacity: 1;
+    }
+    30% {
       background-position:
         0 0,
         -0.14em 50%;
     }
-    60% {
+    48% {
       background-position:
         0 -0.7em,
         center;
