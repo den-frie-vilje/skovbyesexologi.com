@@ -13,10 +13,12 @@
  * duplicates of production content.
  *
  * Belt-and-braces:
- *   1. this file Disallows all on staging
- *   2. staging Web Station sends `X-Robots-Tag: noindex, nofollow`
- *      on every response (configured at the vhost level — see
- *      DEPLOY.md)
+ *   1. this file Disallows all on staging — the PRIMARY strap: it
+ *      deploys atomically with the image
+ *   2. deploy/Caddyfile.staging stamps `X-Robots-Tag: noindex,
+ *      nofollow` on every staging response (in-repo, deploys with
+ *      the stack — an earlier claim that the DSM vhost sent this
+ *      header was measured false on 2026-07-30)
  *   3. the `/admin` and `/publish` pages set their own
  *      `<meta name="robots" content="noindex">` inside <svelte:head>
  */
@@ -31,8 +33,11 @@ export const GET: RequestHandler = () => {
   /* Static env, not dynamic — mode-file-sourced and loud on a
      missing declaration, so this can't silently default to the
      production Allow-all variant again (staging images shipped
-     exactly that until 2026-07-29; see structured-data.ts). */
-  const allowIndexing = (PUBLIC_ALLOW_INDEXING || 'true').toLowerCase() !== 'false';
+     exactly that until 2026-07-29; see structured-data.ts).
+     FAIL-CLOSED per the DFV canonical per-mode pattern: only the
+     literal "true" bakes the indexable variant — an empty or
+     malformed declaration disallows, it never opens. */
+  const allowIndexing = PUBLIC_ALLOW_INDEXING === 'true';
 
   const body = allowIndexing
     ? [
