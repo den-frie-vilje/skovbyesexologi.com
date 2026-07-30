@@ -42,7 +42,9 @@
     'stamp',
     'block',
     'stampduo',
-    'greenstack'
+    'greenstack',
+    'stampintro',
+    'dots'
   ] as const;
   type LogoVariant = (typeof LOGO_VARIANTS)[number];
   const variantLabels: Record<LogoVariant, string> = {
@@ -57,7 +59,9 @@
     stamp: 'Stempel',
     block: 'Blok',
     stampduo: 'Dobbeltstempel',
-    greenstack: 'Grøn stak'
+    greenstack: 'Grøn stak',
+    stampintro: 'Stempel intro',
+    dots: 'Prikker'
   };
 
   interface Props {
@@ -112,6 +116,11 @@
   /* "Skovbye Sexologi" → "SS" for the monogram variant. */
   const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
 
+  /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]
+     for the dots variant: every o/O renders as a filled dot, the
+     text segments between them expand during the intro. */
+  const nameTokens = $derived(name.split(/([oO])/).filter((t) => t !== ''));
+
   /*
     The URL is the single source of truth for the demo state; the
     pills below write it back via `replaceState`, which `page.url`
@@ -155,7 +164,11 @@
     the affordance that restores scroll (see
     `$lib/nav/backNav.svelte.ts`).
   -->
-  <a class="top-link logo-{logoVariant}" href={homeHref}>
+  <a
+    class="top-link logo-{logoVariant}"
+    href={homeHref}
+    aria-label={logoVariant === 'dots' ? name : undefined}
+  >
     {#if logoVariant === 'serif'}
       {nameParts.first} <em>{nameParts.rest}</em>
     {:else if logoVariant === 'stacked'}
@@ -175,6 +188,20 @@
     {:else if logoVariant === 'block' || logoVariant === 'greenstack'}
       <span class="stack-line">{nameParts.first}</span>
       <span class="stack-line stack-tail">{nameParts.rest}</span>
+    {:else if logoVariant === 'stampintro'}
+      <span class="stamp-text">{name}</span>
+    {:else if logoVariant === 'dots'}
+      <!-- The anchor carries aria-label={name}; this construction
+           is visual-only (the O's are not letters here). -->
+      <span class="dots-visual" aria-hidden="true">
+        {#each nameTokens as tok, i (i)}
+          {#if tok === 'o' || tok === 'O'}
+            <span class="o-dot"></span>
+          {:else}
+            <span class="dot-seg">{tok}</span>
+          {/if}
+        {/each}
+      </span>
     {:else}
       <!-- `current`, `stamp` and `stampduo` render the plain name —
            the variant class alone carries the box / fill. -->
@@ -417,6 +444,179 @@
     /* Transparent border so this box and the city's outlined twin
        (which carries a real 1px border) are exactly equal height. */
     border: 1px solid transparent;
+  }
+
+  /* L — the stamp, stamped: an intro that establishes the mark on
+     a dark-green plate with a chartreuse rim, wipes the name in
+     left-to-right in neon, then drains everything to the resting
+     black hairline stamp. Runs once when the variant mounts (and
+     re-runs on each picker switch, since the class re-applies). */
+  .logo-stampintro {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    padding: 0.5em 0.75em 0.42em;
+    line-height: 1;
+    border: 1px solid currentColor;
+    animation: stamp-intro-box 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .logo-stampintro .stamp-text {
+    display: inline-block;
+    animation: stamp-intro-text 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* Sequencing rule (measured, not guessed): the text turns ink
+     WHILE the plate is still green (ink-on-green 3.1:1, a brief
+     decorative beat), and only then does the plate drain around
+     the black text — neon text never crosses the cream surface
+     (that crossing measured as low as 1.96:1 in an earlier cut). */
+  @keyframes stamp-intro-box {
+    0% {
+      opacity: 0;
+      background-color: var(--accent);
+      border-color: var(--highlight);
+    }
+    8% {
+      opacity: 1;
+    }
+    70% {
+      background-color: var(--accent);
+      border-color: var(--highlight);
+    }
+    100% {
+      background-color: transparent;
+      border-color: var(--text);
+    }
+  }
+  @keyframes stamp-intro-text {
+    0%,
+    18% {
+      clip-path: inset(0 100% 0 0);
+      color: var(--highlight);
+    }
+    55% {
+      clip-path: inset(0 0 0 0);
+      color: var(--highlight);
+    }
+    68%,
+    100% {
+      clip-path: inset(0 0 0 0);
+      color: var(--text);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-stampintro,
+    .logo-stampintro .stamp-text,
+    .logo-dots,
+    .logo-dots .dots-visual,
+    .logo-dots .dot-seg,
+    .logo-dots .o-dot {
+      animation: none;
+    }
+  }
+
+  /* M — the three O's as filled dots. Intro: three chartreuse
+     dots on a dark-green plate, the type expands between them,
+     and the whole mark settles to black with the dots kept
+     filled. Same never-neon-on-cream sequencing as the stamp
+     intro: everything turns ink at 55-68% while the plate is
+     still green; the plate drains 70-100% around the black mark. */
+  .logo-dots {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.55em 0.75em 0.5em;
+    animation: dots-plate 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .logo-dots .dots-visual {
+    display: inline-block;
+    animation: dots-ink 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* Inter-token tracking — letter-spacing doesn't apply between
+     inline-block boxes, so the rhythm is carried by margins. */
+  .logo-dots .dots-visual > :global(* + *) {
+    margin-left: 0.2em;
+  }
+  .logo-dots .dot-seg {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+    letter-spacing: 0.2em;
+    /* An inline-block's width includes the trailing letter-space;
+       pull the next token back so token gaps equal the intra-
+       segment tracking. */
+    margin-right: -0.2em;
+    animation: dots-seg 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .logo-dots .o-dot {
+    display: inline-block;
+    /* Sized to the O's drawn bowl (advance 9.5px minus side
+       bearings at this size), with a hint of round-shape
+       overshoot; lifted off the descent floor onto the cap band
+       (vertical-align: bottom anchors to the line-box bottom,
+       ~0.29em below the baseline). Both values measured against
+       a probe "O" glyph, not eyeballed.
+
+       The disc stays chartreuse at rest; the black ring that
+       fades in over it (stroke ≈ the grotesk O's, border-box so
+       the neon counter matches a real O's counter) is what turns
+       the dot back into a letterform. Static border-color is the
+       RESTING value — the keyframes override it during the intro,
+       and reduced-motion (animation: none) then lands on the
+       finished mark directly. */
+    width: 0.76em;
+    height: 0.76em;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--highlight);
+    border: 0.14em solid var(--text);
+    vertical-align: bottom;
+    transform: translateY(-0.16em);
+    animation: dots-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes dots-ring {
+    0%,
+    55% {
+      border-color: transparent;
+    }
+    68%,
+    100% {
+      border-color: var(--text);
+    }
+  }
+  @keyframes dots-plate {
+    0% {
+      opacity: 0;
+      background-color: var(--accent);
+    }
+    8%,
+    70% {
+      opacity: 1;
+      background-color: var(--accent);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  @keyframes dots-ink {
+    0%,
+    55% {
+      color: var(--highlight);
+    }
+    68%,
+    100% {
+      color: var(--text);
+    }
+  }
+  @keyframes dots-seg {
+    0%,
+    15% {
+      max-width: 0;
+    }
+    55%,
+    100% {
+      max-width: 16ch;
+    }
   }
 
   /* K — the stack in dark green over a thin neon baseline bar;
