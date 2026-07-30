@@ -382,7 +382,7 @@
      lives on the pseudo, so the settled animation-none rule
      above doesn't touch it. */
   .dots-visual.settled .o-dot[data-dot='2']::after {
-    animation: eye-blink 1.2s ease-in-out 0.4s both;
+    animation: eye-blink 1.6s ease-in-out 0.4s both;
   }
 
   /* Intro: solid ink disc (border ≈ over the radius — exactly
@@ -517,8 +517,12 @@
     }
   }
 
-  /* Finale — the lid sweeps down and back up once, then the
-     whole interior fades: the eye becomes a plain O. */
+  /* Finale — the iris GLANCES left first (a length-based slide of
+     the pupil layer — the -0.14em brings its edge right up to the
+     ring, a proper side-glance), holds the look, then the lid
+     closes over the leftward gaze; the reopen resets the gaze to
+     centre, and the whole interior fades: the eye becomes a
+     plain O. */
   @keyframes eye-blink {
     0% {
       background-position:
@@ -526,17 +530,23 @@
         center;
       opacity: 1;
     }
-    25% {
+    18%,
+    35% {
+      background-position:
+        0 -0.7em,
+        -0.14em 50%;
+    }
+    45% {
       background-position:
         0 0,
-        center;
+        -0.14em 50%;
     }
-    50% {
+    60% {
       background-position:
         0 -0.7em,
         center;
     }
-    75% {
+    80% {
       opacity: 1;
     }
     100% {
