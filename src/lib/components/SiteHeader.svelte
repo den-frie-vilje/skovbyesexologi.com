@@ -551,27 +551,31 @@
   }
   .logo-dots .o-dot {
     display: inline-block;
-    /* Sized to the O's drawn bowl (advance 9.5px minus side
-       bearings at this size), with a hint of round-shape
-       overshoot; lifted off the descent floor onto the cap band
-       (vertical-align: bottom anchors to the line-box bottom,
-       ~0.29em below the baseline). Both values measured against
-       a probe "O" glyph, not eyeballed.
+    /* Pixel-perfect against the real glyph, measured via canvas
+       measureText('O') in the rendered font (Space Grotesk 700
+       @ 11.52px): ink box 6.64×8.39px — asc 8.23 above baseline,
+       0.16px round-shape overshoot below. The dot stays a CIRCLE
+       (the brand gesture) at the O's exact ink HEIGHT:
+       0.728em = 8.39px. Vertical anchoring uses the inline-block
+       baseline rule — an empty inline-block's baseline is its
+       bottom margin edge, so with default vertical-align the
+       dot's bottom sits exactly ON the text baseline; the 0.014em
+       translate adds the font's own below-baseline overshoot.
+       Verified in-DOM: top/bottom within 0.05px of the O's ink
+       box.
 
-       Static values are the RESTING state (outline O: stroke ≈
-       the grotesk O's at this size, transparent counter) — the
-       keyframes override them during the intro, and
-       reduced-motion (animation: none) lands on the finished
-       mark directly. Border-box keeps the outer circle constant
-       while the border thins inward. */
-    width: 0.76em;
-    height: 0.76em;
+       Static values are the RESTING state (outline O, transparent
+       counter) — keyframes override during the intro, and
+       reduced-motion (animation: none) lands on the finished mark
+       directly. Border-box keeps the outer circle constant while
+       the border thins inward. */
+    width: 0.728em;
+    height: 0.728em;
     box-sizing: border-box;
     border-radius: 50%;
     background: transparent;
     border: 0.14em solid currentColor;
-    vertical-align: bottom;
-    transform: translateY(-0.16em);
+    transform: translateY(0.014em);
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
