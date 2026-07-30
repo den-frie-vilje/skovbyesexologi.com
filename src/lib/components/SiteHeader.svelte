@@ -126,6 +126,19 @@
       .filter((t) => t !== '')
       .map((t) => (t === 'o' || t === 'O' ? { dot: dot++, text: '' } : { dot: -1, text: t }));
   });
+  const dotCount = $derived(dotTokens.filter((t) => t.dot >= 0).length);
+
+  /*
+    The intro animation's fill-mode would keep overriding the
+    dots' hover styles forever — so once every dot has finished
+    its (staggered) opening, `dotsSettled` drops the animations
+    entirely and the CTA-quoting hover can transition freely.
+  */
+  let dotsSettled = $state(false);
+  let settledCount = 0;
+  function onDotSettled() {
+    if (++settledCount >= dotCount) dotsSettled = true;
+  }
 
   /*
     The URL is the single source of truth for the demo state; the
@@ -145,6 +158,10 @@
      `page.state` — `page.url` (which `logoVariant` derives from)
      reacts to real navigations only. */
   function pickLogoVariant(v: LogoVariant) {
+    /* Re-arm the dots intro — the spans remount but this counter
+       lives on the component. */
+    settledCount = 0;
+    dotsSettled = false;
     const url = new URL(page.url);
     url.searchParams.set('logotype', v);
     goto(url, { replaceState: true, keepFocus: true, noScroll: true });
@@ -199,10 +216,10 @@
     {:else if logoVariant === 'dots'}
       <!-- The anchor carries aria-label={name}; this construction
            is visual-only (the O's are not letters here). -->
-      <span class="dots-visual" aria-hidden="true">
+      <span class="dots-visual" class:settled={dotsSettled} aria-hidden="true">
         {#each dotTokens as tok, i (i)}
           {#if tok.dot >= 0}
-            <span class="o-dot" style="--dot-i: {tok.dot}"></span>
+            <span class="o-dot" style="--dot-i: {tok.dot}" onanimationend={onDotSettled}></span>
           {:else}
             <span class="dot-seg">{tok.text}</span>
           {/if}
@@ -529,6 +546,35 @@
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
+    /*
+      Hover quotes the CTA buttons' hovered state: a borderless
+      chartreuse rectangle (their 2px radius), dark-green
+      typography, dark-green-filled O's — accent on chartreuse
+      measures 5.42:1. Padding + equal negative margins paint the
+      box outward without moving the mark or growing the header
+      row.
+    */
+    padding: 0.5em 0.55em 0.45em;
+    margin: -0.5em -0.55em -0.45em;
+    border-radius: 2px;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
+  }
+  .logo-dots:hover,
+  .logo-dots:focus-visible {
+    background-color: var(--highlight);
+    color: var(--accent);
+  }
+  .logo-dots:hover .o-dot,
+  .logo-dots:focus-visible .o-dot {
+    background-color: var(--accent);
+    border-color: var(--accent);
+  }
+  /* Once the staggered intro has finished, drop the animations so
+     their fill-mode stops outranking the hover styles above. */
+  .logo-dots .dots-visual.settled .o-dot {
+    animation: none;
   }
   .logo-dots .dots-visual {
     display: inline-block;
@@ -582,6 +628,9 @@
     /* Sits the dot's bottom on the O's ink bottom — the baseline
        plus the font's own 0.014em below-baseline overshoot. */
     transform: translateY(0.014em);
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease;
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
