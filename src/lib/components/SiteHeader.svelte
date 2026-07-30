@@ -450,27 +450,27 @@
   @keyframes dot-sway {
     0%,
     40% {
-      transform: translateY(0.014em) scale(1, 1);
+      transform: translateY(0.014em) translateX(0) scale(1, 1);
       animation-timing-function: ease-in-out;
     }
     52% {
-      transform: translateY(0.014em) scale(1.04, 1.1);
+      transform: translateY(0.014em) translateX(0.02em) scale(1.08, 1.22);
       animation-timing-function: ease-in-out;
     }
     64% {
-      transform: translateY(0.014em) scale(1.1, 1.05);
+      transform: translateY(0.014em) translateX(0.05em) scale(1.24, 1.1);
       animation-timing-function: ease-in-out;
     }
     76% {
-      transform: translateY(0.014em) scale(1.06, 1.08);
+      transform: translateY(0.014em) translateX(-0.04em) scale(1.14, 1.18);
       animation-timing-function: ease-in-out;
     }
     88% {
-      transform: translateY(0.014em) scale(1.015, 1.02);
+      transform: translateY(0.014em) translateX(0.01em) scale(1.03, 1.05);
       animation-timing-function: ease-in-out;
     }
     100% {
-      transform: translateY(0.014em) scale(1, 1);
+      transform: translateY(0.014em) translateX(0) scale(1, 1);
     }
   }
 
