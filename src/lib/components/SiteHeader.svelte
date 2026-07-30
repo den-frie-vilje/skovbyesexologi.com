@@ -566,15 +566,15 @@
     background-color: var(--highlight);
     color: var(--accent);
   }
-  /* The O's fill by GROWING the ring inward until solid — the
-     intro's opening gesture in reverse, all three synchronously
-     (border-box keeps the outer circle constant; 0.42em is over
-     the radius, so the borders meet at the centre). Border colour
-     rides currentColor, so it tracks the type's colour transition
-     for free. */
+  /* The O's fill by the ring visually growing inward until solid
+     — the intro's opening gesture in reverse, all three
+     synchronously. The spread (0.3em) exceeds the inner radius
+     (0.255em after border), so the shadow closes at the centre;
+     currentColor keeps ring + fill tracking the type's colour
+     transition for free. */
   .logo-dots:hover .o-dot,
   .logo-dots:focus-visible .o-dot {
-    border-width: 0.42em;
+    box-shadow: inset 0 0 0 0.3em currentColor;
   }
   /* Once the staggered intro has finished, drop the animations so
      their fill-mode stops outranking the hover styles above. */
@@ -633,7 +633,18 @@
     /* Sits the dot's bottom on the O's ink bottom — the baseline
        plus the font's own 0.014em below-baseline overshoot. */
     transform: translateY(0.014em);
-    transition: border-width 0.25s ease;
+    /* Hover-fill mechanics: the border NEVER changes — the
+       constant 0.14em ring owns the outer edge in every state,
+       so the silhouette can't drift by even a fraction of a
+       pixel (a border grown past the radius rasterizes as a
+       filled path whose antialiased edge paints ~half a device
+       pixel wider than the stroked ring — measured on the
+       fine-tuned O). The fill is an INSET box-shadow growing
+       inward from the ring's inner edge; inset shadows are
+       clipped to the padding box by spec, so overpaint is
+       impossible by construction. */
+    box-shadow: inset 0 0 0 0 currentColor;
+    transition: box-shadow 0.25s ease;
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
