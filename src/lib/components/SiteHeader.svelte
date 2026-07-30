@@ -575,7 +575,11 @@
     border-radius: 50%;
     background: transparent;
     border: 0.14em solid currentColor;
-    transform: translateY(0.014em);
+    /* 0.014em puts the dot mathematically on the O's ink box
+       (incl. its below-baseline overshoot); the extra −0.0434em
+       (0.5px) is Ole's optical correction — a filled/ringed
+       circle reads lower than the O's thin bowl at this size. */
+    transform: translateY(-0.03em);
     /* Staggered: each O opens 0.3s after the previous (with
        `both` fill the later dots hold the solid-disc first frame
        while they wait). */
