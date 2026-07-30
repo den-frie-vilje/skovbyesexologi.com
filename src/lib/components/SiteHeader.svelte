@@ -39,7 +39,10 @@
     'monogram',
     'highlight',
     'lowercase',
-    'stamp'
+    'stamp',
+    'block',
+    'stampduo',
+    'greenstack'
   ] as const;
   type LogoVariant = (typeof LOGO_VARIANTS)[number];
   const variantLabels: Record<LogoVariant, string> = {
@@ -51,7 +54,10 @@
     monogram: 'Monogram',
     highlight: 'Markeret',
     lowercase: 'Minuskel',
-    stamp: 'Stempel'
+    stamp: 'Stempel',
+    block: 'Blok',
+    stampduo: 'Dobbeltstempel',
+    greenstack: 'Grøn stak'
   };
 
   interface Props {
@@ -166,9 +172,12 @@
       {nameParts.first} <span class="hl">{nameParts.rest}</span>
     {:else if logoVariant === 'lowercase'}
       {name}<span class="lc-dot" aria-hidden="true">.</span>
+    {:else if logoVariant === 'block' || logoVariant === 'greenstack'}
+      <span class="stack-line">{nameParts.first}</span>
+      <span class="stack-line stack-tail">{nameParts.rest}</span>
     {:else}
-      <!-- `current` and `stamp` render the plain name — the
-           variant class alone carries the stamp's box. -->
+      <!-- `current`, `stamp` and `stampduo` render the plain name —
+           the variant class alone carries the box / fill. -->
       {name}
     {/if}
   </a>
@@ -375,6 +384,56 @@
     padding: 0.5em 0.75em 0.42em;
     line-height: 1;
   }
+
+  /* I — the stack with SEXOLOGI on a solid neon block: the
+     highlighter gesture in masthead form. City goes dark green
+     to tie the pair (see the ≥720px block below). */
+  .logo-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    line-height: 1.45;
+  }
+  .logo-block .stack-tail {
+    background: var(--highlight);
+    padding: 0.14em 0.1em 0.14em 0.42em;
+    margin-top: 0.12em;
+    line-height: 1.15;
+  }
+
+  /* J — twin stamps: the name filled dark green; København (≥720)
+     answers as a hairline-outline stamp in the same green. */
+  .logo-stampduo {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    padding: 0.55em 0.8em 0.47em;
+    line-height: 1;
+    background: var(--accent);
+    color: var(--surface);
+    /* Transparent border so this box and the city's outlined twin
+       (which carries a real 1px border) are exactly equal height. */
+    border: 1px solid transparent;
+  }
+
+  /* K — the stack in dark green over a thin neon baseline bar;
+     the city (≥720) gets a neon fraction-slash prefix. */
+  .logo-greenstack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    line-height: 1.45;
+    color: var(--accent);
+    border-bottom: 2px solid var(--highlight);
+    padding-bottom: 0.35em;
+  }
   /*
     City label sits immediately after the brand mark — reads as
     part of the address line "Skovbye Sexologi, København". Not
@@ -414,6 +473,38 @@
     }
     .mark-meta {
       display: inline;
+    }
+
+    /*
+      Variant-specific København treatments — the city is part of
+      the lockup at this breakpoint, so the green/neon variants
+      style their own suffix. Below 720px the city is hidden and
+      these are inert.
+    */
+    /* Blok: city in the dark green so the pair reads mark + place. */
+    .logo-block ~ .mark-meta {
+      color: var(--accent);
+    }
+    /* Dobbeltstempel: city as the outline twin of the filled stamp. */
+    .logo-stampduo ~ .mark-meta {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      padding: 0.55em 0.8em 0.47em;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    /* Grøn stak: neon fraction-slash prefix before the city
+       (darker chartreuse — the glyph-safe neon, same as the hero
+       dot; empty alt string keeps it out of the a11y tree). */
+    .logo-greenstack ~ .mark-meta {
+      color: var(--accent);
+    }
+    .logo-greenstack ~ .mark-meta::before {
+      content: '⁄ ' / '';
+      color: oklch(0.82 0.22 115);
+      font-weight: 700;
     }
   }
 
