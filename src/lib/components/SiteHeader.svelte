@@ -318,15 +318,20 @@
       dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
       dot-shake 3s linear both;
   }
+  /* SEQUENTIAL acts guide the eye left→right: each O stays a
+     solid filled disc (the delayed animations' first frame, held
+     by `both` fill) until its own turn — the roll starts as the
+     tremble's last fade becomes imperceptible, the eye after the
+     roll has settled. */
   .o-dot[data-dot='1'] {
     animation:
       dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
       dot-sway 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.4s, 0.4s;
+    animation-delay: 2.9s, 2.9s;
   }
   .o-dot[data-dot='2'] {
     animation: dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.8s;
+    animation-delay: 5.2s;
     position: relative;
   }
   /*
@@ -354,7 +359,7 @@
       0 -0.7em,
       center;
     animation: eye-lid-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.8s;
+    animation-delay: 5.2s;
   }
   /* The O's fill by the ring visually growing inward until solid
      — the intro's opening gesture in reverse, all three
@@ -407,13 +412,11 @@
     }
   }
 
-  /* Act 1 — anxiety, then relief. The tremble is fast at first
-     (90ms half-cycles) and runs long, frequency and amplitude
-     decaying while the dot stays subtly CONTRACTED (0.97 —
-     anxiety is tension). Then the exhale: a held beat, a slump —
-     it drops and loosens past neutral like a sigh — and a gentle
-     rise back to rest. Jitter runs on the animation's linear
-     base; the relief segments carry their own soft easings. */
+  /* Act 1 — anxiety finding rest. The tremble is fast at first
+     (90ms half-cycles) and runs LONG — frequency and amplitude
+     decaying all the way out while the tension (a subtle 0.97
+     contraction) releases gradually along the same curve. No
+     sigh, no gesture: the rest simply arrives. */
   @keyframes dot-shake {
     0%,
     12% {
@@ -432,34 +435,33 @@
       transform: translateY(0.014em) translateX(0.045em) scale(0.97);
     }
     29% {
-      transform: translateY(0.014em) translateX(-0.035em) scale(0.97);
+      transform: translateY(0.014em) translateX(-0.038em) scale(0.97);
     }
     34% {
-      transform: translateY(0.014em) translateX(0.025em) scale(0.97);
+      transform: translateY(0.014em) translateX(0.03em) scale(0.972);
     }
     40% {
-      transform: translateY(0.014em) translateX(-0.018em) scale(0.97);
+      transform: translateY(0.014em) translateX(-0.024em) scale(0.975);
     }
-    47% {
-      transform: translateY(0.014em) translateX(0.01em) scale(0.97);
+    46% {
+      transform: translateY(0.014em) translateX(0.018em) scale(0.978);
     }
-    55% {
-      transform: translateY(0.014em) translateX(-0.005em) scale(0.97);
+    53% {
+      transform: translateY(0.014em) translateX(-0.013em) scale(0.982);
     }
-    /* the beat before the exhale — still, still tense */
     60% {
-      transform: translateY(0.014em) translateX(0) scale(0.965);
-      animation-timing-function: ease-out;
+      transform: translateY(0.014em) translateX(0.009em) scale(0.986);
     }
-    /* the exhale: weight drops, everything loosens past neutral */
-    74% {
-      transform: translateY(0.074em) translateX(0) scale(1.035);
-      animation-timing-function: ease-in-out;
+    68% {
+      transform: translateY(0.014em) translateX(-0.006em) scale(0.99);
     }
-    88% {
-      transform: translateY(0.024em) translateX(0) scale(1.005);
-      animation-timing-function: ease-in-out;
+    76% {
+      transform: translateY(0.014em) translateX(0.004em) scale(0.994);
     }
+    84% {
+      transform: translateY(0.014em) translateX(-0.002em) scale(0.997);
+    }
+    92%,
     100% {
       transform: translateY(0.014em) translateX(0) scale(1);
     }
