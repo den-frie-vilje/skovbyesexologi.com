@@ -117,9 +117,17 @@
   const initials = $derived((nameParts.first[0] ?? '') + (nameParts.rest[0] ?? ''));
 
   /* "Skovbye Sexologi" → ["Sk","o","vbye Sex","o","l","o","gi"]
-     for the dots variant: every o/O renders as a filled dot, the
-     text segments between them expand during the intro. */
-  const nameTokens = $derived(name.split(/([oO])/).filter((t) => t !== ''));
+     for the dots variant: every o/O renders as a filled dot; the
+     text segments between them open as invisible spacers first
+     (moving the dots apart), then fade in staggered left→right —
+     `i` drives each segment's fade delay. */
+  const dotTokens = $derived.by(() => {
+    let seg = 0;
+    return name
+      .split(/([oO])/)
+      .filter((t) => t !== '')
+      .map((t) => (t === 'o' || t === 'O' ? { dot: true, text: '', i: -1 } : { dot: false, text: t, i: seg++ }));
+  });
 
   /*
     The URL is the single source of truth for the demo state; the
@@ -194,11 +202,11 @@
       <!-- The anchor carries aria-label={name}; this construction
            is visual-only (the O's are not letters here). -->
       <span class="dots-visual" aria-hidden="true">
-        {#each nameTokens as tok, i (i)}
-          {#if tok === 'o' || tok === 'O'}
+        {#each dotTokens as tok, i (i)}
+          {#if tok.dot}
             <span class="o-dot"></span>
           {:else}
-            <span class="dot-seg">{tok}</span>
+            <span class="dot-seg" style="--seg-i: {tok.i}">{tok.text}</span>
           {/if}
         {/each}
       </span>
@@ -513,23 +521,22 @@
     }
   }
 
-  /* M — the three O's as filled dots. Intro: three chartreuse
-     dots on a dark-green plate, the type expands between them,
-     and the whole mark settles to black with the dots kept
-     filled. Same never-neon-on-cream sequencing as the stamp
-     intro: everything turns ink at 55-68% while the plate is
-     still green; the plate drains 70-100% around the black mark. */
+  /* M — the three O's as filled dots. Intro, two beats on the
+     bare header (no plate): the three ringed chartreuse dots
+     appear as a tight cluster and glide apart as the text
+     segments open — invisible — between them; only once the room
+     exists does the type fade in, staggered left→right. The ink
+     ring is on the discs from the start: bare chartreuse on the
+     cream surface measures 1.14:1, so unringed gliding dots
+     would be invisible. */
   .logo-dots {
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
-    padding: 0.55em 0.75em 0.5em;
-    animation: dots-plate 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .logo-dots .dots-visual {
     display: inline-block;
-    animation: dots-ink 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   /* Inter-token tracking — letter-spacing doesn't apply between
      inline-block boxes, so the rhythm is carried by margins. */
@@ -546,7 +553,13 @@
        pull the next token back so token gaps equal the intra-
        segment tracking. */
     margin-right: -0.2em;
-    animation: dots-seg 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    /* Beat 1 opens the space (max-width, shared timing); beat 2
+       fades the type in, 0.35s later per segment (--seg-i set
+       inline), only after the dots have moved apart. */
+    animation:
+      dots-open 3.6s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dots-fade 0.8s ease-out both;
+    animation-delay: 0s, calc(1.5s + var(--seg-i, 0) * 0.35s);
   }
   .logo-dots .o-dot {
     display: inline-block;
@@ -557,13 +570,10 @@
        ~0.29em below the baseline). Both values measured against
        a probe "O" glyph, not eyeballed.
 
-       The disc stays chartreuse at rest; the black ring that
-       fades in over it (stroke ≈ the grotesk O's, border-box so
-       the neon counter matches a real O's counter) is what turns
-       the dot back into a letterform. Static border-color is the
-       RESTING value — the keyframes override it during the intro,
-       and reduced-motion (animation: none) then lands on the
-       finished mark directly. */
+       The disc is chartreuse with an ink ring (stroke ≈ the
+       grotesk O's, border-box so the neon counter matches a real
+       O's counter) — an O with a neon counter, worn from the
+       first frame through rest. */
     width: 0.76em;
     height: 0.76em;
     box-sizing: border-box;
@@ -572,50 +582,30 @@
     border: 0.14em solid var(--text);
     vertical-align: bottom;
     transform: translateY(-0.16em);
-    animation: dots-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: dots-fade 0.45s ease-out both;
   }
-  @keyframes dots-ring {
+  /* Beat 1 — the room opens. Hold the cluster for a beat, then
+     the segments' boxes grow (ease-out: short segments settle
+     first, the long one keeps travelling), all while their text
+     is still transparent. */
+  @keyframes dots-open {
     0%,
-    55% {
-      border-color: transparent;
-    }
-    68%,
-    100% {
-      border-color: var(--text);
-    }
-  }
-  @keyframes dots-plate {
-    0% {
-      opacity: 0;
-      background-color: var(--accent);
-    }
-    8%,
-    70% {
-      opacity: 1;
-      background-color: var(--accent);
-    }
-    100% {
-      background-color: transparent;
-    }
-  }
-  @keyframes dots-ink {
-    0%,
-    55% {
-      color: var(--highlight);
-    }
-    68%,
-    100% {
-      color: var(--text);
-    }
-  }
-  @keyframes dots-seg {
-    0%,
-    15% {
+    12% {
       max-width: 0;
     }
-    55%,
+    48%,
     100% {
       max-width: 16ch;
+    }
+  }
+  /* Beat 2 — the type arrives in the opened room (per-segment
+     delay staggers it left→right). Also the dots' own entrance. */
+  @keyframes dots-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 
