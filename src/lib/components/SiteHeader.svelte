@@ -311,27 +311,46 @@
   */
   .o-dot[data-dot='0'] {
     animation:
-      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
-      dot-shake 2s linear both;
+      dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-shake 2.4s linear both;
   }
   .o-dot[data-dot='1'] {
     animation:
-      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
-      dot-bounce 2s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.3s, 0.3s;
+      dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dot-bounce 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.4s, 0.4s;
   }
   .o-dot[data-dot='2'] {
-    animation:
-      dot-open 2s cubic-bezier(0.22, 1, 0.36, 1) both,
-      eye-open 2s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.6s, 0.6s;
-    /* The pupil — sized to sit inside the ring; visible from the
-       moment the core opens, held until the blink sheds it. */
-    background-image: radial-gradient(
-      circle closest-side,
-      var(--accent) 0 32%,
-      transparent 33% 100%
-    );
+    animation: dot-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.8s;
+    position: relative;
+  }
+  /*
+    The eye's interior — a pseudo layer INSIDE the ring (inset
+    just past the border) so the circle itself never deforms:
+    a solid ink EYELID (a slab slid by background-position —
+    length-based, animates smoothly cross-browser, unlike
+    gradient-stop interpolation) over an accent pupil. The lid
+    parts upward as the core opens; the blink slides it down and
+    up again; the final settle fades the whole interior away
+    (opacity), leaving the plain O.
+  */
+  .o-dot[data-dot='2']::after {
+    content: '';
+    position: absolute;
+    inset: 0.1em;
+    border-radius: 50%;
+    background-image:
+      linear-gradient(var(--text), var(--text)),
+      radial-gradient(circle closest-side, var(--accent) 0 46%, transparent 47% 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    /* Rest value: lid parked above (open). */
+    background-position:
+      0 -0.7em,
+      center;
+    animation: eye-lid-open 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.8s;
   }
   /* The O's fill by the ring visually growing inward until solid
      — the intro's opening gesture in reverse, all three
@@ -348,11 +367,13 @@
   .dots-visual.settled .o-dot {
     animation: none;
   }
-  /* …except the third dot, whose settling IS the finale: one
-     blink (lid squeeze), shedding the pupil on the way out.
-     Equal specificity to the rule above — source order wins. */
-  .dots-visual.settled .o-dot[data-dot='2'] {
-    animation: eye-blink 1.1s ease-in-out 0.4s both;
+  /* …except the third dot's INTERIOR, whose settling IS the
+     finale: the lid sweeps down and back up once, then the whole
+     eye (lid + pupil) fades out, leaving the plain O. The blink
+     lives on the pseudo, so the settled animation-none rule
+     above doesn't touch it. */
+  .dots-visual.settled .o-dot[data-dot='2']::after {
+    animation: eye-blink 1.2s ease-in-out 0.4s both;
   }
 
   /* Intro: solid ink disc (border ≈ over the radius — exactly
@@ -382,30 +403,37 @@
     }
   }
 
-  /* Act 1 — trembling open: horizontal jitter through the
-     opening window (12-58%), amplitude decaying to rest. */
+  /* Act 1 — anxious → calm: rapid tremble as the core opens
+     (72ms half-cycles at 2.4s), both frequency and amplitude
+     decaying to rest. */
   @keyframes dot-shake {
     0%,
     12% {
       transform: translateY(0.014em) translateX(0);
     }
+    15% {
+      transform: translateY(0.014em) translateX(-0.06em);
+    }
     18% {
-      transform: translateY(0.014em) translateX(-0.055em);
+      transform: translateY(0.014em) translateX(0.055em);
+    }
+    21% {
+      transform: translateY(0.014em) translateX(-0.05em);
     }
     24% {
-      transform: translateY(0.014em) translateX(0.05em);
+      transform: translateY(0.014em) translateX(0.045em);
     }
-    30% {
-      transform: translateY(0.014em) translateX(-0.04em);
+    28% {
+      transform: translateY(0.014em) translateX(-0.035em);
     }
-    36% {
-      transform: translateY(0.014em) translateX(0.03em);
+    33% {
+      transform: translateY(0.014em) translateX(0.025em);
     }
-    42% {
-      transform: translateY(0.014em) translateX(-0.02em);
+    39% {
+      transform: translateY(0.014em) translateX(-0.015em);
     }
-    48% {
-      transform: translateY(0.014em) translateX(0.01em);
+    46% {
+      transform: translateY(0.014em) translateX(0.008em);
     }
     58%,
     100% {
@@ -413,75 +441,75 @@
     }
   }
 
-  /* Act 2 — the landing bounce, right as its core finishes
-     opening. */
+  /* Act 2 — a heavy, soft landing: low amplitude, lazy rise,
+     long settle — viscous rather than elastic. */
   @keyframes dot-bounce {
     0%,
     55% {
       transform: translateY(0.014em) scale(1);
+      animation-timing-function: ease-in-out;
     }
-    63% {
-      transform: translateY(0.014em) scale(1.14);
+    68% {
+      transform: translateY(0.014em) scale(1.065);
+      animation-timing-function: ease-in-out;
     }
-    71% {
-      transform: translateY(0.014em) scale(0.94);
+    80% {
+      transform: translateY(0.014em) scale(0.975);
+      animation-timing-function: ease-in-out;
     }
-    79% {
-      transform: translateY(0.014em) scale(1.04);
+    91% {
+      transform: translateY(0.014em) scale(1.008);
+      animation-timing-function: ease-in-out;
     }
-    88%,
     100% {
       transform: translateY(0.014em) scale(1);
     }
   }
 
-  /* Act 3 — the eye: a solid slit that widens open around the
-     pupil as the core opens. */
-  @keyframes eye-open {
+  /* Act 3 — the eyelid parts upward as the core opens; the
+     circle itself never deforms. */
+  @keyframes eye-lid-open {
     0%,
     12% {
-      transform: translateY(0.014em) scaleY(0.12);
+      background-position:
+        0 0,
+        center;
     }
-    58% {
-      transform: translateY(0.014em) scaleY(1.06);
-    }
-    70%,
+    58%,
     100% {
-      transform: translateY(0.014em) scaleY(1);
+      background-position:
+        0 -0.7em,
+        center;
     }
   }
 
-  /* Finale — one blink, and the pupil dissolves on the reopen
-     (same gradient structure, colour → transparent, so the
-     interpolation is smooth). Forwards fill = the resting plain
-     O. */
+  /* Finale — the lid sweeps down and back up once, then the
+     whole interior fades: the eye becomes a plain O. */
   @keyframes eye-blink {
     0% {
-      transform: translateY(0.014em) scaleY(1);
-      background-image: radial-gradient(
-        circle closest-side,
-        var(--accent) 0 32%,
-        transparent 33% 100%
-      );
+      background-position:
+        0 -0.7em,
+        center;
+      opacity: 1;
     }
-    22% {
-      transform: translateY(0.014em) scaleY(0.06);
+    25% {
+      background-position:
+        0 0,
+        center;
     }
-    45% {
-      transform: translateY(0.014em) scaleY(1);
-      background-image: radial-gradient(
-        circle closest-side,
-        var(--accent) 0 32%,
-        transparent 33% 100%
-      );
+    50% {
+      background-position:
+        0 -0.7em,
+        center;
+    }
+    75% {
+      opacity: 1;
     }
     100% {
-      transform: translateY(0.014em) scaleY(1);
-      background-image: radial-gradient(
-        circle closest-side,
-        transparent 0 32%,
-        transparent 33% 100%
-      );
+      background-position:
+        0 -0.7em,
+        center;
+      opacity: 0;
     }
   }
 
@@ -529,14 +557,15 @@
 
   @media (prefers-reduced-motion: reduce) {
     /* Straight to the resting mark: no story, no blink — and the
-       pupil gradient goes too (it only exists to be shed). */
+       eye interior goes too (it only exists to be shed). */
     .o-dot,
-    .dots-visual.settled .o-dot[data-dot='2'] {
+    .o-dot[data-dot='2']::after,
+    .dots-visual.settled .o-dot[data-dot='2']::after {
       animation: none;
       transition: none;
     }
-    .o-dot[data-dot='2'] {
-      background-image: none;
+    .o-dot[data-dot='2']::after {
+      opacity: 0;
     }
   }
 </style>
