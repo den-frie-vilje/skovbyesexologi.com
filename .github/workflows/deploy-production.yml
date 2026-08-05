@@ -70,7 +70,7 @@ jobs:
     steps:
       - name: Checkout
         if: github.event_name == 'push'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Need parent commit on main for the diff. fetch-depth: 2
           # gets HEAD + parent — enough for paths-filter, much
