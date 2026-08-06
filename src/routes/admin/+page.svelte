@@ -40,17 +40,20 @@
                                      (self-hosted) and any other
                                      same-origin script. NO inline
                                      scripts and NO 'unsafe-eval'.
-      style-src                    — same-origin + Google Fonts CSS
-                                     ('unsafe-inline' is needed
-                                     because Sveltia injects styles
-                                     dynamically at runtime; meta CSP
-                                     can't use a nonce).
+      style-src                    — same-origin ('unsafe-inline' is
+                                     needed because Sveltia injects
+                                     styles, including its @font-face
+                                     rules, dynamically at runtime;
+                                     meta CSP can't use a nonce).
       img-src                      — same-origin, data:, blob: (for
                                      editor image previews), and
                                      GitHub avatar/usercontent hosts.
       font-src                     — same-origin + data: (for
                                      embedded font glyphs) +
-                                     fonts.gstatic.com.
+                                     cdn.jsdelivr.net, where Sveltia
+                                     fetches its Fontsource faces:
+                                     Material Symbols (its whole icon
+                                     set), Source Sans 3, Noto Mono.
       connect-src                  — same-origin (for /auth/* OAuth
                                      proxy, /admin/config.yml, and
                                      fetches to the static tree) +
@@ -80,7 +83,7 @@
   -->
   <meta
     http-equiv="content-security-policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com; worker-src 'self' blob:; base-uri 'self';"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com; worker-src 'self' blob:; base-uri 'self';"
   />
   <!--
     Sveltia's UMD bundle — deliberately NOT `type="module"`. The bundle
