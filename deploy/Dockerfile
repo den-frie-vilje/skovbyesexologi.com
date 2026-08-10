@@ -25,7 +25,7 @@
 # per RUN — but the per-version downloads cached by the first
 # activation stay on the layer fs, so subsequent activations are
 # pure PATH manipulation (instant).
-FROM pkgxdev/pkgx:latest@sha256:a752ba83d58f0429a21e11206af5be562b44674e1ac0e97f9022ae150a1b6973 AS builder
+FROM pkgxdev/pkgx:latest@sha256:130b8c59a737b65f6d2cf94efdfd25e63a4d56328efdfafdc6b7513b46e013e9 AS builder
 WORKDIR /app
 
 # pkgx dev shellcode is bash 4+ syntax; the pkgx image's default
