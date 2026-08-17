@@ -40,7 +40,7 @@
                                      (self-hosted) and any other
                                      same-origin script. NO inline
                                      scripts and NO 'unsafe-eval'.
-      style-src                    — same-origin + Google Fonts CSS
+      style-src                    — same-origin only
                                      ('unsafe-inline' is needed
                                      because Sveltia injects styles
                                      dynamically at runtime; meta CSP
@@ -49,8 +49,16 @@
                                      editor image previews), and
                                      GitHub avatar/usercontent hosts.
       font-src                     — same-origin + data: (for
-                                     embedded font glyphs) +
-                                     fonts.gstatic.com.
+                                     embedded font glyphs). No CDN:
+                                     the editor's three fonts are
+                                     vendored to /admin/fonts by
+                                     scripts/copy-sveltia.ts, which
+                                     rewrites the bundle's URLs and
+                                     fails the build if it cannot.
+                                     Read that script's header before
+                                     widening this directive; a font
+                                     host reappearing here means the
+                                     rewrite stopped matching.
       connect-src                  — same-origin (for /auth/* OAuth
                                      proxy, /admin/config.yml, and
                                      fetches to the static tree) +
@@ -73,14 +81,34 @@
                                      add via the per-site Caddyfile
                                      if frame-busting matters later.
 
-    To diagnose violations: open /admin in DevTools console — any
+    Known violations on this page, all expected, none functional:
+      fonts.googleapis.com + fonts.gstatic.com
+                                   — the SITE's six typefaces, linked
+                                     globally in src/app.html and so
+                                     inherited by /admin. Measured on
+                                     this page they were downloaded
+                                     and never used: every one reports
+                                     `unloaded` in document.fonts and
+                                     the editor renders in Sveltia's
+                                     own Source Sans 3. Blocking them
+                                     costs nothing here. The errors are
+                                     the correct signal that the public
+                                     site still loads fonts from
+                                     Google, which is a live GDPR
+                                     exposure for every visitor and is
+                                     tracked separately; re-allowing
+                                     the hosts here would only hide it.
+      githubstatus.com, and a data: URI fetched for the logo
+                                   — pre-existing, cosmetic.
+
+    To diagnose new violations: open /admin in DevTools console — any
     blocked resource shows a "Refused to load …" error pointing
     at the directive that blocked it. Add the host to that
     directive's allowlist and re-deploy.
   -->
   <meta
     http-equiv="content-security-policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com; worker-src 'self' blob:; base-uri 'self';"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.github.com https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com; worker-src 'self' blob:; base-uri 'self';"
   />
   <!--
     Sveltia's UMD bundle — deliberately NOT `type="module"`. The bundle
