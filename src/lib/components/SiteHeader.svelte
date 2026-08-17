@@ -385,29 +385,34 @@
     animation: eye-blink 1.2s ease-in-out 0.4s both;
   }
 
-  /* Intro: solid ink disc (border ≈ over the radius — exactly
-     half computed to a sub-pixel chartreuse pinhole) → the
-     chartreuse core opens from the centre as the inner border
-     thins, on the Iris spring (the core blooms slightly past its
+  /* Intro: solid ink disc → the chartreuse core opens from the
+     centre, on the Iris spring (the core blooms slightly past its
      final size and contracts) → hold the ringed-neon beat → the
-     chartreuse fades once the stroke matches the type's weight.
-     Timing functions are per-keyframe: the spring drives only
-     the geometry segment; the colour fade keeps plain ease. */
+     chartreuse fades once only the ring remains. Same
+     never-overpaint construction as the hover fill: the border
+     NEVER changes (the 0.14em ring owns the outer edge in every
+     frame — a border grown past the radius rasterizes as a
+     filled path whose AA edge paints wider than the stroked
+     ring, which read as slightly-oversized solid O's); the
+     "solid" is an inset shadow covering the interior, and the
+     opening is its spread shrinking to 0. Timing functions are
+     per-keyframe: the spring drives only the geometry segment;
+     the colour fade keeps plain ease. */
   @keyframes dot-open {
     0%,
     12% {
-      border-width: 0.42em;
+      box-shadow: inset 0 0 0 0.3em currentColor;
       background-color: var(--highlight);
       animation-timing-function: var(--ease-flesh);
     }
     58%,
     70% {
-      border-width: 0.14em;
+      box-shadow: inset 0 0 0 0 currentColor;
       background-color: var(--highlight);
       animation-timing-function: ease;
     }
     100% {
-      border-width: 0.14em;
+      box-shadow: inset 0 0 0 0 currentColor;
       background-color: transparent;
     }
   }
