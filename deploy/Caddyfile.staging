@@ -61,7 +61,7 @@
     # atomically with the stack (the DSM-vhost header this repo
     # once claimed was measured absent on 2026-07-30 — infra
     # straps rot; per-mode straps ship with the image).
-    header X-Robots-Tag "noindex, nofollow"
+    header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
 
     # Structured JSON access log to stdout — Docker / Container
     # Manager picks it up. Easy to grep or pipe into a log
