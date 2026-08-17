@@ -13,7 +13,7 @@ page; the earlier `/editorial` and `/techno` preview sketches have
 been deleted. Content lives in `src/content/{da,en}/...` JSON files
 edited via the Sveltia admin at `/admin`. Production deploys via the
 nas-sites infrastructure, pull-only: CI builds and cosign-signs the
-image, the NAS agent polls every five minutes and pulls once the
+image, the NAS agent polls roughly every five minutes and pulls once the
 signature verifies. There is no inbound deploy endpoint. See
 [DEPLOY.md](DEPLOY.md).
 
