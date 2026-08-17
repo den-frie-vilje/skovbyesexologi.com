@@ -23,7 +23,8 @@ stage. Bilingual: DA at `/`, EN at `/en/...`. Per-service detail
 pages live at `/ydelser/[slug]` (DA) and `/en/services/[slug]` (EN).
 Sveltia CMS at `/admin` writes back to the repo via the GitHub
 backend (self-hosted bundle, CSP-locked). Production deploys via the
-nas-sites HMAC-webhook pipeline with a reviewer-gated workflow.
+nas-sites pull-only pipeline (CI signs, the NAS agent verifies and
+pulls, no inbound endpoint) with a reviewer-gated workflow.
 
 What's still open: JSON-LD structured data (LocalBusiness + Person +
 Service + Review), accessibility audit + `prefers-reduced-motion`
