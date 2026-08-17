@@ -12,8 +12,10 @@ The "Flod" visual system is the site. The root `/` route is the Flod
 page; the earlier `/editorial` and `/techno` preview sketches have
 been deleted. Content lives in `src/content/{da,en}/...` JSON files
 edited via the Sveltia admin at `/admin`. Production deploys via the
-nas-sites infrastructure (HMAC webhook → Synology NAS) with a
-reviewer-gated GitHub Actions pipeline.
+nas-sites infrastructure, pull-only: CI builds and cosign-signs the
+image, the NAS agent polls every five minutes and pulls once the
+signature verifies. There is no inbound deploy endpoint. See
+[DEPLOY.md](DEPLOY.md).
 
 ### Done so far
 
@@ -29,11 +31,17 @@ reviewer-gated GitHub Actions pipeline.
 - ✅ Per-service detail pages — DA at `/ydelser/[slug]`, EN at
   `/en/services/[slug]`
 - ✅ Per-service OG images — runtime-generated via `og/[[lang=locale]]/[slug]`
-- ✅ Production deploy pipeline — GitHub Actions → HMAC webhook →
-  NAS, with a `production-gate` reviewer environment + path-scoped
-  signed-commit verification gate (Phase 3)
+- ✅ Production deploy pipeline — GitHub Actions builds and
+  cosign-signs, the NAS agent verifies and pulls, with a
+  `production-gate` reviewer environment + path-scoped signed-commit
+  verification gate (Phase 3)
 - ✅ Admin Content-Security-Policy locking down `/admin`'s allowed
   origins (Phase 2 / H3)
+- ✅ Digest-pinned base images — both `FROM` lines in
+  `deploy/Dockerfile` carry `@sha256:` (Phase 5)
+- ✅ `/admin` and `/publish` stripped from the production image —
+  `STRIP_EDITOR=true` build arg, set by `deploy-production.yml`
+  (Phase 8)
 
 ### Open
 
@@ -46,12 +54,13 @@ reviewer-gated GitHub Actions pipeline.
   keyboard navigation review.
 - [ ] **Booking integration** — currently `mailto:` only; consider
   Calendly/Simply.coach embed if/when warranted.
-- [ ] **Site security hardening (in progress)** — the rest of the
-  post-security-review plan: HMAC + ts freshness check (Phase 4),
-  digest-pin all base images (Phase 5), gitleaks instead of regex
-  scan (Phase 6), `type=gha` build cache (Phase 7),
-  `STRIP_EDITOR=true` build arg to remove `/admin` + `/publish`
-  from the production image (Phase 8).
+- [ ] **Site security hardening (in progress)** — what is left of the
+  post-security-review plan: gitleaks instead of regex scan (Phase 6),
+  `type=gha` build cache (Phase 7). Phases 5 and 8 are done and have
+  moved up. Phase 4, an HMAC and timestamp freshness check, is dropped
+  rather than done: it hardened the inbound webhook, and the webhook
+  was removed when the harness went pull-only, so there is nothing
+  left for it to protect.
 
 ### Intentionally out of scope for now
 
