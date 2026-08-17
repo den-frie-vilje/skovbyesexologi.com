@@ -1,12 +1,24 @@
 @import 'tailwindcss';
 
+/* Self-hosted typefaces, per SC-9. Fontsource's own CSS, so the
+   unicode-range subsetting and font-display: swap match what the Google
+   stylesheet gave us. Axes as the old URL asked: opsz for Fraunces, wght
+   elsewhere, and Instrument Serif's roman and italic. */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/dm-sans';
+
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Fraunces', ui-serif, Georgia, serif;
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Fraunces Variable', 'Fraunces', ui-serif, Georgia, serif;
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   --font-humanist: 'Instrument Serif', ui-serif, Georgia, serif;
-  --font-body-warm: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body-warm: 'DM Sans Variable', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
   --color-ink: oklch(0.18 0.02 290);
   --color-cream: oklch(0.97 0.012 85);
