@@ -15,7 +15,7 @@
     "prebuild": "node scripts/copy-sveltia.ts"
   },
   "engines": {
-    "node": "~25",
+    "node": "~26",
     "pnpm": "~10"
   },
   "devDependencies": {
