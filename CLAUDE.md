@@ -119,6 +119,6 @@ repo). Use them when writing Svelte:
 
 ## Tooling Note
 
-Node 25 is the floor. Both `pkgx.yml` (`nodejs.org: ~25`) and
-`package.json` (`engines.node: ~25`) agree. Node 25 strips TypeScript
+Node 26 is the floor. Both `pkgx.yml` (`nodejs.org: ~26`) and
+`package.json` (`engines.node: ~26`) agree. Node 26 strips TypeScript
 types natively, which lets us run `scripts/*.ts` directly without tsx.
