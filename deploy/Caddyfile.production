@@ -44,6 +44,13 @@
         }
         redir @non_canonical https://skovbyesexologi.com{uri} 301
 
+        # Plain HTTP → HTTPS. DSM's reverse proxy marks the scheme in
+        # X-Forwarded-Proto; an HTTP rule in DSM for the name, pointing
+        # at this same port, ends here. After canonicalization, so a
+        # non-canonical http name reaches the https canonical in one hop.
+        @plain header X-Forwarded-Proto http
+        redir @plain https://{host}{uri} 301
+
         # Editor tooling — not for public eyes. /admin and
         # /publish are staging-only; serve 404 on production.
         @editor path /admin /admin/* /publish /publish/*

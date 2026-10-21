@@ -20,6 +20,11 @@
 }
 
 :80 {
+    # Plain HTTP → HTTPS, as on production: DSM marks the scheme in
+    # X-Forwarded-Proto and an HTTP rule for the name ends here.
+    @plain header X-Forwarded-Proto http
+    redir @plain https://{host}{uri} 301
+
     # Sveltia CMS OAuth proxy. `handle_path` strips `/auth` so
     # the upstream sees `/auth` and `/callback` at its root
     # (which is what netlify-cms-github-oauth-provider expects).
