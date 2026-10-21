@@ -13,7 +13,7 @@ which writes back to this repo via the GitHub backend.
 ## Local dev
 
 All commands run via `pkgx` — Node and pnpm are managed at the
-versions declared in `pkgx.yml` + `package.json`'s `engines` (Node 25,
+versions declared in `pkgx.yml` + `package.json`'s `engines` (Node 26,
 pnpm 10).
 
 ```sh

@@ -62,7 +62,7 @@
  * been. Vendoring them is a larger job and is not made necessary by
  * this change.
  *
- * Runs as `prebuild` lifecycle hook before `vite build`. Node 25
+ * Runs as `prebuild` lifecycle hook before `vite build`. Node 26
  * strips TypeScript types natively so this runs as `node
  * scripts/copy-sveltia.ts` without a build step (matches the
  * `scripts/icons` and `scripts/og` patterns).

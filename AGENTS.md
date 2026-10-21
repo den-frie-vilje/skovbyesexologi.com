@@ -86,8 +86,8 @@ pkgx pnpm check       # svelte-check + tsc — run BEFORE every push
 A type-only or attribute-typed error you didn't catch locally surfaces
 as a failed CI build a minute or two after the push. Cheap to prevent.
 
-`pkgx.yml` declares the toolchain: `nodejs.org: ~25`, `pnpm.io: ~10`.
-`package.json` `engines` agrees. Node 25 is required — we lean on its
+`pkgx.yml` declares the toolchain: `nodejs.org: ~26`, `pnpm.io: ~10`.
+`package.json` `engines` agrees. Node 26 is required — we lean on its
 native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 
 ## Architecture
