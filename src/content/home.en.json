@@ -5,7 +5,7 @@
       "href": "#terapi"
     },
     {
-      "label": "Intimacy",
+      "label": "Intimacy coordination",
       "href": "#intimacy-coordination"
     },
     {
@@ -24,7 +24,7 @@
   "hero": {
     "name": "Skovbye Sexology",
     "city": "Copenhagen",
-    "statement": "You come as _you are_,\n\nnot as you should",
+    "statement": "Come as _you are_,\n\nnot as you feel you should be",
     "attribution": "Signe Skovbye — clinical sexologist, intimacy coordinator, psychomotor therapist.",
     "scrollLabel": "feel"
   },

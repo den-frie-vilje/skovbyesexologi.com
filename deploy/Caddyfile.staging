@@ -20,6 +20,11 @@
 }
 
 :80 {
+    # Plain HTTP → HTTPS, as on production: DSM marks the scheme in
+    # X-Forwarded-Proto and an HTTP rule for the name ends here.
+    @plain header X-Forwarded-Proto http
+    redir @plain https://{host}{uri} 301
+
     # Sveltia CMS OAuth proxy. `handle_path` strips `/auth` so
     # the upstream sees `/auth` and `/callback` at its root
     # (which is what netlify-cms-github-oauth-provider expects).
@@ -61,7 +66,7 @@
     # atomically with the stack (the DSM-vhost header this repo
     # once claimed was measured absent on 2026-07-30 — infra
     # straps rot; per-mode straps ship with the image).
-    header X-Robots-Tag "noindex, nofollow"
+    header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
 
     # Structured JSON access log to stdout — Docker / Container
     # Manager picks it up. Easy to grep or pipe into a log

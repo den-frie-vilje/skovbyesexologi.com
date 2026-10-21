@@ -13,10 +13,14 @@
  * duplicates of production content.
  *
  * Belt-and-braces:
- *   1. this file Disallows all on staging — the PRIMARY strap: it
- *      deploys atomically with the image
+ *   1. this file leaves staging crawlable ON PURPOSE, disallowing only
+ *      /admin/ and /publish/, so the noindex below is actually read.
+ *      A crawler blocked by robots.txt never fetches the page and so
+ *      never sees the noindex, and Google documents that such a URL
+ *      can still be indexed from an inbound link (SC-1, nas-sites#45)
  *   2. deploy/Caddyfile.staging stamps `X-Robots-Tag: noindex,
- *      nofollow` on every staging response (in-repo, deploys with
+ *      nofollow, noarchive, nosnippet` on every staging response —
+ *      the PRIMARY strap, now that it can be read (in-repo, deploys with
  *      the stack — an earlier claim that the DSM vhost sent this
  *      header was measured false on 2026-07-30)
  *   3. the `/admin` and `/publish` pages set their own
@@ -49,9 +53,12 @@ export const GET: RequestHandler = () => {
         `Sitemap: ${SITE_URL}/sitemap.xml`
       ].join('\n')
     : [
-        '# Staging build — not intended for search engines.',
+        '# Staging build. Crawlable ON PURPOSE, so that the noindex on every',
+        '# response is actually read. Nothing here may enter an index.',
         'User-agent: *',
-        'Disallow: /'
+        'Allow: /',
+        'Disallow: /admin/',
+        'Disallow: /publish/'
       ].join('\n');
 
   return new Response(body, {
