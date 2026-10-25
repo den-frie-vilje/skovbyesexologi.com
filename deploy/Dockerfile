@@ -83,7 +83,7 @@ RUN eval "$(pkgx dev --shellcode 2>/dev/null)" && dev on && \
 # nginx widens the blast radius. uid 101 with no shell and
 # no write access to /usr/share/nginx/html keeps damage
 # contained.
-FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:592b23aa79a6e6c08ba4b20f1fff700e1328895705966722608e115d62e52d39
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:d9083fe47768377ef55dedafd67d4da7c2f2bc2bece7554954f29359deb0dce9
 
 # Drop the distro's default config so our server block is the
 # only one. Install wget — nginxinc/nginx-unprivileged is slim
