@@ -114,6 +114,9 @@ export type Bio = {
   label: string;
   heading: string;
   pronouns: string;
+  /** Public path of the portrait, e.g. `/img/portrait.jpg`. Shared
+   *  across locales (`i18n: duplicate` in the Sveltia config). */
+  portrait: string;
   portraitAlt: string;
   body: string;
 };

@@ -138,7 +138,7 @@ static/
     config.yml                   Sveltia config
     sveltia-cms.js               Self-hosted bundle (gitignored, copied at build time)
   favicon.svg
-  img/signe.jpg                  Portrait (from live Wix site)
+  img/                           CMS media folder — the bio portrait (`bio.portrait`) is picked from here
 ```
 
 ## The Flod Page (root `/`)

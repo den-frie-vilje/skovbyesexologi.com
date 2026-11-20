@@ -510,7 +510,7 @@
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
         <img
-          src="/img/signe.jpg"
+          src={bio.portrait}
           alt={bio.portraitAlt}
           width="1200"
           height="1400"

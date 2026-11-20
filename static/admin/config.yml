@@ -269,6 +269,15 @@ collections:
           - { name: label, label: Section label, widget: string, i18n: true }
           - { name: heading, widget: string, i18n: true }
           - { name: pronouns, widget: string, i18n: true }
+          - name: portrait
+            label: Portrait photo
+            widget: image
+            i18n: duplicate
+            hint: >-
+              Shown in the bio section and on the link-preview images.
+              Cropped to an upright 6:7 frame around the centre, so keep
+              the face near the middle. At least 1200 px wide stays sharp
+              on large screens. Same photo in both locales.
           - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
             label: Body

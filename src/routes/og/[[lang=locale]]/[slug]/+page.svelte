@@ -155,7 +155,7 @@
     <!-- Right: portrait + accent. -->
     <div class="og-portrait">
       <img
-        src="/img/signe.jpg"
+        src={bio.portrait}
         alt={bio.portraitAlt}
         width="1200"
         height="1400"

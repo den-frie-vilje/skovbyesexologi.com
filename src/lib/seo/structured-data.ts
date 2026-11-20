@@ -140,6 +140,7 @@ function businessAndPerson(
     name: personName(bio.heading),
     jobTitle: site.tagline,
     description: markdownToPlainText(bio.body),
+    image: `${SITE_URL}${bio.portrait}`,
     worksFor: { '@id': businessId },
     pronouns: bio.pronouns,
     // Both locales declared up front so a DA-page graph also
