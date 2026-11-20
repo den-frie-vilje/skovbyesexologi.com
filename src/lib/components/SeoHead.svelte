@@ -24,6 +24,9 @@
   }
 
   let { seo }: Props = $props();
+
+  // The closing tag is split so it cannot end this script block.
+  const jsonLdTag = $derived(`<script type="application/ld+json">${seo.jsonLd}</${'script'}>`);
 </script>
 
 <svelte:head>
@@ -63,5 +66,5 @@
     builder, emitted as one <script type="application/ld+json"> tag.
     See https://search.google.com/test/rich-results.
   -->
-  {@html `<script type="application/ld+json">${seo.jsonLd}</script>`}
+  {@html jsonLdTag}
 </svelte:head>

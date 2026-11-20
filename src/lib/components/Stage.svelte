@@ -41,12 +41,7 @@
     height?: number;
   }
 
-  let {
-    anchors,
-    chapterMode = 0,
-    width: widthOverride,
-    height: heightOverride
-  }: Props = $props();
+  let { anchors, chapterMode = 0, width: widthOverride, height: heightOverride }: Props = $props();
 
   /*
     Therapy-palette endpoints + scene lighting colours. These used
@@ -61,8 +56,8 @@
     to retune the therapy palette; the konsulent endpoints live
     alongside the lerp call where they're used.
   */
-  const tint = '#e3c3cb';       // mercury-orb base + therapy end of orb lerp
-  const accent = '#d7ff3a';     // scene key-light colour
+  const tint = '#e3c3cb'; // mercury-orb base + therapy end of orb lerp
+  const accent = '#d7ff3a'; // scene key-light colour
   const background = '#f3ede2'; // scene fill-light colour
 
   let host: HTMLDivElement;
@@ -101,8 +96,7 @@
     const fixedSizeAtMount =
       typeof widthOverride === 'number' && typeof heightOverride === 'number';
     const prefersReducedMotion =
-      !fixedSizeAtMount &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      !fixedSizeAtMount && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
     let disposed = false;
 
@@ -111,8 +105,7 @@
       const { MarchingCubes } = await import('three/addons/objects/MarchingCubes.js');
       if (disposed) return;
 
-      const fixedSize =
-        typeof widthOverride === 'number' && typeof heightOverride === 'number';
+      const fixedSize = typeof widthOverride === 'number' && typeof heightOverride === 'number';
       const width = fixedSize ? widthOverride! : window.innerWidth;
       const height = fixedSize ? heightOverride! : window.innerHeight;
 
@@ -139,8 +132,9 @@
       // Hardware-accel hints — Safari sometimes paints the canvas's own
       // element background white during scroll unless these are set.
       renderer.domElement.style.transform = 'translateZ(0)';
-      (renderer.domElement.style as CSSStyleDeclaration & { webkitBackfaceVisibility?: string })
-        .webkitBackfaceVisibility = 'hidden';
+      (
+        renderer.domElement.style as CSSStyleDeclaration & { webkitBackfaceVisibility?: string }
+      ).webkitBackfaceVisibility = 'hidden';
       renderer.domElement.style.backfaceVisibility = 'hidden';
 
       const scene = new THREE.Scene();
@@ -345,40 +339,89 @@ uniform float uEnvMix;`
         scene.add(mc);
         const balls: FluidBall[] = [
           {
-            orbitPhase: 0.0, orbitSpeed: 0.22, orbitRadius: 0.05, orbitEllipse: 0.8,
-            bobPhase: 0.3, bobSpeed: 0.55,
-            strengthPhase: 0.0, strengthMin: 0.6, strengthMax: 0.78, fallBias: 0
+            orbitPhase: 0.0,
+            orbitSpeed: 0.22,
+            orbitRadius: 0.05,
+            orbitEllipse: 0.8,
+            bobPhase: 0.3,
+            bobSpeed: 0.55,
+            strengthPhase: 0.0,
+            strengthMin: 0.6,
+            strengthMax: 0.78,
+            fallBias: 0
           },
           {
-            orbitPhase: 2.1, orbitSpeed: -0.18, orbitRadius: 0.09, orbitEllipse: 0.85,
-            bobPhase: 1.2, bobSpeed: 0.75,
-            strengthPhase: 1.5, strengthMin: 0.5, strengthMax: 0.66, fallBias: 0
+            orbitPhase: 2.1,
+            orbitSpeed: -0.18,
+            orbitRadius: 0.09,
+            orbitEllipse: 0.85,
+            bobPhase: 1.2,
+            bobSpeed: 0.75,
+            strengthPhase: 1.5,
+            strengthMin: 0.5,
+            strengthMax: 0.66,
+            fallBias: 0
           },
           {
-            orbitPhase: 4.2, orbitSpeed: 0.12, orbitRadius: 0.11, orbitEllipse: 0.7,
-            bobPhase: 2.8, bobSpeed: 0.5,
-            strengthPhase: 3.2, strengthMin: 0.46, strengthMax: 0.62, fallBias: 0
+            orbitPhase: 4.2,
+            orbitSpeed: 0.12,
+            orbitRadius: 0.11,
+            orbitEllipse: 0.7,
+            bobPhase: 2.8,
+            bobSpeed: 0.5,
+            strengthPhase: 3.2,
+            strengthMin: 0.46,
+            strengthMax: 0.62,
+            fallBias: 0
           },
           {
-            orbitPhase: 1.3, orbitSpeed: 0.2, orbitRadius: 0.12, orbitEllipse: 0.9,
-            bobPhase: 3.6, bobSpeed: 0.8,
-            strengthPhase: 2.4, strengthMin: 0.36, strengthMax: 0.52, fallBias: 0
+            orbitPhase: 1.3,
+            orbitSpeed: 0.2,
+            orbitRadius: 0.12,
+            orbitEllipse: 0.9,
+            bobPhase: 3.6,
+            bobSpeed: 0.8,
+            strengthPhase: 2.4,
+            strengthMin: 0.36,
+            strengthMax: 0.52,
+            fallBias: 0
           },
           {
-            orbitPhase: 5.1, orbitSpeed: -0.26, orbitRadius: 0.14, orbitEllipse: 0.95,
-            bobPhase: 4.4, bobSpeed: 1.0,
-            strengthPhase: 4.1, strengthMin: 0.3, strengthMax: 0.46, fallBias: 0
+            orbitPhase: 5.1,
+            orbitSpeed: -0.26,
+            orbitRadius: 0.14,
+            orbitEllipse: 0.95,
+            bobPhase: 4.4,
+            bobSpeed: 1.0,
+            strengthPhase: 4.1,
+            strengthMin: 0.3,
+            strengthMax: 0.46,
+            fallBias: 0
           },
           {
-            orbitPhase: 3.0, orbitSpeed: 0.38, orbitRadius: 0.15, orbitEllipse: 0.6,
-            bobPhase: 2.2, bobSpeed: 0.9,
-            strengthPhase: 0.7, strengthMin: 0.28, strengthMax: 0.44, fallBias: 0
+            orbitPhase: 3.0,
+            orbitSpeed: 0.38,
+            orbitRadius: 0.15,
+            orbitEllipse: 0.6,
+            bobPhase: 2.2,
+            bobSpeed: 0.9,
+            strengthPhase: 0.7,
+            strengthMin: 0.28,
+            strengthMax: 0.44,
+            fallBias: 0
           },
           // Drip — pulls downward via fallBias
           {
-            orbitPhase: 0.9, orbitSpeed: 0.4, orbitRadius: 0.08, orbitEllipse: 1.0,
-            bobPhase: 0.6, bobSpeed: 1.4,
-            strengthPhase: 0.5, strengthMin: 0.28, strengthMax: 0.48, fallBias: -0.3
+            orbitPhase: 0.9,
+            orbitSpeed: 0.4,
+            orbitRadius: 0.08,
+            orbitEllipse: 1.0,
+            bobPhase: 0.6,
+            bobSpeed: 1.4,
+            strengthPhase: 0.5,
+            strengthMin: 0.28,
+            strengthMax: 0.48,
+            fallBias: -0.3
           }
         ];
         return { mesh: mc, balls };
@@ -635,9 +678,7 @@ uniform float uEnvMix;`
       // Detect touch-primary via pointer/hover media — more reliable than
       // viewport-width heuristics (tablets in landscape read as desktop
       // width but still have the URL-bar issue).
-      const isTouchPrimary = window.matchMedia(
-        '(hover: none) and (pointer: coarse)'
-      ).matches;
+      const isTouchPrimary = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
       let lastResizeW = width;
       let lastResizeH = height;
       const onResize = () => {
@@ -745,14 +786,10 @@ uniform float uEnvMix;`
           const orbR = Math.min(0.36, b.orbitRadius * orbitMult);
           const cx = 0.5 + Math.cos(a) * orbR;
           const cz = 0.5 + Math.sin(a) * orbR * b.orbitEllipse;
-          const cy =
-            0.5 +
-            Math.sin(time * b.bobSpeed + b.bobPhase) * 0.05 +
-            b.fallBias * pulse;
+          const cy = 0.5 + Math.sin(time * b.bobSpeed + b.bobPhase) * 0.05 + b.fallBias * pulse;
           const strength =
             b.strengthMin +
-            (Math.sin(time * 0.9 + b.strengthPhase) * 0.5 + 0.5) *
-              (b.strengthMax - b.strengthMin);
+            (Math.sin(time * 0.9 + b.strengthPhase) * 0.5 + 0.5) * (b.strengthMax - b.strengthMin);
           f.mesh.addBall(cx, cy, cz, strength, subtract);
         }
 
@@ -811,9 +848,7 @@ uniform float uEnvMix;`
         const scaleNow = Math.max(0.001, live.scale);
         const GEM_SURFACE_LIMIT = 1.5;
         d.mesh.position.z =
-          scaleNow > GEM_SURFACE_LIMIT
-            ? baseZ - (scaleNow - GEM_SURFACE_LIMIT)
-            : baseZ;
+          scaleNow > GEM_SURFACE_LIMIT ? baseZ - (scaleNow - GEM_SURFACE_LIMIT) : baseZ;
 
         d.mesh.scale.setScalar(scaleNow);
         // Slow tumble around all three axes for a jewel catching light

@@ -345,7 +345,9 @@
       </ul>
 
       <button class="btn btn-primary" type="button" onclick={publish} disabled={publishing}>
-        {publishing ? 'Publishing…' : `Publish ${commits.length} commit${commits.length === 1 ? '' : 's'} to production`}
+        {publishing
+          ? 'Publishing…'
+          : `Publish ${commits.length} commit${commits.length === 1 ? '' : 's'} to production`}
       </button>
 
       {#if publishMessage}

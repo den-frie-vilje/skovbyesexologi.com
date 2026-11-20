@@ -43,7 +43,7 @@ services:
       # from the per-(site, env) .env file so new sites just
       # bump `CADDY_PORT=` in their own staging.env rather than
       # editing this compose template.
-      - "127.0.0.1:${CADDY_PORT:-8080}:80"
+      - '127.0.0.1:${CADDY_PORT:-8080}:80'
     volumes:
       - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -72,7 +72,7 @@ services:
     # otherwise the edge can refill with old content during the
     # rolling replace window.
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8080/']
       interval: 10s
       timeout: 3s
       retries: 3
@@ -117,7 +117,7 @@ services:
       # Where the auth success page redirects to. Empty → the
       # provider renders a tiny self-closing postMessage page,
       # which is what Sveltia expects.
-      REDIRECT_URL: ""
+      REDIRECT_URL: ''
 
 volumes:
   caddy_data:

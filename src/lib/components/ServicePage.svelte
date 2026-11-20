@@ -13,13 +13,7 @@
   content + publishes stage config to the shared `stage` store.
 -->
 <script lang="ts">
-  import type {
-    HomeList,
-    HomeManifest,
-    HomeRitual,
-    LocaleBundle,
-    Service
-  } from '$lib/content';
+  import type { HomeList, HomeManifest, HomeRitual, LocaleBundle, Service } from '$lib/content';
   import { bubblePoses, dropsPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import { handleBackToHome } from '$lib/nav/backNav.svelte';
@@ -58,15 +52,7 @@
     forPersonal?: HomeList;
   }
 
-  let {
-    service,
-    bundle,
-    backLabel,
-    backHref,
-    manifest,
-    ritual,
-    forPersonal
-  }: Props = $props();
+  let { service, bundle, backLabel, backHref, manifest, ritual, forPersonal }: Props = $props();
 
   /*
     Resolve the sticky CTA with a chapter-level fallback:
@@ -101,9 +87,7 @@
 
   /* Show the feature bullets on the detail page unless the editor has
      turned them off. Independent of `body`. */
-  const showBullets = $derived(
-    service.showDetailBullets !== false && service.bullets.length > 0
-  );
+  const showBullets = $derived(service.showDetailBullets !== false && service.bullets.length > 0);
 
   /*
     Publish this service's stage config to the shared store. The
@@ -174,52 +158,52 @@
   {/if}
 
   <article class="service-page">
-      <!-- ============== HEADER ============== -->
-      <header class="s-head">
-        <!--
+    <!-- ============== HEADER ============== -->
+    <header class="s-head">
+      <!--
           No service number here — the "01/02/03/04" ordering is a
           listing convention for the homepage's four-service grid,
           where it helps skim. On a detail page the number carries
           no meaning: the page IS the service.
         -->
-        <p class="s-eyebrow">
-          <span class="s-kicker">{service.kicker}</span>
-        </p>
-        <h1 class="s-title">{service.title}</h1>
-        <p class="s-blurb">{service.blurb}</p>
-      </header>
+      <p class="s-eyebrow">
+        <span class="s-kicker">{service.kicker}</span>
+      </p>
+      <h1 class="s-title">{service.title}</h1>
+      <p class="s-blurb">{service.blurb}</p>
+    </header>
 
-      <!-- ============== BODY (prose / markdown) ============== -->
-      <!--
+    <!-- ============== BODY (prose / markdown) ============== -->
+    <!--
         Long-form markdown prose. When present it replaces the feature
         bullets on the detail page (see `bodyHtml`) so the page reads as
         writing rather than a stacked list. Rendered HTML is first-party
         + build-time (see `$lib/markdown`), hence `{@html}`.
       -->
-      {#if bodyHtml}
-        <section class="s-block s-body-block">
-          <div class="s-body">{@html bodyHtml}</div>
-        </section>
-      {/if}
+    {#if bodyHtml}
+      <section class="s-block s-body-block">
+        <div class="s-body">{@html bodyHtml}</div>
+      </section>
+    {/if}
 
-      <!-- ============== WHAT'S INCLUDED ============== -->
-      <!-- Feature bullets — independent of the prose body; hidden when
+    <!-- ============== WHAT'S INCLUDED ============== -->
+    <!-- Feature bullets — independent of the prose body; hidden when
            the editor sets `showDetailBullets: false`. -->
-      {#if showBullets}
-        <section class="s-block s-bullets-block">
-          <ul class="s-bullets">
-            {#each service.bullets as bullet, i}
-              <li>
-                <span class="b-num">{String(i + 1).padStart(2, '0')}</span>
-                <span class="b-text">{bullet}</span>
-              </li>
-            {/each}
-          </ul>
-        </section>
-      {/if}
+    {#if showBullets}
+      <section class="s-block s-bullets-block">
+        <ul class="s-bullets">
+          {#each service.bullets as bullet, i}
+            <li>
+              <span class="b-num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="b-text">{bullet}</span>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
 
-      <!-- ============== SUPPORTS (therapy) ============== -->
-      <!--
+    <!-- ============== SUPPORTS (therapy) ============== -->
+    <!--
         Prose rendering — middot-joined italic line — mirrors how
         the homepage renders the same field in its service card.
         Earlier the detail page used pill chips, which introduced
@@ -227,14 +211,14 @@
         the prose form keeps detail pages quieter than the
         homepage while staying inside the design vocabulary.
       -->
-      {#if service.supports && service.supportsLabel}
-        <section class="s-block s-supports-block">
-          <p class="s-label">{service.supportsLabel}</p>
-          <p class="s-supports">{service.supports.join(' · ')}</p>
-        </section>
-      {/if}
+    {#if service.supports && service.supportsLabel}
+      <section class="s-block s-supports-block">
+        <p class="s-label">{service.supportsLabel}</p>
+        <p class="s-supports">{service.supports.join(' · ')}</p>
+      </section>
+    {/if}
 
-      <!--
+    <!--
         Optional chapter-context blocks from the homepage —
         passed in explicitly by the route when the service's
         `chapter` makes them relevant (today: terapi carries
@@ -244,60 +228,60 @@
         homepage has the space to unfold.
       -->
 
-      <!--
+    <!--
         Chapter-context blocks rendered via reusable components.
         Each renders the same design the homepage uses for the
         corresponding content (manifest / ritual / for-personal),
         so a user arriving on a detail page encounters familiar
         type + rhythm rather than new typographic elements.
       -->
-      {#if manifest}
-        <section class="s-block">
-          <ManifestSection {manifest} />
-        </section>
-      {/if}
-      {#if ritual}
-        <section class="s-block">
-          <RitualSection {ritual} />
-        </section>
-      {/if}
-      {#if forPersonal}
-        <section class="s-block">
-          <NumberedList list={forPersonal} />
-        </section>
-      {/if}
+    {#if manifest}
+      <section class="s-block">
+        <ManifestSection {manifest} />
+      </section>
+    {/if}
+    {#if ritual}
+      <section class="s-block">
+        <RitualSection {ritual} />
+      </section>
+    {/if}
+    {#if forPersonal}
+      <section class="s-block">
+        <NumberedList list={forPersonal} />
+      </section>
+    {/if}
 
-      <!-- ============== STUDIOS ============== -->
-      <!--
+    <!-- ============== STUDIOS ============== -->
+    <!--
         Studios sit between the concrete "what's included" bullets
         and the testimonials — logos read as "I've worked with" and
         flow naturally into "here's what they said".
       -->
-      {#if service.studios && service.studiosLabel}
-        <section class="s-block s-studios-block">
-          <p class="s-label">{service.studiosLabel}</p>
-          <StudioLogos
-            studios={service.studios}
-            label={service.studiosLabel}
-            locale={bundle.site.lang}
-          />
-        </section>
-      {/if}
+    {#if service.studios && service.studiosLabel}
+      <section class="s-block s-studios-block">
+        <p class="s-label">{service.studiosLabel}</p>
+        <StudioLogos
+          studios={service.studios}
+          label={service.studiosLabel}
+          locale={bundle.site.lang}
+        />
+      </section>
+    {/if}
 
-      <!-- ============== TESTIMONIALS ============== -->
-      {#if service.testimonials && service.testimonials.length > 0}
-        <section class="s-block s-testimonials-block">
-          <Testimonials items={service.testimonials} />
-        </section>
-      {/if}
+    <!-- ============== TESTIMONIALS ============== -->
+    {#if service.testimonials && service.testimonials.length > 0}
+      <section class="s-block s-testimonials-block">
+        <Testimonials items={service.testimonials} lang={bundle.site.lang} />
+      </section>
+    {/if}
 
-      <!-- No inline CTA block — the sticky StickyCta at the top
+    <!-- No inline CTA block — the sticky StickyCta at the top
            of the article is the primary call-to-action. Keeping
            the page flow ending on the back-link anchor. -->
 
-      <!-- ============== BACK LINK ============== -->
-      <nav class="s-back">
-        <!--
+    <!-- ============== BACK LINK ============== -->
+    <nav class="s-back">
+      <!--
           `handleBackToHome` checks whether the previous history
           entry is the homepage; if so, `preventDefault()` +
           `history.back()` so the browser restores scroll
@@ -306,8 +290,8 @@
           `$lib/nav/backNav.svelte.ts` for why this is preferred
           over SvelteKit's snapshot / a custom scroll store.
         -->
-        <a href={backHref} onclick={handleBackToHome}>← {backLabel}</a>
-      </nav>
+      <a href={backHref} onclick={handleBackToHome}>← {backLabel}</a>
+    </nav>
   </article>
 </div>
 
@@ -486,7 +470,9 @@
     text-decoration-color: var(--accent);
     text-decoration-thickness: 1px;
     text-underline-offset: 0.18em;
-    transition: text-decoration-color 0.15s, color 0.15s;
+    transition:
+      text-decoration-color 0.15s,
+      color 0.15s;
   }
   .s-body :global(a:hover),
   .s-body :global(a:focus-visible) {
@@ -600,7 +586,9 @@
     text-decoration: none;
     border-bottom: 1px solid transparent;
     padding-bottom: 0.2rem;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
   }
   .s-back a:hover,
   .s-back a:focus-visible {

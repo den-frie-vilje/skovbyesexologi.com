@@ -23,11 +23,11 @@ editor flow, and the local dev loop.
 
 Every site on the shared NAS exposes three hostnames:
 
-| Role | Hostname | TLS | Purpose |
-| --- | --- | --- | --- |
-| Staging origin | `skovbyesexologi-com.stage.denfrievilje.dk` | `*.stage.denfrievilje.dk` wildcard | Editor preview + Sveltia OAuth callback. `X-Robots-Tag: noindex, nofollow`. |
-| Production origin | `skovbyesexologi-com.prod.denfrievilje.dk` | `*.prod.denfrievilje.dk` wildcard | Internal canonical origin. CDN-fronted client-facing apex CNAMEs to this. |
-| Public apex | `skovbyesexologi.com` | Issued by Cloudflare on the apex zone | What end users hit. Cloudflare-proxied (orange-cloud). |
+| Role              | Hostname                                    | TLS                                   | Purpose                                                                     |
+| ----------------- | ------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
+| Staging origin    | `skovbyesexologi-com.stage.denfrievilje.dk` | `*.stage.denfrievilje.dk` wildcard    | Editor preview + Sveltia OAuth callback. `X-Robots-Tag: noindex, nofollow`. |
+| Production origin | `skovbyesexologi-com.prod.denfrievilje.dk`  | `*.prod.denfrievilje.dk` wildcard     | Internal canonical origin. CDN-fronted client-facing apex CNAMEs to this.   |
+| Public apex       | `skovbyesexologi.com`                       | Issued by Cloudflare on the apex zone | What end users hit. Cloudflare-proxied (orange-cloud).                      |
 
 `<DOMAIN_DASHED>` = `<DOMAIN>` with dots replaced by dashes. Keeping the
 whole origin inside one DNS label means a single wildcard cert covers
@@ -86,7 +86,7 @@ once for the whole NAS.
 Add A records on the parent zone:
 
 - `*.stage.denfrievilje.dk` → NAS public IP
-- `*.prod.denfrievilje.dk`  → NAS public IP
+- `*.prod.denfrievilje.dk` → NAS public IP
 
 These are wildcards because every future site joins the same two
 sub-zones.
@@ -148,13 +148,13 @@ sudo /volume1/docker/nas-sites/repo/tools/bootstrap-site.sh
 
 Answer the prompts twice — once for each environment:
 
-| Prompt | Staging | Production |
-| --- | --- | --- |
-| Domain | `skovbyesexologi.com` | `skovbyesexologi.com` |
-| Environment | `staging` | `production` |
-| Repo | `den-frie-vilje/skovbyesexologi.com` | `den-frie-vilje/skovbyesexologi.com` |
-| Branch | `staging` | `main` |
-| Compose | `deploy/compose.staging.yml` | `deploy/compose.production.yml` |
+| Prompt      | Staging                              | Production                           |
+| ----------- | ------------------------------------ | ------------------------------------ |
+| Domain      | `skovbyesexologi.com`                | `skovbyesexologi.com`                |
+| Environment | `staging`                            | `production`                         |
+| Repo        | `den-frie-vilje/skovbyesexologi.com` | `den-frie-vilje/skovbyesexologi.com` |
+| Branch      | `staging`                            | `main`                               |
+| Compose     | `deploy/compose.staging.yml`         | `deploy/compose.production.yml`      |
 
 When `$EDITOR` opens `<env>.env`:
 
@@ -182,11 +182,11 @@ the agent after step 6.
 Each `(site, env)` publishes Caddy on a unique loopback port. Set
 `CADDY_PORT=` in each env file. Live allocation on this NAS:
 
-| Site | Staging | Production | Notes |
-| --- | --- | --- | --- |
-| — | ~~8080~~ | ~~8081~~ | Jitsi Meet holds 8080 — skip the 80xx range |
-| skovbyesexologi.com | 18080 | 18081 | First site, "shift up by 10000" convention |
-| *(next site)* | 18082 | 18083 | |
+| Site                | Staging  | Production | Notes                                       |
+| ------------------- | -------- | ---------- | ------------------------------------------- |
+| —                   | ~~8080~~ | ~~8081~~   | Jitsi Meet holds 8080 — skip the 80xx range |
+| skovbyesexologi.com | 18080    | 18081      | First site, "shift up by 10000" convention  |
+| _(next site)_       | 18082    | 18083      |                                             |
 
 Verify a chosen pair is unoccupied:
 

@@ -34,8 +34,8 @@ services:
     # "address already in use" because the second bind collides
     # with the first. `!override` needs Compose 2.24+.
     ports: !override
-      - "8080:80"
-    restart: "no"
+      - '8080:80'
+    restart: 'no'
 
   site:
     # Build locally. The `image:` tag from compose.staging.yml
@@ -45,7 +45,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     pull_policy: build
-    restart: "no"
+    restart: 'no'
 
   # sveltia-auth: profile gating keeps it off in local dev.
   # The `never` profile is not activated by any --profile flag,

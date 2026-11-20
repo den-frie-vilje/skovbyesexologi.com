@@ -38,8 +38,10 @@ fallback for the WebGL stage, possible booking integration. See
   pkgx pnpm install
   pkgx pnpm dev      # vite on :5173, host 0.0.0.0
   pkgx pnpm build    # static → build/
-  pkgx pnpm check    # svelte-check + tsc
+  pkgx pnpm check    # svelte-check + tsc, then ESLint and Prettier (pnpm lint)
+  pkgx pnpm format   # write Prettier formatting
   pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
+  pkgx pnpm portrait # key the bio portrait (runs in prebuild; see docs/portrait.md)
   ```
 - **Run `pkgx pnpm check` before pushing.** The CI Docker build runs
   `RUN pkgx pnpm check` BEFORE `pnpm build`; local `pnpm build` does

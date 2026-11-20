@@ -16,6 +16,7 @@
 <script lang="ts">
   import { contentFor } from '$lib/content';
   import Stage from '$lib/components/Stage.svelte';
+  import Portrait from '$lib/components/Portrait.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -23,7 +24,6 @@
   const site = $derived(bundle.site);
   const home = $derived(bundle.home);
   const bio = $derived(bundle.bio);
-  const services = $derived(bundle.services);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   /*
@@ -58,8 +58,8 @@
     {
       selector: '.og-stage-zone',
       bubble: { x: 1.15, y: -0.1, scale: 1.05 },
-      drops:  { x: 0.35, y: 0.8,  scale: 0.45 },
-      gem:    { x: 0.9,  y: -0.9, scale: 1.5 },
+      drops: { x: 0.35, y: 0.8, scale: 0.45 },
+      gem: { x: 0.9, y: -0.9, scale: 1.5 },
       intensity: 1.1
     }
   ];
@@ -154,11 +154,13 @@
 
     <!-- Right: portrait + accent. -->
     <div class="og-portrait">
-      <img
-        src="/img/signe.jpg"
+      <Portrait
+        src={bio.portrait}
         alt={bio.portraitAlt}
-        width="1200"
-        height="1400"
+        ground={bio.portraitGround}
+        sizes="420px"
+        loading="eager"
+        fill
       />
       <span class="og-accent" aria-hidden="true"></span>
     </div>
@@ -339,13 +341,12 @@
     font-style: italic;
     font-weight: 500; /* matches .name-section h2 em on the home page */
     /* Echo the chartreuse highlight from the hero "burde/should" */
-    background:
-      linear-gradient(
-        to top,
-        var(--og-highlight) 10%,
-        var(--og-highlight) 35%,
-        transparent 35%
-      );
+    background: linear-gradient(
+      to top,
+      var(--og-highlight) 10%,
+      var(--og-highlight) 35%,
+      transparent 35%
+    );
     padding: 0 0.04em;
   }
 
@@ -455,15 +456,6 @@
     width: 420px;
     height: 100%;
     overflow: hidden;
-  }
-  .og-portrait img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Subtle warm filter so portrait feels part of the palette */
-    filter: saturate(0.94) contrast(1.02);
   }
   /* Small chartreuse accent mark lower-right — a nod to the site's
      highlighter underline without redrawing the WebGL stage. */

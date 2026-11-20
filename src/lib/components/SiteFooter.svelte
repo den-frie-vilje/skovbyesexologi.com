@@ -14,11 +14,7 @@
 <script lang="ts">
   import type { SocialLink } from '$lib/content';
   import SocialLinks from './SocialLinks.svelte';
-  import {
-    PUBLIC_GIT_SHA,
-    PUBLIC_BUILD_TIME,
-    PUBLIC_GITHUB_REPO
-  } from '$env/static/public';
+  import { PUBLIC_GIT_SHA, PUBLIC_BUILD_TIME, PUBLIC_GITHUB_REPO } from '$env/static/public';
 
   interface Props {
     /** Rendered copyright string — already expanded from the
@@ -38,13 +34,7 @@
     onLabel?: string;
   }
 
-  let {
-    text,
-    socials,
-    subject = '',
-    findLabel,
-    onLabel
-  }: Props = $props();
+  let { text, socials, subject = '', findLabel, onLabel }: Props = $props();
 
   // Build marker — tiny link to the commit this bundle was built
   // from. CI populates these via build-args in deploy-{staging,
@@ -79,7 +69,8 @@
           rel="noopener"
           title="View commit on GitHub"
         >
-          build {shortSha}{#if buildLabel} · {buildLabel}{/if}
+          build {shortSha}{#if buildLabel}
+            · {buildLabel}{/if}
         </a>
       {/if}
     </div>

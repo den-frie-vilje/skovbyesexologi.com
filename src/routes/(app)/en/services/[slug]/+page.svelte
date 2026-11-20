@@ -42,9 +42,4 @@
   blocks (manifest + ritual + forPersonal) are dropped now that the
   service carries its own prose `body`.
 -->
-<ServicePage
-  service={data.service}
-  {bundle}
-  backLabel="Home"
-  backHref="/en"
-/>
+<ServicePage service={data.service} {bundle} backLabel="Home" backHref="/en" />
