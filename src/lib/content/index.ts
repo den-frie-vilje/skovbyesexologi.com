@@ -117,6 +117,9 @@ export type Bio = {
   /** Public path of the portrait, e.g. `/img/portrait.jpg`. Shared
    *  across locales (`i18n: duplicate` in the Sveltia config). */
   portrait: string;
+  /** Ground behind the cut-out portrait: one of `GROUNDS` in
+   *  `Portrait.svelte`. Shared across locales. */
+  portraitGround: string;
   portraitAlt: string;
   body: string;
 };

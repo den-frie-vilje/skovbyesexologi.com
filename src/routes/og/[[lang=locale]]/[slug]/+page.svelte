@@ -16,6 +16,7 @@
 <script lang="ts">
   import { contentFor } from '$lib/content';
   import Stage from '$lib/components/Stage.svelte';
+  import Portrait from '$lib/components/Portrait.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -154,12 +155,7 @@
 
     <!-- Right: portrait + accent. -->
     <div class="og-portrait">
-      <img
-        src={bio.portrait}
-        alt={bio.portraitAlt}
-        width="1200"
-        height="1400"
-      />
+      <Portrait src={bio.portrait} alt={bio.portraitAlt} ground={bio.portraitGround} sizes="420px" loading="eager" fill />
       <span class="og-accent" aria-hidden="true"></span>
     </div>
   </div>
@@ -455,15 +451,6 @@
     width: 420px;
     height: 100%;
     overflow: hidden;
-  }
-  .og-portrait img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Subtle warm filter so portrait feels part of the palette */
-    filter: saturate(0.94) contrast(1.02);
   }
   /* Small chartreuse accent mark lower-right — a nod to the site's
      highlighter underline without redrawing the WebGL stage. */

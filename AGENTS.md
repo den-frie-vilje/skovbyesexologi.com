@@ -122,6 +122,7 @@ src/
     components/
       FlodStage.svelte           Three.js stage
       SiteFooter.svelte          Footer with build-marker linking the deployed commit
+      Portrait.svelte            Bio portrait: keyed cutout over a CSS ground chosen in the CMS
     three/
       warmEnv.ts                 4 equirectangular env-map painters
   routes/
@@ -139,6 +140,7 @@ static/
     sveltia-cms.js               Self-hosted bundle (gitignored, copied at build time)
   favicon.svg
   img/                           CMS media folder — the bio portrait (`bio.portrait`) is picked from here
+  gen/portrait/                  Keyed portrait cutouts (generated, committed) — see docs/portrait.md
 ```
 
 ## The Flod Page (root `/`)

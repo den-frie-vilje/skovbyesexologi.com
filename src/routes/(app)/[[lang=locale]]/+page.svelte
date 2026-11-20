@@ -9,6 +9,7 @@
   import { stage } from '$lib/stage/store.svelte';
   import SeoHead from '$lib/components/SeoHead.svelte';
   import StudioLogos from '$lib/components/StudioLogos.svelte';
+  import Portrait from '$lib/components/Portrait.svelte';
   import { buildHomePageSeo } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
 
@@ -509,14 +510,14 @@
     <p class="section-label reveal">{bio.label}</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
-        <img
-          src={bio.portrait}
-          alt={bio.portraitAlt}
-          width="1200"
-          height="1400"
-          loading="lazy"
-          decoding="async"
-        />
+        <div class="bio-portrait-frame">
+          <Portrait
+            src={bio.portrait}
+            alt={bio.portraitAlt}
+            ground={bio.portraitGround}
+            sizes="(min-width: 860px) 40vw, min(420px, 100vw)"
+          />
+        </div>
         <figcaption>
           <span class="bio-name">{nameSection.firstName} {nameSection.lastName}</span>
           <span class="bio-pronouns">{bio.pronouns}</span>
@@ -1223,17 +1224,11 @@
     position: relative;
     max-width: 420px;
   }
-  .bio-portrait img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 6 / 7;
-    object-fit: cover;
+  .bio-portrait-frame {
     /* Subtle warm tint border echoes the konsulent paper */
     box-shadow:
       0 1px 0 color-mix(in oklch, var(--text) 10%, transparent),
       0 24px 48px -24px color-mix(in oklch, var(--text) 45%, transparent);
-    filter: saturate(0.92) contrast(1.02);
   }
   .bio-portrait figcaption {
     margin-top: 1rem;

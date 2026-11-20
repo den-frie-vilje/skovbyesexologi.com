@@ -31,8 +31,8 @@ deploy/*.env
 *.log
 
 # Local source reference photos — not for the public repo.
-# The portrait actually served by the site lives at static/img/signe.jpg.
-portrait/
+# The portrait the site serves is whichever file bio.portrait names under static/img/.
+/portrait/
 
 # Ad-hoc staging backups (zip dumps taken before risky migrations etc.).
 # These can be large and contain committed content — belong outside the
