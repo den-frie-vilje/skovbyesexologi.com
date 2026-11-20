@@ -287,7 +287,7 @@
       <!-- ============== TESTIMONIALS ============== -->
       {#if service.testimonials && service.testimonials.length > 0}
         <section class="s-block s-testimonials-block">
-          <Testimonials items={service.testimonials} />
+          <Testimonials items={service.testimonials} lang={bundle.site.lang} />
         </section>
       {/if}
 

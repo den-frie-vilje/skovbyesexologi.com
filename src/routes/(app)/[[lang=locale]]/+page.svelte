@@ -543,8 +543,7 @@
       <Testimonials
         items={home.testimonials.items}
         label={home.testimonials.label}
-        prevLabel={locale === 'da' ? 'Forrige udtalelse' : 'Previous testimonial'}
-        nextLabel={locale === 'da' ? 'Næste udtalelse' : 'Next testimonial'}
+        lang={locale}
       />
     </section>
   {/if}

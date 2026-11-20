@@ -43,17 +43,17 @@
     items: Testimonial[];
     /** Optional section label rendered above the list. */
     label?: string;
-    /** Localised aria-labels for the carousel controls. */
-    prevLabel?: string;
-    nextLabel?: string;
+    /** Language of the carousel controls' accessible names. */
+    lang?: string;
   }
 
-  let {
-    items,
-    label,
-    prevLabel = 'Previous testimonial',
-    nextLabel = 'Next testimonial'
-  }: Props = $props();
+  let { items, label, lang = 'da' }: Props = $props();
+
+  const CONTROLS = {
+    da: { prev: 'Forrige udtalelse', next: 'Næste udtalelse', nav: 'Vælg udtalelse' },
+    en: { prev: 'Previous testimonial', next: 'Next testimonial', nav: 'Choose testimonial' }
+  };
+  const controls = $derived(lang === 'en' ? CONTROLS.en : CONTROLS.da);
 
   const layout = $derived(
     items.length === 1 ? 'single' : items.length === 2 ? 'grid' : 'scroll'
@@ -266,11 +266,11 @@
         <button
           type="button"
           class="t-arrow t-arrow-prev"
-          aria-label={prevLabel}
+          aria-label={controls.prev}
           onclick={prev}
         >←</button>
 
-        <ol class="t-dots" aria-label="Testimonial navigation">
+        <ol class="t-dots" aria-label={controls.nav}>
           {#each items as _, i}
             <li>
               <button
@@ -288,7 +288,7 @@
         <button
           type="button"
           class="t-arrow t-arrow-next"
-          aria-label={nextLabel}
+          aria-label={controls.next}
           onclick={() => next(true)}
         >→</button>
       </div>
