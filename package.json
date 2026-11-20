@@ -9,7 +9,7 @@
     "build:staging": "vite build --mode staging",
     "build:production": "vite build --mode production",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && pnpm lint",
     "icons": "node scripts/gen-pose-icons.ts",
     "og": "node scripts/gen-og-images.ts",
     "prebuild": "node scripts/copy-sveltia.ts && node scripts/gen-portrait.ts",

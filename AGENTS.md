@@ -77,7 +77,8 @@ installed globally.
 pkgx pnpm install     # install deps
 pkgx pnpm dev         # vite dev server on :5173, host 0.0.0.0
 pkgx pnpm build       # static build → build/
-pkgx pnpm check       # svelte-check + tsc — run BEFORE every push
+pkgx pnpm check       # svelte-check + tsc, then ESLint + Prettier — run BEFORE every push
+pkgx pnpm format      # write Prettier formatting
 ```
 
 **Pre-push routine**: `pkgx pnpm check` before `git push`. Vite's
@@ -422,6 +423,10 @@ backend (GitHub or the self-hosted GitLab instance), DA + EN locale pickers.
 ## Code Style
 
 - TypeScript everywhere — `.ts` config files, `lang="ts"` in Svelte
+- ESLint (`eslint.config.ts`) and Prettier (`.prettierrc`) are part of
+  `pnpm check`, so the image build fails on a lint error or an
+  unformatted file. `any` is an error. A rule that is switched off
+  says why, in the config
 - Tailwind utility classes inline where they make sense; scoped `<style>`
   for page-level specifics until a shared component system emerges
 - Design tokens via CSS custom properties (`var(--color-ink)`)
