@@ -30,7 +30,7 @@ services:
       # on 127.0.0.1. Port comes from the per-(site, env) .env
       # file so new sites just bump `CADDY_PORT=` in their own
       # production.env rather than editing this compose template.
-      - "127.0.0.1:${CADDY_PORT:-8081}:80"
+      - '127.0.0.1:${CADDY_PORT:-8081}:80'
     volumes:
       - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -48,7 +48,7 @@ services:
     # Cloudflare cache purge fires after the new container is
     # actually live.
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8080/']
       interval: 10s
       timeout: 3s
       retries: 3

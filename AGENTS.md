@@ -24,8 +24,8 @@ signature verifies. There is no inbound deploy endpoint. See
 - ✅ Sveltia CMS at `/admin` — GitHub backend + self-hosted OAuth
   proxy + path-pinned npm bundle (no third-party CDN)
 - ✅ Content model migration — `src/content/{site,contact,bio,home}.{da,en}.json`
-  + per-service files under `src/content/services/{da,en}/...`
-  (`src/lib/content.ts` is no longer imported anywhere)
+  - per-service files under `src/content/services/{da,en}/...`
+    (`src/lib/content.ts` is no longer imported anywhere)
 - ✅ Bilingual routing — `[[lang=locale]]` param matcher; DA at `/`,
   EN at `/en/...`; `hreflang` links
 - ✅ Per-service detail pages — DA at `/ydelser/[slug]`, EN at
@@ -46,21 +46,21 @@ signature verifies. There is no inbound deploy endpoint. See
 ### Open
 
 - [ ] **JSON-LD structured data** — `LocalBusiness`, `Person`,
-  `Service` (per service), `Review` (testimonials). `sitemap.xml`
-  and `robots.txt` if not yet emitted.
+      `Service` (per service), `Review` (testimonials). `sitemap.xml`
+      and `robots.txt` if not yet emitted.
 - [ ] **Accessibility audit** — `prefers-reduced-motion` full
-  fallback for the WebGL stage (static hero image + skipped canvas
-  mount), visible focus states, ARIA on the chapter transition,
-  keyboard navigation review.
+      fallback for the WebGL stage (static hero image + skipped canvas
+      mount), visible focus states, ARIA on the chapter transition,
+      keyboard navigation review.
 - [ ] **Booking integration** — currently `mailto:` only; consider
-  Calendly/Simply.coach embed if/when warranted.
+      Calendly/Simply.coach embed if/when warranted.
 - [ ] **Site security hardening (in progress)** — what is left of the
-  post-security-review plan: gitleaks instead of regex scan (Phase 6),
-  `type=gha` build cache (Phase 7). Phases 5 and 8 are done and have
-  moved up. Phase 4, an HMAC and timestamp freshness check, is dropped
-  rather than done: it hardened the inbound webhook, and the webhook
-  was removed when the harness went pull-only, so there is nothing
-  left for it to protect.
+      post-security-review plan: gitleaks instead of regex scan (Phase 6),
+      `type=gha` build cache (Phase 7). Phases 5 and 8 are done and have
+      moved up. Phase 4, an HMAC and timestamp freshness check, is dropped
+      rather than done: it hardened the inbound webhook, and the webhook
+      was removed when the harness went pull-only, so there is nothing
+      left for it to protect.
 
 ### Intentionally out of scope for now
 
@@ -103,10 +103,10 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
   JetBrains Mono, Instrument Serif, DM Sans. The Flod page uses Instrument
   Serif + Fraunces + DM Sans.
 - **Content** lives in `src/content/{site,contact,bio,home}.{da,en}.json`
-  + `src/content/services/{da,en}/*.json` per service. Loaded via
-  `src/lib/content/` (a `$lib/content` import resolves there) which
-  exposes `contentFor(locale)` and `loadService(slug, locale)` plus
-  the typed shapes (`Locale`, `Contact`, `Testimonial`, etc.).
+  - `src/content/services/{da,en}/*.json` per service. Loaded via
+    `src/lib/content/` (a `$lib/content` import resolves there) which
+    exposes `contentFor(locale)` and `loadService(slug, locale)` plus
+    the typed shapes (`Locale`, `Contact`, `Testimonial`, etc.).
 
 ## Repo Layout
 
@@ -203,7 +203,7 @@ Three active elements:
 **Layer 1: named pose palette** — `src/lib/stage/poses.ts` exports three
 records (`mainPoses`, `goldPoses`, `gemPoses`) mapping pose names to
 `{ x, y, scale }` NDC coordinates. Raw numbers live here and here only.
-Poses are named by *position* (`heroRight`, `cornerBR`, `topLeftSm`), not
+Poses are named by _position_ (`heroRight`, `cornerBR`, `topLeftSm`), not
 narrative role, so they stay reusable across new sections.
 
 **Layer 2: section registry** — `src/content/da/home.json` lists each
@@ -228,6 +228,7 @@ Section roots in `+page.svelte` carry `data-stage-anchor="<id>"` so the
 stage queries by stable identity, not positional CSS selectors.
 
 Each frame the stage:
+
 1. Reads each section's visibility ratio (bounding rect overlap with viewport)
 2. Cubic-eases weights, blends weighted target for main/drip1/drip2/intensity
 3. Double-lerps (`k1 = 0.012, k2 = 0.015`) toward the blended target for
@@ -276,7 +277,10 @@ toward.
 if (!chunkHolder[chunkPatchFlag]) {
   const original = THREE.ShaderChunk.envmap_physical_pars_fragment;
   THREE.ShaderChunk.envmap_physical_pars_fragment = original
-    .replace(/.../, `vec4 envMapColor = mix(textureCubeUV(envMap,…), textureCubeUV(uEnvMapB,…), uEnvMix);`)
+    .replace(
+      /.../,
+      `vec4 envMapColor = mix(textureCubeUV(envMap,…), textureCubeUV(uEnvMapB,…), uEnvMix);`
+    )
     .replace(/.../, `…`);
   chunkHolder[chunkPatchFlag] = true;
 }
@@ -319,7 +323,8 @@ overlay. Asymmetric lerp: 0.08 climbing, 0.03 returning.
   opaque `var(--bone)` fill
 - Hardware-accel hints on the canvas element:
   ```css
-  transform: translateZ(0); backface-visibility: hidden;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   ```
   to prevent Safari flashing the element bg white during scroll
 
@@ -328,16 +333,12 @@ overlay. Asymmetric lerp: 0.08 climbing, 0.03 returning.
 Defined as scoped custom properties on `.flod`:
 
 ```css
---bone:         oklch(0.96 0.009 215)   /* cool paper — Terapi bg */
---bone-warm:    oklch(0.94 0.03 72)     /* warm paper — Konsulent bg */
---bone-2:       oklch(0.93 0.012 210)
---graphite:     oklch(0.17 0.012 240)   /* primary text */
---graphite-soft: 70% mix of graphite + transparent
---tangerine:    oklch(0.94 0.26 120)    /* chartreuse highlighter */
---violet:       oklch(0.36 0.14 150)    /* dark moss green — repurposed name */
---rose-deep:    oklch(0.48 0.14 20)
---mercury:      oklch(0.78 0.015 220)
---rule:         18% mix of graphite + transparent
+--bone: oklch(0.96 0.009 215) /* cool paper — Terapi bg */ --bone-warm: oklch(0.94 0.03 72)
+  /* warm paper — Konsulent bg */ --bone-2: oklch(0.93 0.012 210) --graphite: oklch(0.17 0.012 240)
+  /* primary text */ --graphite-soft: 70% mix of graphite + transparent
+  --tangerine: oklch(0.94 0.26 120) /* chartreuse highlighter */ --violet: oklch(0.36 0.14 150)
+  /* dark moss green — repurposed name */ --rose-deep: oklch(0.48 0.14 20)
+  --mercury: oklch(0.78 0.015 220) --rule: 18% mix of graphite + transparent;
 ```
 
 `--violet` is a misnomer kept for diff continuity — it's actually dark moss

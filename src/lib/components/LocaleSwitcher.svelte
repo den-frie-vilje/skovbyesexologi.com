@@ -45,9 +45,7 @@
   // Aria-label in the CURRENT page's language so the announcement
   // is read correctly: "Switch to English" on a DA page, "Skift til
   // dansk" on an EN page.
-  const altAriaLabel = $derived(
-    altLocale === 'en' ? 'Switch to English' : 'Skift til dansk'
-  );
+  const altAriaLabel = $derived(altLocale === 'en' ? 'Switch to English' : 'Skift til dansk');
 </script>
 
 <!--
@@ -57,11 +55,7 @@
   EN link" — the latter is the standard pattern for bilingual
   toggles.
 -->
-<div
-  class="locale-switch"
-  role="group"
-  aria-label={currentLocale === 'en' ? 'Language' : 'Sprog'}
->
+<div class="locale-switch" role="group" aria-label={currentLocale === 'en' ? 'Language' : 'Sprog'}>
   <!--
     Current locale as plain text (not a link). Clicking the current
     language would be a no-op round-trip; removing it from tab

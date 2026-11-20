@@ -9,7 +9,14 @@ export default ts.config(
   {
     // Generated, vendored by a build step, or written by the CMS. `scripts/keyer.ts` is
     // shared verbatim with gosscounselling.co.uk and is linted there.
-    ignores: ['build/', '.svelte-kit/', 'node_modules/', 'static/', 'src/content/', 'scripts/keyer.ts']
+    ignores: [
+      'build/',
+      '.svelte-kit/',
+      'node_modules/',
+      'static/',
+      'src/content/',
+      'scripts/keyer.ts'
+    ]
   },
   js.configs.recommended,
   ...ts.configs.recommended,
@@ -24,7 +31,10 @@ export default ts.config(
       // TypeScript resolves identifiers itself; the core rule only produces false reports on types.
       'no-undef': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ],
       // Every `{@html}` here renders first-party content baked in at build time: CMS
       // markdown through `$lib/markdown` (which states the trust boundary) and the
       // JSON-LD the site builds itself. Nothing a visitor typed reaches one.

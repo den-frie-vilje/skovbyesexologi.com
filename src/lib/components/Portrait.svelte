@@ -41,7 +41,14 @@
     /** Take the parent's height instead of keeping `--portrait-ratio`. */
     fill?: boolean;
   }
-  let { src, alt, ground = 'white', sizes = '100vw', loading = 'lazy', fill = false }: Props = $props();
+  let {
+    src,
+    alt,
+    ground = 'white',
+    sizes = '100vw',
+    loading = 'lazy',
+    fill = false
+  }: Props = $props();
 
   const cutout = $derived(manifest[src]?.cutout);
   const groundName = $derived((GROUNDS as readonly string[]).includes(ground) ? ground : 'white');
@@ -52,7 +59,14 @@
     <picture>
       <source type="image/avif" srcset={cutout.avif} {sizes} />
       <source type="image/webp" srcset={cutout.webp} {sizes} />
-      <img src={cutout.fallback} {alt} width={cutout.width} height={cutout.height} {loading} decoding="async" />
+      <img
+        src={cutout.fallback}
+        {alt}
+        width={cutout.width}
+        height={cutout.height}
+        {loading}
+        decoding="async"
+      />
     </picture>
   {:else}
     <img {src} {alt} {loading} decoding="async" />

@@ -64,7 +64,14 @@ export interface PortraitEntry {
   /** How the master was made. */
   quality: 'ai' | 'lanczos' | 'source';
   /** Present when the photograph was cut out. `method` says by which route. */
-  cutout?: { method: Cutout['method']; width: number; height: number; avif: string; webp: string; fallback: string };
+  cutout?: {
+    method: Cutout['method'];
+    width: number;
+    height: number;
+    avif: string;
+    webp: string;
+    fallback: string;
+  };
   /** Present when it was not: the reason, for whoever reads the manifest. */
   uncut?: string;
 }
@@ -136,16 +143,24 @@ async function makeMaster(
   const upright = await sharp(srcPath).rotate().png().toBuffer();
   const { width = 0 } = await sharp(upright).metadata();
   if (width >= UPSCALE_BELOW) {
-    const png = await sharp(upright).resize({ width: Math.min(width, MASTER_MAX), kernel: 'lanczos3' }).png().toBuffer();
+    const png = await sharp(upright)
+      .resize({ width: Math.min(width, MASTER_MAX), kernel: 'lanczos3' })
+      .png()
+      .toBuffer();
     return { png, quality: 'source' };
   }
   if (ai) {
     try {
       const big = await ai(upright);
-      const png = await sharp(big).resize({ width: MASTER_MAX, kernel: 'lanczos3', withoutEnlargement: true }).png().toBuffer();
+      const png = await sharp(big)
+        .resize({ width: MASTER_MAX, kernel: 'lanczos3', withoutEnlargement: true })
+        .png()
+        .toBuffer();
       return { png, quality: 'ai' };
     } catch (e) {
-      console.warn(`portrait: AI upscale failed (${(e as Error).message.split('\n')[0]}); Lanczos instead`);
+      console.warn(
+        `portrait: AI upscale failed (${(e as Error).message.split('\n')[0]}); Lanczos instead`
+      );
     }
   }
   const png = await sharp(upright)
@@ -161,14 +176,19 @@ async function makeMaster(
 // ---------------------------------------------------------------------------
 
 async function cut(masterPng: Buffer, prior: Prior): Promise<Cutout> {
-  const { data, info } = await sharp(masterPng).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(masterPng)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const rgb = new Uint8Array(data.buffer, data.byteOffset, data.length);
   const matte = await prior(rgb, info.width, info.height);
   try {
     return cutOut(rgb, info.width, info.height, matte);
   } catch (e) {
     if (!(e instanceof UnkeyableError)) throw e;
-    console.warn(`portrait: the backing cannot be keyed (${e.message.split('. ')[0]}). Using the matte alone.`);
+    console.warn(
+      `portrait: the backing cannot be keyed (${e.message.split('. ')[0]}). Using the matte alone.`
+    );
     return cutOutByMatte(rgb, info.width, info.height, matte);
   }
 }
@@ -179,7 +199,9 @@ const describe = (c: Cutout, quality: string) =>
 
 /** The cutout over flat test grounds, for a person to look at. */
 async function drawOver(c: Cutout, dir: string) {
-  const layer = await sharp(c.rgba, { raw: { width: c.width, height: c.height, channels: 4 } }).png().toBuffer();
+  const layer = await sharp(c.rgba, { raw: { width: c.width, height: c.height, channels: 4 } })
+    .png()
+    .toBuffer();
   await sharp(layer).toFile(resolve(dir, 'cutout.png'));
   const grounds: Record<string, [string, string]> = {
     light: ['#dfe6ee', '#eef5b0'],
@@ -188,7 +210,10 @@ async function drawOver(c: Cutout, dir: string) {
   };
   for (const [name, [from, to]] of Object.entries(grounds)) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${c.width}" height="${c.height}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`;
-    await sharp(Buffer.from(svg)).composite([{ input: layer }]).png().toFile(resolve(dir, `on-${name}.png`));
+    await sharp(Buffer.from(svg))
+      .composite([{ input: layer }])
+      .png()
+      .toFile(resolve(dir, `on-${name}.png`));
   }
 }
 
@@ -201,7 +226,9 @@ if (SOURCE && OUT_DIR) {
   const master = await makeMaster(resolve(SOURCE), loadAiUpscaler());
   const c = await cut(master.png, await loadPrior());
   await drawOver(c, OUT_DIR);
-  console.log(`portrait: ${SOURCE}\n          ${describe(c, master.quality)}\n          written to ${OUT_DIR}`);
+  console.log(
+    `portrait: ${SOURCE}\n          ${describe(c, master.quality)}\n          written to ${OUT_DIR}`
+  );
   process.exit(0);
 }
 
@@ -212,7 +239,9 @@ if (SOURCE && OUT_DIR) {
 const bio = JSON.parse(readFileSync(BIO, 'utf8')) as { portrait?: string };
 const src = bio.portrait;
 const manifest: Record<string, PortraitEntry> = {};
-const previous: Record<string, PortraitEntry> = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {};
+const previous: Record<string, PortraitEntry> = existsSync(MANIFEST)
+  ? JSON.parse(readFileSync(MANIFEST, 'utf8'))
+  : {};
 
 const write = () => writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 
@@ -265,20 +294,34 @@ try {
   prior = await loadPrior();
 } catch (e) {
   const why = (e as Error).message.split('\n')[0];
-  manifest[src] = { hash, quality: master.quality, uncut: `The matting network could not be loaded: ${why}` };
+  manifest[src] = {
+    hash,
+    quality: master.quality,
+    uncut: `The matting network could not be loaded: ${why}`
+  };
   write();
-  console.warn(`portrait: the matting network could not be loaded, so ${src} is shown as it is.\n          ${why}`);
+  console.warn(
+    `portrait: the matting network could not be loaded, so ${src} is shown as it is.\n          ${why}`
+  );
   process.exit(0);
 }
 const c = await cut(master.png, prior);
 
 const base = sharp(c.rgba, { raw: { width: c.width, height: c.height, channels: 4 } });
-const widths = [...new Set([...TARGET_WIDTHS.filter((w) => w <= c.width), c.width])].sort((a, b) => a - b);
+const widths = [...new Set([...TARGET_WIDTHS.filter((w) => w <= c.width), c.width])].sort(
+  (a, b) => a - b
+);
 const name = `portrait-${hash}`;
 for (const w of widths) {
   const sized = base.clone().resize({ width: w, kernel: 'lanczos3' });
-  await sized.clone().avif({ quality: 62, effort: 5 }).toFile(resolve(GEN_DIR, `${name}-${w}.avif`));
-  await sized.clone().webp({ quality: 86, alphaQuality: 100, effort: 5 }).toFile(resolve(GEN_DIR, `${name}-${w}.webp`));
+  await sized
+    .clone()
+    .avif({ quality: 62, effort: 5 })
+    .toFile(resolve(GEN_DIR, `${name}-${w}.avif`));
+  await sized
+    .clone()
+    .webp({ quality: 86, alphaQuality: 100, effort: 5 })
+    .toFile(resolve(GEN_DIR, `${name}-${w}.webp`));
 }
 const maxW = widths[widths.length - 1];
 manifest[src] = {

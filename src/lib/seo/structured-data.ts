@@ -49,9 +49,7 @@ export const SITE_URL = normalizeSiteUrl(PUBLIC_SITE_URL);
 /** Per-locale detail-page URL for a service. DA lives at
  *  `/ydelser/{da-slug}`, EN at `/en/services/{en-slug}`. */
 function servicePageUrl(locale: Locale, slug: string): string {
-  return locale === 'en'
-    ? `${SITE_URL}/en/services/${slug}`
-    : `${SITE_URL}/ydelser/${slug}`;
+  return locale === 'en' ? `${SITE_URL}/en/services/${slug}` : `${SITE_URL}/ydelser/${slug}`;
 }
 
 /** Home-page URL per locale. Used for the business node's `url`
@@ -171,13 +169,14 @@ function serviceNode(locale: Locale, service: Service, businessId: string) {
     // testimonials are present, schema.org's `review` field accepts
     // an array of Review nodes, so we map all of them rather than
     // emitting only the first.
-    ...(service.testimonials && service.testimonials.length > 0 && {
-      review: service.testimonials.map((t) => ({
-        '@type': 'Review',
-        reviewBody: t.quote,
-        author: { '@type': 'Person', name: t.source }
-      }))
-    })
+    ...(service.testimonials &&
+      service.testimonials.length > 0 && {
+        review: service.testimonials.map((t) => ({
+          '@type': 'Review',
+          reviewBody: t.quote,
+          author: { '@type': 'Person', name: t.source }
+        }))
+      })
   };
 }
 

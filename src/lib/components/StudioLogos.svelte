@@ -126,10 +126,7 @@
         const travel = second.offsetLeft - first.offsetLeft;
         if (travel > 0) {
           node.style.setProperty('--travel', `${travel.toFixed(1)}px`);
-          node.style.setProperty(
-            '--marquee-duration',
-            `${(travel / PX_PER_SECOND).toFixed(2)}s`
-          );
+          node.style.setProperty('--marquee-duration', `${(travel / PX_PER_SECOND).toFixed(2)}s`);
         }
       }
     };

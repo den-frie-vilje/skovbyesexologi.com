@@ -55,17 +55,13 @@
   };
   const controls = $derived(lang === 'en' ? CONTROLS.en : CONTROLS.da);
 
-  const layout = $derived(
-    items.length === 1 ? 'single' : items.length === 2 ? 'grid' : 'scroll'
-  );
+  const layout = $derived(items.length === 1 ? 'single' : items.length === 2 ? 'grid' : 'scroll');
 
   /** The three-copy DOM list — only used in scroll layout. The
    *  middle copy is the user's "home"; prev/next copies exist
    *  solely so `scrollLeft` can briefly cross into them during a
    *  wrap, before `scrollend` shifts back. */
-  const tripled = $derived(
-    layout === 'scroll' ? [...items, ...items, ...items] : items
-  );
+  const tripled = $derived(layout === 'scroll' ? [...items, ...items, ...items] : items);
 
   // ---- Carousel state (scroll layout only) ----
 
@@ -243,8 +239,7 @@
       {#each tripled as t, i}
         <li
           class="t-card"
-          aria-hidden={layout === 'scroll' &&
-            (i < items.length || i >= items.length * 2)
+          aria-hidden={layout === 'scroll' && (i < items.length || i >= items.length * 2)
             ? 'true'
             : undefined}
         >
@@ -268,7 +263,9 @@
           class="t-arrow t-arrow-prev"
           aria-label={controls.prev}
           onclick={prev}
-        >←</button>
+        >
+          ←
+        </button>
 
         <ol class="t-dots" aria-label={controls.nav}>
           {#each items as _, i}
@@ -290,7 +287,9 @@
           class="t-arrow t-arrow-next"
           aria-label={controls.next}
           onclick={() => next(true)}
-        >→</button>
+        >
+          →
+        </button>
       </div>
     {/if}
   </section>
@@ -449,7 +448,9 @@
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    transition: color 0.15s, transform 0.15s;
+    transition:
+      color 0.15s,
+      transform 0.15s;
   }
   .t-arrow-prev {
     justify-self: start;

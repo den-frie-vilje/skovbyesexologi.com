@@ -64,13 +64,7 @@ export type Site = {
  *      contact.socials options list
  *  Keep the set curated — a footer row of 30 platforms reads as
  *  SEO spam rather than a real presence. */
-export type SocialPlatform =
-  | 'linkedin'
-  | 'instagram'
-  | 'facebook'
-  | 'bluesky'
-  | 'x'
-  | 'youtube';
+export type SocialPlatform = 'linkedin' | 'instagram' | 'facebook' | 'bluesky' | 'x' | 'youtube';
 
 /** One social profile link. URL is optional so editors can stub
  *  out platforms they plan to add later without breaking the
@@ -292,14 +286,12 @@ export type LocaleBundle = {
 */
 type RawServiceModule = { default: Omit<Service, 'id'> };
 
-const daServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/services/da/*.json',
-  { eager: true }
-);
-const enServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/services/en/*.json',
-  { eager: true }
-);
+const daServiceModules = import.meta.glob<RawServiceModule>('../../content/services/da/*.json', {
+  eager: true
+});
+const enServiceModules = import.meta.glob<RawServiceModule>('../../content/services/en/*.json', {
+  eager: true
+});
 
 function idFromPath(path: string): string {
   const match = path.match(/\/([^/]+)\.json$/);
@@ -334,12 +326,17 @@ const bundles: Record<Locale, LocaleBundle> = {
 /** Return the full content bundle for a locale. Unknown locales fall
  *  back to the default (Danish). */
 export function contentFor(locale: Locale | string | undefined): LocaleBundle {
-  const key = (locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE) as Locale;
+  const key = (
+    locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE
+  ) as Locale;
   return bundles[key];
 }
 
 /** Service lookup within a given locale. */
-export function serviceBySlug(locale: Locale | string | undefined, slug: string): Service | undefined {
+export function serviceBySlug(
+  locale: Locale | string | undefined,
+  slug: string
+): Service | undefined {
   return contentFor(locale).services.find((s) => s.slug === slug);
 }
 
@@ -420,12 +417,10 @@ function homePath(locale: Locale): string {
  * `title`; slugs come from `slug`; the URL prefix switches by
  * locale.
  */
-export function primaryNav(
-  locale: Locale | string | undefined
-): NavLink[] {
-  const key = (locale && (LOCALES as readonly string[]).includes(locale)
-    ? locale
-    : DEFAULT_LOCALE) as Locale;
+export function primaryNav(locale: Locale | string | undefined): NavLink[] {
+  const key = (
+    locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE
+  ) as Locale;
   const bundle = bundles[key];
   const servicePrefix = key === 'en' ? '/en/services' : '/ydelser';
   return [

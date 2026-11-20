@@ -224,7 +224,7 @@ jobs:
     if: needs.detect-changes.outputs.content-only != 'true'
     runs-on: ubuntu-latest
     environment: production-gate
-    timeout-minutes: 2880  # 2 days — workflow auto-fails if Ole hasn't approved
+    timeout-minutes: 2880 # 2 days — workflow auto-fails if Ole hasn't approved
     steps:
       - name: Reviewed
         run: echo "Code/config change reviewed and approved — proceeding to build + deploy."

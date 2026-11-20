@@ -117,7 +117,9 @@ export async function loadPrior(): Promise<Prior> {
     const result = (await segment(new RawImage(Uint8ClampedArray.from(rgb), w, h, 3))) as unknown;
     const out = (Array.isArray(result) ? result[0] : result) as SegmenterOutput;
     if (out.width !== w || out.height !== h) {
-      throw new Error(`matte: the network returned ${out.width}×${out.height} for a ${w}×${h} frame`);
+      throw new Error(
+        `matte: the network returned ${out.width}×${out.height} for a ${w}×${h} frame`
+      );
     }
     const matte = new Float32Array(w * h);
     const step = out.channels;
@@ -136,7 +138,14 @@ function coreOf(matte: Float32Array, w: number, h: number): Uint8Array {
   const n = w * h;
   const doubt = Float32Array.from(matte, (m) => 1 - m);
   const spread = new Float32Array(n);
-  maxFilter(doubt, spread, new Float32Array(n), w, h, Math.max(1, Math.round(w * FUSION.coreInset)));
+  maxFilter(
+    doubt,
+    spread,
+    new Float32Array(n),
+    w,
+    h,
+    Math.max(1, Math.round(w * FUSION.coreInset))
+  );
   const core = new Uint8Array(n);
   for (let i = 0; i < n; i++) core[i] = spread[i] <= 1 - FUSION.core ? 1 : 0;
   return core;
@@ -176,7 +185,12 @@ function label(mask: Uint8Array, w: number, h: number): { labels: Int32Array; co
  * frame: a normalised blur at widening radii, each pixel taking the narrowest radius
  * that reaches something known. Smooth by construction, which is what a shadow is.
  */
-function carryInward(values: Float32Array[], known: Uint8Array, w: number, h: number): Float32Array[] {
+function carryInward(
+  values: Float32Array[],
+  known: Uint8Array,
+  w: number,
+  h: number
+): Float32Array[] {
   const n = w * h;
   const out = values.map((v) => Float32Array.from(v));
   const filled = Uint8Array.from(known);
@@ -229,7 +243,8 @@ export function cutOut(rgb: Uint8Array, w: number, h: number, matte: Float32Arra
         if (r > hi) hi = r;
       }
       backingLike[i] =
-        smoothstep(FUSION.keptLo, FUSION.keptHi, sum / 3) * (1 - smoothstep(FUSION.chromaLo, FUSION.chromaHi, hi - lo));
+        smoothstep(FUSION.keptLo, FUSION.keptHi, sum / 3) *
+        (1 - smoothstep(FUSION.chromaLo, FUSION.chromaHi, hi - lo));
     }
   }
 
@@ -269,7 +284,8 @@ export function cutOut(rgb: Uint8Array, w: number, h: number, matte: Float32Arra
 
   // The figure's own colour near its edge, for re-solving coverage over shadow.
   const sure = new Uint8Array(n);
-  for (let i = 0; i < n; i++) sure[i] = matte[i] > 0.9 && keyed.alpha[i] === 255 && !wall[i] ? 1 : 0;
+  for (let i = 0; i < n; i++)
+    sure[i] = matte[i] > 0.9 && keyed.alpha[i] === 255 && !wall[i] ? 1 : 0;
   const source = [0, 1, 2].map((c) => Float32Array.from({ length: n }, (_, i) => rgb[i * 3 + c]));
   const own = carryInward(source, sure, w, h);
 
@@ -312,7 +328,9 @@ export function cutOut(rgb: Uint8Array, w: number, h: number, matte: Float32Arra
         const d2 = own[2][i] - p2;
         const span = d0 * d0 + d1 * d1 + d2 * d2;
         if (span > 36) {
-          const along = ((rgb[i * 3] - p0) * d0 + (rgb[i * 3 + 1] - p1) * d1 + (rgb[i * 3 + 2] - p2) * d2) / span;
+          const along =
+            ((rgb[i * 3] - p0) * d0 + (rgb[i * 3 + 1] - p1) * d1 + (rgb[i * 3 + 2] - p2) * d2) /
+            span;
           const solved = Math.min(1, Math.max(0, along));
           af = (1 - shaded) * af + shaded * solved;
           fr = (1 - shaded) * fr + shaded * own[0][i];

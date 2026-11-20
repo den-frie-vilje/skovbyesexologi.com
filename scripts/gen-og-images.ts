@@ -47,7 +47,13 @@ type Variant = {
   filename), NOT the locale-specific URL slug, so each OG URL
   stays the same across locales.
 */
-const OG_SLUGS = ['home', 'terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
+const OG_SLUGS = [
+  'home',
+  'terapi',
+  'intimacy-coordination',
+  'aeldrepleje',
+  'undervisning'
+] as const;
 const variants: Variant[] = OG_SLUGS.flatMap((slug) => [
   { path: `/og/${slug}`, name: `${slug}.da` },
   { path: `/og/en/${slug}`, name: `${slug}.en` }

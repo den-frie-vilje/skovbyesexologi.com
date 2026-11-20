@@ -17,7 +17,6 @@ import { contentFor } from '$lib/content';
  */
 export const prerender = true;
 
-
 export const entries: EntryGenerator = () => {
   // Enumerate every DA service's URL slug so adapter-static writes
   // a /da/ydelser/<slug>/index.html for each at build time. Drifts

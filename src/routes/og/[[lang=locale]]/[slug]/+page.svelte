@@ -58,8 +58,8 @@
     {
       selector: '.og-stage-zone',
       bubble: { x: 1.15, y: -0.1, scale: 1.05 },
-      drops:  { x: 0.35, y: 0.8,  scale: 0.45 },
-      gem:    { x: 0.9,  y: -0.9, scale: 1.5 },
+      drops: { x: 0.35, y: 0.8, scale: 0.45 },
+      gem: { x: 0.9, y: -0.9, scale: 1.5 },
       intensity: 1.1
     }
   ];
@@ -154,7 +154,14 @@
 
     <!-- Right: portrait + accent. -->
     <div class="og-portrait">
-      <Portrait src={bio.portrait} alt={bio.portraitAlt} ground={bio.portraitGround} sizes="420px" loading="eager" fill />
+      <Portrait
+        src={bio.portrait}
+        alt={bio.portraitAlt}
+        ground={bio.portraitGround}
+        sizes="420px"
+        loading="eager"
+        fill
+      />
       <span class="og-accent" aria-hidden="true"></span>
     </div>
   </div>
@@ -334,13 +341,12 @@
     font-style: italic;
     font-weight: 500; /* matches .name-section h2 em on the home page */
     /* Echo the chartreuse highlight from the hero "burde/should" */
-    background:
-      linear-gradient(
-        to top,
-        var(--og-highlight) 10%,
-        var(--og-highlight) 35%,
-        transparent 35%
-      );
+    background: linear-gradient(
+      to top,
+      var(--og-highlight) 10%,
+      var(--og-highlight) 35%,
+      transparent 35%
+    );
     padding: 0 0.04em;
   }
 
