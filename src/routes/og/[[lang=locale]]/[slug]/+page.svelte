@@ -24,7 +24,6 @@
   const site = $derived(bundle.site);
   const home = $derived(bundle.home);
   const bio = $derived(bundle.bio);
-  const services = $derived(bundle.services);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   /*

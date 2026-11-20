@@ -183,7 +183,6 @@
   // Per-section home content — each grouped under its section name in
   // home.json, so the destructuring here mirrors the site structure
   // rather than a flat string bag.
-  const nav = $derived(home.nav);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   const chapter1 = $derived(home.chapter1);

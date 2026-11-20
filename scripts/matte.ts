@@ -156,10 +156,16 @@ function label(mask: Uint8Array, w: number, h: number): { labels: Int32Array; co
     while (top) {
       const i = stack[--top];
       const x = i % w;
-      if (x > 0 && mask[i - 1] && !labels[i - 1]) (labels[i - 1] = id), (stack[top++] = i - 1);
-      if (x < w - 1 && mask[i + 1] && !labels[i + 1]) (labels[i + 1] = id), (stack[top++] = i + 1);
-      if (i >= w && mask[i - w] && !labels[i - w]) (labels[i - w] = id), (stack[top++] = i - w);
-      if (i < w * (h - 1) && mask[i + w] && !labels[i + w]) (labels[i + w] = id), (stack[top++] = i + w);
+      const visit = (j: number) => {
+        if (mask[j] && !labels[j]) {
+          labels[j] = id;
+          stack[top++] = j;
+        }
+      };
+      if (x > 0) visit(i - 1);
+      if (x < w - 1) visit(i + 1);
+      if (i >= w) visit(i - w);
+      if (i < w * (h - 1)) visit(i + w);
     }
   }
   return { labels, count };

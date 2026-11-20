@@ -30,7 +30,6 @@ export const prerender = true;
 /** The stable ids of services we render an OG image for. Matches the
  *  filenames under `src/content/{locale}/services/`. */
 const SERVICE_IDS = ['terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
-type ServiceId = (typeof SERVICE_IDS)[number];
 
 /** `home` + each service id — this is the list adapter-static
  *  prerenders via the `entries()` hook below. */

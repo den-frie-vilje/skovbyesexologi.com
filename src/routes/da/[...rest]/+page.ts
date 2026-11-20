@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { EntryGenerator } from './$types';
-import { contentFor, serviceById, serviceBySlug } from '$lib/content';
+import { contentFor } from '$lib/content';
 
 /**
  * /da/<rest> → redirect to /<rest> (strip the 'da/' prefix).

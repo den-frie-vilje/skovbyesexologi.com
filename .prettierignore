@@ -1,0 +1,17 @@
+# Build output and dependencies
+build/
+.svelte-kit/
+node_modules/
+pnpm-lock.yaml
+
+# Served as-is: the vendored CMS bundle, media, generated cutouts
+static/
+
+# Written by the CMS, in the CMS's own formatting
+src/content/
+
+# Written by scripts
+src/lib/portrait-manifest.json
+
+# Shared verbatim with gosscounselling.co.uk; kept byte-identical so the two can be diffed
+scripts/keyer.ts
