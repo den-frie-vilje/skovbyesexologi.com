@@ -121,7 +121,7 @@ src/
   lib/
     content/index.ts             Loaders + types — `$lib/content` resolves here
     components/
-      FlodStage.svelte           Three.js stage
+      Stage.svelte               Three.js stage
       SiteFooter.svelte          Footer with build-marker linking the deployed commit
       Portrait.svelte            Bio portrait: keyed cutout over a CSS ground chosen in the CMS
     three/
@@ -175,12 +175,12 @@ hero → name-section
   offset. `.flod`'s background is a `linear-gradient` with hard-stops at
   `--konsulent-y`, so the warm paper bg appears to scroll up from the
   divider naturally.
-- `chapterMode` is passed as a prop to `FlodStage`, which lerps materials,
+- `chapterMode` is passed as a prop to `Stage`, which lerps materials,
   colours, and env-map crossfade along the same value.
 
 ### Three.js stage
 
-`src/lib/components/FlodStage.svelte` — fixed full-viewport canvas at
+`src/lib/components/Stage.svelte` — fixed full-viewport canvas at
 `z-index: -1` inside the `.flod { isolation: isolate }` stacking context
 (so it paints between `.flod`'s bg gradient and the in-flow sections).
 
@@ -213,7 +213,7 @@ of pose names. Editors (Sveltia) choose from the palette; never type raw
 NDC. The `offstage` pose uses `scale: 0.01`, guaranteeing the perf skip.
 
 **Resolution** — `resolveAnchor(section)` in `poses.ts` turns a
-`SectionStage` into the runtime shape FlodStage consumes:
+`SectionStage` into the runtime shape Stage consumes:
 
 ```ts
 {
