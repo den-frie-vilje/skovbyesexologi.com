@@ -525,7 +525,7 @@
     <p class="section-label reveal">{bio.label}</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
-        <div class="bio-portrait-frame">
+        <div class="bio-portrait-frame" class:framed={bio.portraitGround !== 'transparent'}>
           <Portrait
             src={bio.portrait}
             alt={bio.portraitAlt}
@@ -1245,7 +1245,10 @@
     position: relative;
     max-width: 420px;
   }
-  .bio-portrait-frame {
+  /* A painted ground is a card and casts one. A transparent ground is
+     only the figure, and a card's shadow around nothing would draw the
+     frame back in. */
+  .bio-portrait-frame.framed {
     /* Subtle warm tint border echoes the konsulent paper */
     box-shadow:
       0 1px 0 color-mix(in oklch, var(--text) 10%, transparent),

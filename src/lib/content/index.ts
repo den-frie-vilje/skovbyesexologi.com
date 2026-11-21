@@ -112,7 +112,7 @@ export type Bio = {
    *  across locales (`i18n: duplicate` in the Sveltia config). */
   portrait: string;
   /** Ground behind the cut-out portrait: one of `GROUNDS` in
-   *  `Portrait.svelte`. Shared across locales. */
+   *  `Portrait.svelte`, `transparent` for none. Shared across locales. */
   portraitGround: string;
   portraitAlt: string;
   body: string;
@@ -248,7 +248,6 @@ export type HomeStage = { sections: SectionStage[] };
 
 /** Homepage content, grouped by section in the order it renders. */
 export type HomePage = {
-  nav: NavLink[];
   hero: HomeHero;
   nameSection: HomeNameSection;
   chapter1: ChapterHeader;

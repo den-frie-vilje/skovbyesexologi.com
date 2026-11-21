@@ -5,6 +5,8 @@
   `portrait-manifest.json`. It is transparent, with the wall's cast shadow
   kept as shadow, so the ground below is plain CSS and can be anything:
   the editor picks one of `GROUNDS` in the CMS (`bio.portraitGround`).
+  `transparent`, the default, paints none: the figure and its shadow stand
+  directly on the page.
 
   A portrait with no cutout in the manifest (a new upload before its build,
   or a photograph that could not be cut out) is shown as it is, filling the
@@ -15,7 +17,7 @@
 -->
 <script lang="ts" module>
   /** The grounds an editor can choose. Keep in step with `portraitGround` in `static/admin/config.yml`. */
-  export const GROUNDS = ['white', 'warm', 'chartreuse', 'cool'] as const;
+  export const GROUNDS = ['transparent', 'white', 'warm', 'chartreuse', 'cool'] as const;
   export type PortraitGround = (typeof GROUNDS)[number];
 </script>
 
@@ -44,14 +46,16 @@
   let {
     src,
     alt,
-    ground = 'white',
+    ground = 'transparent',
     sizes = '100vw',
     loading = 'lazy',
     fill = false
   }: Props = $props();
 
   const cutout = $derived(manifest[src]?.cutout);
-  const groundName = $derived((GROUNDS as readonly string[]).includes(ground) ? ground : 'white');
+  const groundName = $derived(
+    (GROUNDS as readonly string[]).includes(ground) ? ground : 'transparent'
+  );
 </script>
 
 <div class="portrait" class:fill data-ground={groundName}>
@@ -80,7 +84,8 @@
     width: 100%;
     aspect-ratio: var(--portrait-ratio, 6 / 7);
     background: var(--ground);
-    --ground: #fff;
+    /* No ground: the figure and its shadow stand on whatever is behind the frame. */
+    --ground: transparent;
   }
   .portrait.fill {
     aspect-ratio: auto;
@@ -90,8 +95,11 @@
     The grounds. Each is a wash across the frame with a pool of light behind
     the head, so the figure reads as standing in front of a lit wall.
     Light grounds only: the jacket is near black and needs something to
-    stand against.
+    stand against. `transparent` has no rule; it is the default above.
   */
+  .portrait[data-ground='white'] {
+    --ground: #fff;
+  }
   .portrait[data-ground='warm'] {
     --ground:
       radial-gradient(ellipse 70% 55% at 50% 26%, oklch(0.98 0.02 80 / 0.85), transparent 70%),

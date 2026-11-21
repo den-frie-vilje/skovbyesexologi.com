@@ -1,26 +1,4 @@
 {
-  "nav": [
-    {
-      "label": "Therapy",
-      "href": "#terapi"
-    },
-    {
-      "label": "Intimacy coordination",
-      "href": "#intimacy-coordination"
-    },
-    {
-      "label": "Elder care",
-      "href": "#aeldrepleje"
-    },
-    {
-      "label": "Education",
-      "href": "#undervisning"
-    },
-    {
-      "label": "Contact",
-      "href": "#kontakt"
-    }
-  ],
   "hero": {
     "name": "Skovbye Sexology",
     "city": "Copenhagen",
