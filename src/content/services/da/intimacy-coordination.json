@@ -15,6 +15,7 @@
   ],
   "supportsLabel": "",
   "testimonials": [],
+  "pullQuote": "At få gennemgået scener omhyggeligt, så skuespillere og instruktør har afstemt hvad der skal ske på optagelse",
   "cta": {
     "label": "Kom i kontakt",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
@@ -53,6 +54,12 @@
       "url": "https://www.bedside-productions.com"
     }
   ],
+  "homeStage": {
+    "bubble": "heroRightBig",
+    "drops": "bottomLeftMed",
+    "gem": "topRightSm",
+    "intensity": 1.2
+  },
   "stage": {
     "bubble": "offstage",
     "drops": "topRightMed",

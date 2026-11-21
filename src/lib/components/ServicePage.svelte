@@ -13,6 +13,7 @@
   content + publishes stage config to the shared `stage` store.
 -->
 <script lang="ts">
+  import { chapterCta } from '$lib/content';
   import type { HomeList, HomeManifest, HomeRitual, LocaleBundle, Service } from '$lib/content';
   import { bubblePoses, dropsPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
@@ -57,21 +58,14 @@
   /*
     Resolve the sticky CTA with a chapter-level fallback:
       • Prefer the service's own `cta` if defined.
-      • Otherwise, fall back to the chapter's "lead" service:
-        terapi chapter → the terapi service's "Book en tid",
-        konsulent chapter → the intimacy-coordination service's
-        "Kom i kontakt". This mirrors the homepage, where one
-        CTA covers the whole konsulent chapter (intimacy, elder
-        care, teaching) rather than one per service section.
+      • Otherwise, fall back to the chapter's call-to-action: that of
+        the first service in the same chapter that has one. This
+        mirrors the homepage, where one CTA covers a whole chapter
+        rather than one per service section.
     The effect: every service detail page has a sticky CTA even
     when its own content JSON doesn't define one.
   */
-  const effectiveCta = $derived(
-    service.cta ??
-      (service.chapter === 'konsulent'
-        ? bundle.services.find((s) => s.id === 'intimacy-coordination')?.cta
-        : bundle.services.find((s) => s.id === 'terapi')?.cta)
-  );
+  const effectiveCta = $derived(service.cta ?? chapterCta(bundle.services, service.chapter));
 
   /*
     Detail-page prose. `body` is authored as markdown (bold, italic,
