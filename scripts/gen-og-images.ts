@@ -9,7 +9,13 @@
  * Run manually (not wired into prebuild so iterating on the OG
  * layout doesn't thrash committed PNGs):
  *
- *     pkgx pnpm og
+ *     pkgx pnpm og               # headed Chromium on this machine's GPU
+ *     pkgx pnpm og --software    # headless, WebGL on the CPU: no GPU or display needed
+ *
+ * The two produce the same composition. Software rendering runs the
+ * stage at a few frames a second, and the stage eases toward its pose
+ * frame by frame, so `--software` waits 150 s per image where a GPU
+ * needs 6. Ten images take about 25 minutes.
  *
  * One-time setup for new contributors (~92 MB Chromium download
  * cached per user, not in the repo):
@@ -33,6 +39,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
 const VIEWPORT = { width: 1200, height: 630 };
+
+/** Draw WebGL on the CPU, headless. See the header. */
+const SOFTWARE = process.argv.includes('--software');
+/** Time for the stage to load, compile and ease into its pose. */
+const SETTLE_MS = SOFTWARE ? 150_000 : 6_000;
 
 type Variant = {
   /** URL path to navigate to, relative to the dev server. */
@@ -78,7 +89,8 @@ async function main() {
   // Bind to 127.0.0.1 on a fixed port — dev server doesn't need internet
   // access, just a localhost address Playwright can hit.
   const port = 5173;
-  const server = spawn('pkgx', ['pnpm', 'dev', '--port', String(port), '--host', '127.0.0.1'], {
+  const vite = resolve(repoRoot, 'node_modules', '.bin', 'vite');
+  const server = spawn(vite, ['dev', '--port', String(port), '--host', '127.0.0.1'], {
     cwd: repoRoot,
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -91,18 +103,22 @@ async function main() {
     console.log(`✓ vite ready on :${port}`);
 
     console.log('→ launching chromium…');
-    // Real Chrome in headed mode uses the host GPU for WebGL —
-    // necessary for Three.js's MeshPhysicalMaterial with iridescence
-    // to render into the canvas. Headless chromium (including
-    // `headless: 'new'`) uses SwiftShader which produces a
-    // transparent buffer for these advanced material shaders.
-    //
-    // A browser window flashes open for ~4s while the generator
-    // runs. It's closed when the generator exits.
-    const browser = await chromium.launch({
-      headless: false,
-      args: ['--no-sandbox']
-    });
+    // Headed Chromium draws the stage on the host GPU and a window
+    // flashes open while the generator runs. `--software` runs headless
+    // with ANGLE on SwiftShader instead, for a machine with neither.
+    const browser = await chromium.launch(
+      SOFTWARE
+        ? {
+            args: [
+              '--no-sandbox',
+              '--use-gl=angle',
+              '--use-angle=swiftshader',
+              '--enable-unsafe-swiftshader',
+              '--ignore-gpu-blocklist'
+            ]
+          }
+        : { headless: false, args: ['--no-sandbox'] }
+    );
     /*
       `deviceScaleFactor: 2` doubles the render resolution to
       2400×1260 for retina-ready OG cards — much crisper type
@@ -133,12 +149,32 @@ async function main() {
       await page.evaluate(() => document.fonts.ready);
       // Three.js startup cost: dynamic `import('three')` +
       // MarchingCubes addon, WebGLRenderer init, shader compile,
-      // env-texture generation, then several frames of lerping
-      // toward the anchor pose. 2s is too tight — the capture
-      // fires before the first material has painted, so the PNG
-      // shows the text + portrait over an empty page. 6s leaves
-      // comfortable headroom on cold GPU paths.
-      await page.waitForTimeout(6000);
+      // env-texture generation, then the frames of lerping toward
+      // the anchor pose. Captured too early, the image shows the
+      // text and portrait over an empty or half-arrived stage.
+      await page.waitForTimeout(SETTLE_MS);
+      // Every piece of text must be set in a webfont that actually
+      // loaded. A family name with no @font-face behind it falls
+      // back to whatever serif this machine has, silently, and the
+      // image then differs from one machine to the next.
+      const fallbacks = await page.evaluate(async () => {
+        await document.fonts.ready;
+        const loaded = new Set(
+          [...document.fonts]
+            .filter((face) => face.status === 'loaded')
+            .map((face) => face.family.replace(/['"]/g, ''))
+        );
+        const missing = new Set<string>();
+        for (const el of document.querySelectorAll('.og *')) {
+          if (el.children.length || !el.textContent?.trim()) continue;
+          const first = getComputedStyle(el).fontFamily.split(',')[0].trim().replace(/['"]/g, '');
+          if (!loaded.has(first)) missing.add(first);
+        }
+        return [...missing];
+      });
+      if (fallbacks.length) {
+        throw new Error(`${v.path}: text set in a font that did not load: ${fallbacks.join(', ')}`);
+      }
       /*
         JPEG output at q=75 — paired with the 2× deviceScaleFactor
         above, this lands each file in the 200–280 KB range,

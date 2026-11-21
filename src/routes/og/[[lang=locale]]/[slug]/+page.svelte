@@ -17,6 +17,8 @@
   import { contentFor } from '$lib/content';
   import Stage from '$lib/components/Stage.svelte';
   import Portrait from '$lib/components/Portrait.svelte';
+  // The name and the kicker set Fraunces in italic; the site's own CSS loads the upright only.
+  import '@fontsource-variable/fraunces/opsz-italic.css';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -73,6 +75,25 @@
   */
   const STAGE_W = 780;
   const STAGE_H = 630;
+
+  /**
+   * Shrink a heading until its longest word fits the text column. A Danish
+   * compound is one unbreakable word, and at the heading's set size it can be
+   * wider than the column, which would run it across the portrait.
+   */
+  function fitWidth(node: HTMLElement) {
+    const fit = () => {
+      node.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(node).fontSize);
+      while (node.scrollWidth > node.clientWidth && size > 48) {
+        size -= 1;
+        node.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    // Again once the webfonts are in: the fallback's widths are not theirs.
+    document.fonts.ready.then(fit);
+  }
 </script>
 
 <svelte:head>
@@ -125,7 +146,7 @@
           "Skovbye" italicised with chartreuse underline, then a
           bullet list of the three practice roles as the "what".
         -->
-        <h1 class="og-name">
+        <h1 class="og-name" use:fitWidth>
           {data.title} <em>{data.em}</em>
         </h1>
 
@@ -145,7 +166,7 @@
           at the densest titles (EN "Psychomotor sexological
           therapy" wraps three lines).
         -->
-        <h1 class="og-service-title">{data.title}</h1>
+        <h1 class="og-service-title" use:fitWidth>{data.title}</h1>
         <p class="og-kicker">{data.kicker}</p>
       {/if}
 
@@ -187,7 +208,7 @@
     width: 1200px;
     height: 630px;
     color: oklch(0.17 0.012 240); /* --text */
-    font-family: 'Instrument Serif', 'Fraunces', serif;
+    font-family: var(--font-humanist);
     display: flex;
     align-items: stretch;
     box-sizing: border-box;
@@ -242,6 +263,10 @@
        to paint above .og's gradient background. */
     isolation: isolate;
     overflow: hidden;
+    /* The stage ends where the portrait column begins. A cut-out portrait
+       on a transparent ground shows that edge, so the stage fades out
+       over its last stretch instead of stopping at a line. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 200px), transparent);
   }
 
   /*
@@ -304,7 +329,7 @@
     messenger-preview sizes without drowning the title below.
   */
   .og-mark {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 30px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -326,7 +351,7 @@
     after padding).
   */
   .og-name {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 104px;
     font-weight: 400;
     line-height: 0.92;
@@ -361,7 +386,7 @@
     list-style: none;
     padding: 0;
     margin: 0 0 36px;
-    font-family: 'Fraunces', 'Instrument Serif', serif;
+    font-family: var(--font-serif);
     font-size: 38px;
     line-height: 1.2;
     color: color-mix(in oklch, var(--og-text) 88%, transparent);
@@ -405,7 +430,7 @@
     therapy" without pushing the URL off the bottom.
   */
   .og-service-title {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 96px;
     font-weight: 400;
     line-height: 0.95;
@@ -421,7 +446,7 @@
     body prose.
   */
   .og-kicker {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-style: italic;
     font-size: 32px;
     line-height: 1.25;
@@ -441,7 +466,7 @@
     left: 72px;
     bottom: 48px;
     margin: 0;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 28px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
