@@ -14,11 +14,6 @@
  */
 import type { Handle } from '@sveltejs/kit';
 
-const LOCALE_PREFIXES: Record<string, string> = {
-  '/en': 'en',
-  '/en/': 'en'
-};
-
 function inferLocale(pathname: string): 'da' | 'en' {
   if (pathname === '/en' || pathname.startsWith('/en/')) return 'en';
   return 'da';

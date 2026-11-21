@@ -33,24 +33,24 @@
       "url": "https://www.nordiskfilm.com"
     },
     {
-      "name": "",
-      "logo": "",
-      "url": ""
+      "name": "Den Danske Filmskole",
+      "logo": "/img/studios/filmskolen-logo.svg",
+      "url": "https://www.filmskolen.dk"
     },
     {
-      "name": "",
-      "logo": "",
-      "url": ""
+      "name": "Får302",
+      "logo": "/img/studios/faar302-logo.svg",
+      "url": "https://www.faar302.dk"
     },
     {
-      "name": "",
-      "logo": "",
-      "url": ""
+      "name": "Makropol",
+      "logo": "/img/studios/makropol-logo.svg",
+      "url": "https://makropol.dk"
     },
     {
-      "name": "",
-      "logo": "",
-      "url": ""
+      "name": "Bedside Productions",
+      "logo": "/img/studios/bedside-productions-logo.svg",
+      "url": "https://www.bedside-productions.com"
     }
   ],
   "stage": {

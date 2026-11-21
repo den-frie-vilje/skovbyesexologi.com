@@ -16,12 +16,7 @@
  * same across locales even when the service slug differs in DA vs EN.
  */
 
-import {
-  contentFor,
-  DEFAULT_LOCALE,
-  type Locale,
-  type ServiceChapter
-} from '$lib/content';
+import { contentFor, DEFAULT_LOCALE, type Locale, type ServiceChapter } from '$lib/content';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -30,7 +25,6 @@ export const prerender = true;
 /** The stable ids of services we render an OG image for. Matches the
  *  filenames under `src/content/{locale}/services/`. */
 const SERVICE_IDS = ['terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
-type ServiceId = (typeof SERVICE_IDS)[number];
 
 /** `home` + each service id — this is the list adapter-static
  *  prerenders via the `entries()` hook below. */
@@ -40,9 +34,7 @@ type OgSlug = (typeof OG_SLUGS)[number];
 export const entries = () => {
   // `undefined` optional lang = DA (prefix-less); explicit `en` = EN.
   const locales: (Locale | undefined)[] = [undefined, 'en'];
-  return locales.flatMap((lang) =>
-    OG_SLUGS.map((slug) => (lang ? { lang, slug } : { slug }))
-  );
+  return locales.flatMap((lang) => OG_SLUGS.map((slug) => (lang ? { lang, slug } : { slug })));
 };
 
 type OgData =

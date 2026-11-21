@@ -24,12 +24,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { beforeNavigate } from '$app/navigation';
-  import {
-    contentFor,
-    primaryNav,
-    renderFooterCopyright,
-    type Locale
-  } from '$lib/content';
+  import { contentFor, primaryNav, renderFooterCopyright, type Locale } from '$lib/content';
   import ContactSection from '$lib/components/ContactSection.svelte';
   import Stage from '$lib/components/Stage.svelte';
   import SiteFooter from '$lib/components/SiteFooter.svelte';
@@ -76,12 +71,10 @@
     if a page ever forgets to publish these.
   */
   const altLocale = $derived(
-    ($page.data?.altLocale as Locale | undefined) ??
-      (locale === 'en' ? 'da' : 'en')
+    ($page.data?.altLocale as Locale | undefined) ?? (locale === 'en' ? 'da' : 'en')
   );
   const altHref = $derived(
-    ($page.data?.altHref as string | undefined) ??
-      (altLocale === 'en' ? '/en' : '/')
+    ($page.data?.altHref as string | undefined) ?? (altLocale === 'en' ? '/en' : '/')
   );
 
   /*
@@ -92,9 +85,7 @@
     variant) or set it to `0` (whole page warm, for konsulent
     service pages).
   */
-  const konsulentStyle = $derived(
-    stage.konsulentY !== null ? `${stage.konsulentY}px` : null
-  );
+  const konsulentStyle = $derived(stage.konsulentY !== null ? `${stage.konsulentY}px` : null);
 </script>
 
 <div class="app-shell" style:--konsulent-y={konsulentStyle}>

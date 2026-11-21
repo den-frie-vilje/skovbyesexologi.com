@@ -68,7 +68,15 @@
  * `scripts/icons` and `scripts/og` patterns).
  */
 
-import { copyFileSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSync } from 'node:fs';
+import {
+  copyFileSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  statSync,
+  existsSync,
+  mkdirSync
+} from 'node:fs';
 import { dirname, basename } from 'node:path';
 
 const PKG = 'node_modules/@sveltia/cms';
@@ -82,7 +90,7 @@ const PKG_JSON_DST = 'static/admin/sveltia-cms.package.json';
 const FONTS = [
   '@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2',
   '@fontsource/noto-mono/files/noto-mono-latin-400-normal.woff2',
-  '@fontsource-variable/material-symbols-outlined/files/material-symbols-outlined-latin-wght-normal.woff2',
+  '@fontsource-variable/material-symbols-outlined/files/material-symbols-outlined-latin-wght-normal.woff2'
 ];
 
 /**
@@ -94,17 +102,17 @@ const REWRITES = [
   {
     what: 'font: Source Sans 3',
     find: 'https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3:vf@5.3.0/latin-wght-normal.woff2',
-    replace: '/admin/fonts/source-sans-3-latin-wght-normal.woff2',
+    replace: '/admin/fonts/source-sans-3-latin-wght-normal.woff2'
   },
   {
     what: 'font: Noto Mono',
     find: 'https://cdn.jsdelivr.net/fontsource/fonts/noto-mono@5.3.0/latin-400-normal.woff2',
-    replace: '/admin/fonts/noto-mono-latin-400-normal.woff2',
+    replace: '/admin/fonts/noto-mono-latin-400-normal.woff2'
   },
   {
     what: 'font: Material Symbols Outlined',
     find: 'https://cdn.jsdelivr.net/fontsource/fonts/material-symbols-outlined:vf@5.3.1/latin-wght-normal.woff2',
-    replace: '/admin/fonts/material-symbols-outlined-latin-wght-normal.woff2',
+    replace: '/admin/fonts/material-symbols-outlined-latin-wght-normal.woff2'
   },
   {
     // A preconnect opens a real DNS + TLS connection, so it leaks the editor's
@@ -114,18 +122,18 @@ const REWRITES = [
     // walks, so deleting a node is a bigger claim than changing an attribute.
     what: 'jsDelivr preconnect',
     find: '<link rel="preconnect" href="https://cdn.jsdelivr.net/"/>',
-    replace: '<link rel="preconnect" href="/"/>',
+    replace: '<link rel="preconnect" href="/"/>'
   },
   {
     what: 'locale strings base URL',
     find: 'DZ=`${JH}@${qH}/locales`',
-    replace: 'DZ=`/admin/locales`',
+    replace: 'DZ=`/admin/locales`'
   },
   {
     what: 'update check',
     find: 'n=`${JH}/package.json`',
-    replace: 'n=`/admin/sveltia-cms.package.json`',
-  },
+    replace: 'n=`/admin/sveltia-cms.package.json`'
+  }
 ];
 
 /** Hosts that must not survive in the served bundle. */
@@ -147,7 +155,7 @@ for (const { what, find, replace } of REWRITES) {
       `prebuild: ${what} — literal not found in the Sveltia bundle:\n  ${find}\n` +
         `The bundle changed shape. Re-read it before shipping: an admin page that\n` +
         `silently resumes fetching from a CDN is the failure this check exists to stop.\n` +
-        `See sveltia-cms#909 for the upstream request that would retire these rewrites.`,
+        `See sveltia-cms#909 for the upstream request that would retire these rewrites.`
     );
     process.exit(1);
   }
@@ -156,7 +164,9 @@ for (const { what, find, replace } of REWRITES) {
 
 for (const host of FORBIDDEN_HOSTS) {
   if (bundle.includes(host)) {
-    console.error(`prebuild: ${host} still referenced in the rewritten bundle — refusing to ship it.`);
+    console.error(
+      `prebuild: ${host} still referenced in the rewritten bundle — refusing to ship it.`
+    );
     process.exit(1);
   }
 }
@@ -190,5 +200,5 @@ const { version } = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8'));
 const sizeKb = (statSync(DST).size / 1024).toFixed(1);
 console.log(
   `prebuild: vendored Sveltia ${version} (${sizeKb} KB) → ${DST}\n` +
-    `prebuild: ${FONTS.length} fonts, ${locales.length} locales, ${REWRITES.length} URL rewrites, no third-party host remaining`,
+    `prebuild: ${FONTS.length} fonts, ${locales.length} locales, ${REWRITES.length} URL rewrites, no third-party host remaining`
 );

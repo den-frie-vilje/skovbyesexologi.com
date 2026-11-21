@@ -269,6 +269,32 @@ collections:
           - { name: label, label: Section label, widget: string, i18n: true }
           - { name: heading, widget: string, i18n: true }
           - { name: pronouns, widget: string, i18n: true }
+          - name: portrait
+            label: Portrait photo
+            widget: image
+            i18n: duplicate
+            hint: >-
+              Shown in the bio section and on the link-preview images.
+              Works best taken against a plain, evenly lit wall: the
+              figure is cut out and placed on the background chosen
+              below. The frame is upright (6:7) and keeps the top of the
+              photo. At least 1200 px wide stays sharp on large screens.
+              Same photo in both locales.
+          - name: portraitGround
+            label: Portrait background
+            widget: select
+            i18n: duplicate
+            default: transparent
+            options:
+              - { label: 'None: the figure stands directly on the page', value: transparent }
+              - { label: White, value: white }
+              - { label: 'Warm: paper into rose', value: warm }
+              - { label: 'Chartreuse: cool paper into the highlighter green', value: chartreuse }
+              - { label: 'Cool: pale into mercury blue', value: cool }
+            hint: >-
+              What the cut-out portrait stands in front of. The figure is
+              cut out of the photograph when the site builds, and its
+              shadow falls on whichever background is chosen here.
           - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
             label: Body
@@ -297,14 +323,6 @@ collections:
         format: json
         i18n: true
         fields:
-          - name: nav
-            label: Top-nav links
-            widget: list
-            i18n: true
-            fields:
-              - { name: label, widget: string, i18n: true }
-              - { name: href, widget: string, i18n: true, hint: 'Use #anchor for in-page links.' }
-
           - name: hero
             widget: object
             i18n: true
@@ -479,8 +497,12 @@ collections:
     folder: src/content/services
     format: json
     extension: json
-    create: true
-    delete: true
+    # The homepage lays out exactly these four services by id, each with
+    # its own section, stage pose and link-preview image. A service added
+    # here would get a detail page and nothing else, and one deleted
+    # would fail the build, so the editor can do neither.
+    create: false
+    delete: false
     slug: '{{fields.slug}}'
     identifier_field: title
     editor: { preview: false }

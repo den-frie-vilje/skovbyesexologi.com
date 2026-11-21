@@ -9,6 +9,7 @@
   import { stage } from '$lib/stage/store.svelte';
   import SeoHead from '$lib/components/SeoHead.svelte';
   import StudioLogos from '$lib/components/StudioLogos.svelte';
+  import Portrait from '$lib/components/Portrait.svelte';
   import { buildHomePageSeo } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
 
@@ -72,9 +73,7 @@
     `<SeoHead>` below. Locale-specific string + URL choices live
     in `buildHomePageSeo`, not in this file.
   */
-  const seo = $derived(
-    buildHomePageSeo({ locale, site, bio, contact, services })
-  );
+  const seo = $derived(buildHomePageSeo({ locale, site, bio, contact, services }));
 
   // Chapter state — flips to 1 once the Konsulentydelser section scrolls
   // into the upper half of the viewport. Drives the Stage material
@@ -182,7 +181,6 @@
   // Per-section home content — each grouped under its section name in
   // home.json, so the destructuring here mirrors the site structure
   // rather than a flat string bag.
-  const nav = $derived(home.nav);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   const chapter1 = $derived(home.chapter1);
@@ -210,10 +208,10 @@
     for-personal) scrolls up past the sticky threshold, at which point
     the button scrolls up naturally with the container. No JS required.
   -->
-  <div class="chapter-wrap chapter-wrap-therapi">
-    {#if therapyService?.cta}
-      <StickyCta cta={therapyService.cta} />
-    {/if}
+<div class="chapter-wrap chapter-wrap-therapi">
+  {#if therapyService?.cta}
+    <StickyCta cta={therapyService.cta} />
+  {/if}
 
   <!--
     Hero is a section, not a <header> — the page-level banner is
@@ -243,11 +241,13 @@
     -->
     <h1 class="statement">
       {#each statementLines as line, i}
-        <span class="line reveal-soft"
-          ><span class="ink">{@html line}</span>{#if i === statementLines.length - 1}<span
-              class="ink dot">.</span
-            >{/if}</span
-        >
+        <span class="line reveal-soft">
+          <span class="ink">{@html line}</span>{#if i === statementLines.length - 1}<span
+              class="ink dot"
+            >
+              .
+            </span>{/if}
+        </span>
       {/each}
     </h1>
     <p class="attribution reveal">
@@ -315,7 +315,11 @@
   </section>
 
   {#if therapyService}
-    <section class="service service-terapi" id={therapyService.slug} data-stage-anchor="service-terapi">
+    <section
+      class="service service-terapi"
+      id={therapyService.slug}
+      data-stage-anchor="service-terapi"
+    >
       <div class="service-head reveal">
         <span class="s-num">{therapyService.number}</span>
         <span class="s-kicker">{therapyService.kicker}</span>
@@ -365,11 +369,11 @@
       {/each}
     </ul>
   </section>
+</div>
+<!-- /.chapter-wrap-therapi -->
 
-  </div><!-- /.chapter-wrap-therapi -->
-
-  <!-- ============== CHAPTER II · KONSULENTYDELSER ============== -->
-  <!--
+<!-- ============== CHAPTER II · KONSULENTYDELSER ============== -->
+<!--
     chapter-wrap-konsulent extends through the bio section so
     `Kom i kontakt` stays sticky all the way to the contact block.
     The StickyCta is the wrap's first child so it's sticky-bound by
@@ -377,10 +381,10 @@
     parent, not nearest positioned ancestor — placing it inside
     chapter-konsulent would pin it to that small section instead).
   -->
-  <div class="chapter-wrap chapter-wrap-konsulent">
-    {#if intimacyService?.cta}
-      <StickyCta cta={intimacyService.cta} />
-    {/if}
+<div class="chapter-wrap chapter-wrap-konsulent">
+  {#if intimacyService?.cta}
+    <StickyCta cta={intimacyService.cta} />
+  {/if}
 
   <section class="chapter chapter-konsulent" data-stage-anchor="chapter-konsulent">
     <div class="chapter-inner reveal">
@@ -391,7 +395,11 @@
   </section>
 
   {#if intimacyService}
-    <section class="service service-intimacy" id={intimacyService.slug} data-stage-anchor="service-intimacy">
+    <section
+      class="service service-intimacy"
+      id={intimacyService.slug}
+      data-stage-anchor="service-intimacy"
+    >
       <div class="service-head reveal">
         <span class="s-num">{intimacyService.number}</span>
         <span class="s-kicker">{intimacyService.kicker}</span>
@@ -440,7 +448,11 @@
   {/if}
 
   {#if elderlyService}
-    <section class="service service-elderly" id={elderlyService.slug} data-stage-anchor="service-elderly">
+    <section
+      class="service service-elderly"
+      id={elderlyService.slug}
+      data-stage-anchor="service-elderly"
+    >
       <div class="service-head reveal">
         <span class="s-num">{elderlyService.number}</span>
         <span class="s-kicker">{elderlyService.kicker}</span>
@@ -467,7 +479,11 @@
   {/if}
 
   {#if teachingService}
-    <section class="service service-teaching" id={teachingService.slug} data-stage-anchor="service-teaching">
+    <section
+      class="service service-teaching"
+      id={teachingService.slug}
+      data-stage-anchor="service-teaching"
+    >
       <div class="service-head reveal">
         <span class="s-num">{teachingService.number}</span>
         <span class="s-kicker">{teachingService.kicker}</span>
@@ -509,14 +525,14 @@
     <p class="section-label reveal">{bio.label}</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
-        <img
-          src="/img/signe.jpg"
-          alt={bio.portraitAlt}
-          width="1200"
-          height="1400"
-          loading="lazy"
-          decoding="async"
-        />
+        <div class="bio-portrait-frame" class:framed={bio.portraitGround !== 'transparent'}>
+          <Portrait
+            src={bio.portrait}
+            alt={bio.portraitAlt}
+            ground={bio.portraitGround}
+            sizes="(min-width: 860px) 40vw, min(420px, 100vw)"
+          />
+        </div>
         <figcaption>
           <span class="bio-name">{nameSection.firstName} {nameSection.lastName}</span>
           <span class="bio-pronouns">{bio.pronouns}</span>
@@ -529,26 +545,21 @@
       </div>
     </div>
   </section>
+</div>
+<!-- /.chapter-wrap-konsulent — bio is inside so Kom i kontakt stays pinned through the about-section -->
 
-  </div><!-- /.chapter-wrap-konsulent — bio is inside so Kom i kontakt stays pinned through the about-section -->
-
-  {#if home.testimonials && home.testimonials.items.length > 0}
-    <!--
+{#if home.testimonials && home.testimonials.items.length > 0}
+  <!--
       Featured testimonials — curated mix across services, not
       tied to a specific chapter. Sits between the bio and the
       contact block as a closing-act of voices before the final CTA.
     -->
-    <section class="home-testimonials" data-stage-anchor="testimonials">
-      <Testimonials
-        items={home.testimonials.items}
-        label={home.testimonials.label}
-        prevLabel={locale === 'da' ? 'Forrige udtalelse' : 'Previous testimonial'}
-        nextLabel={locale === 'da' ? 'Næste udtalelse' : 'Next testimonial'}
-      />
-    </section>
-  {/if}
+  <section class="home-testimonials" data-stage-anchor="testimonials">
+    <Testimonials items={home.testimonials.items} label={home.testimonials.label} lang={locale} />
+  </section>
+{/if}
 
-  <!--
+<!--
     The `<ContactSection>` + `<SiteFooter>` that used to close
     the page out are now rendered by `(app)/+layout.svelte`
     (common to every content route).
@@ -659,8 +670,15 @@
     animation: drip 2.4s ease-in-out infinite;
   }
   @keyframes drip {
-    0%, 100% { transform: translateY(0); opacity: 0.6; }
-    50% { transform: translateY(6px); opacity: 1; }
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translateY(6px);
+      opacity: 1;
+    }
   }
 
   /* ============== NAME SECTION ============== */
@@ -773,7 +791,11 @@
   .manifest :global(em) {
     font-style: italic;
     font-weight: 500;
-    background: linear-gradient(180deg, transparent 68%, color-mix(in oklch, var(--highlight) 55%, transparent) 68%);
+    background: linear-gradient(
+      180deg,
+      transparent 68%,
+      color-mix(in oklch, var(--highlight) 55%, transparent) 68%
+    );
     padding: 0 0.04em;
   }
 
@@ -1223,17 +1245,14 @@
     position: relative;
     max-width: 420px;
   }
-  .bio-portrait img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 6 / 7;
-    object-fit: cover;
+  /* A painted ground is a card and casts one. A transparent ground is
+     only the figure, and a card's shadow around nothing would draw the
+     frame back in. */
+  .bio-portrait-frame.framed {
     /* Subtle warm tint border echoes the konsulent paper */
     box-shadow:
       0 1px 0 color-mix(in oklch, var(--text) 10%, transparent),
       0 24px 48px -24px color-mix(in oklch, var(--text) 45%, transparent);
-    filter: saturate(0.92) contrast(1.02);
   }
   .bio-portrait figcaption {
     margin-top: 1rem;

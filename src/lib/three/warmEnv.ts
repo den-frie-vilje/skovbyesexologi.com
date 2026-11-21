@@ -2,11 +2,7 @@
  * Abstract photo-studio environment for the mercury blob reflections.
  * Warm paper base, blush + cool-blue softboxes, overhead key light, no literal shapes.
  */
-export function paintStudioEnv(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-): void {
+export function paintStudioEnv(ctx: CanvasRenderingContext2D, width: number, height: number): void {
   const base = ctx.createLinearGradient(0, 0, 0, height);
   base.addColorStop(0, '#fff6ea');
   base.addColorStop(0.2, '#faecd9');
@@ -94,11 +90,7 @@ function softbox(
  * Warm/rich environment for liquid gold — dramatic amber/orange highlights,
  * deep brown shadows, strong horizon for that "wet metal" gallery light.
  */
-export function paintGoldEnv(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-): void {
+export function paintGoldEnv(ctx: CanvasRenderingContext2D, width: number, height: number): void {
   // Dramatic gold-photography env: bright overhead sky, warm amber wrap,
   // DEEP near-black floor. Gold needs that strong top-to-bottom contrast
   // for reflections to read as metal rather than uniform wax.
@@ -154,11 +146,7 @@ export function paintGoldEnv(
  * High-contrast environment for the dark amethyst — bright white keys on
  * near-black, with a few tight colored pinpoints to suggest prismatic refraction.
  */
-export function paintGemEnv(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-): void {
+export function paintGemEnv(ctx: CanvasRenderingContext2D, width: number, height: number): void {
   const base = ctx.createLinearGradient(0, 0, 0, height);
   base.addColorStop(0, '#2a1a38');
   base.addColorStop(0.35, '#120a1c');
@@ -219,11 +207,7 @@ export function paintGemEnv(
  * so the chrome picks up gentle blue reflections without the high-contrast
  * harshness of the pink gem env.
  */
-export function paintChromeEnv(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-): void {
+export function paintChromeEnv(ctx: CanvasRenderingContext2D, width: number, height: number): void {
   const base = ctx.createLinearGradient(0, 0, 0, height);
   base.addColorStop(0, '#eaf2fa');
   base.addColorStop(0.25, '#d6e1ef');
