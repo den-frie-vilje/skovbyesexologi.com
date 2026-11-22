@@ -18,6 +18,12 @@
   "supportsLabel": "",
   "testimonials": [],
   "studiosLabel": "",
+  "homeStage": {
+    "bubble": "topRightSm",
+    "drops": "disperseLowC",
+    "gem": "cornerBRsm",
+    "intensity": 1
+  },
   "stage": {
     "bubble": "fullBleed",
     "drops": "offstage",

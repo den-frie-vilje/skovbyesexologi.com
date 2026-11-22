@@ -179,12 +179,17 @@ export type Service = {
    *  the array form lets a service accumulate quotes over time
    *  without a schema change. */
   testimonials?: Testimonial[];
+  /** Optional pull-quote set inside the service's homepage section. */
+  pullQuote?: string;
   cta?: ServiceCTA;
   studiosLabel?: string;
   studios?: StudioCredit[];
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */
   chapter: ServiceChapter;
+  /** Stage configuration while the service's section is in view on
+   *  the homepage. */
+  homeStage: StageConfig;
   /** Stage configuration for the service detail page. Typically
    *  one of the three elements uses the `fullBleed` pose as a
    *  background wash, with the others `offstage`. */
@@ -255,7 +260,6 @@ export type HomePage = {
   ritual: HomeRitual;
   forPersonal: HomeList;
   chapter2: ChapterHeader;
-  pillQuote: string;
   forWork: HomeList;
   /** Curated featured testimonials — a mix across services rather
    *  than per-service, shown between the bio and contact sections.
@@ -344,6 +348,34 @@ export function serviceBySlug(
  *  language-switch links. */
 export function serviceById(locale: Locale | string | undefined, id: string): Service | undefined {
   return contentFor(locale).services.find((s) => s.id === id);
+}
+
+/** The services of one chapter, in display order (by `number`). The
+ *  homepage renders one section per entry, so the set of services is
+ *  whatever the CMS holds. */
+export function servicesInChapter(services: Service[], chapter: ServiceChapter): Service[] {
+  return services.filter((s) => s.chapter === chapter);
+}
+
+/** The call-to-action that covers a whole chapter: that of its first
+ *  service that has one. */
+export function chapterCta(services: Service[], chapter: ServiceChapter): ServiceCTA | undefined {
+  return servicesInChapter(services, chapter).find((s) => s.cta)?.cta;
+}
+
+/** `data-stage-anchor` id of a service's section on the homepage. */
+export function serviceAnchorId(service: Service): string {
+  return `service-${service.id}`;
+}
+
+/** Every stage anchor on the homepage: the fixed sections from the
+ *  Home content, then one per service. The hero stays first; the stage
+ *  starts from the first anchor. */
+export function homeStageSections(bundle: LocaleBundle): SectionStage[] {
+  return [
+    ...bundle.home.stage.sections,
+    ...bundle.services.map((s) => ({ id: serviceAnchorId(s), stage: s.homeStage }))
+  ];
 }
 
 /** Locale-specific detail-page path for a service slug. Matches the

@@ -15,6 +15,7 @@
   ],
   "supportsLabel": "",
   "testimonials": [],
+  "pullQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimate relationships on screen.",
   "cta": {
     "label": "Get in touch",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
@@ -53,6 +54,12 @@
       "url": "https://www.bedside-productions.com"
     }
   ],
+  "homeStage": {
+    "bubble": "heroRightBig",
+    "drops": "bottomLeftMed",
+    "gem": "topRightSm",
+    "intensity": 1.2
+  },
   "stage": {
     "bubble": "offstage",
     "drops": "topRightMed",

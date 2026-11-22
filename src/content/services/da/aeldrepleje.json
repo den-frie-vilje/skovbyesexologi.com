@@ -20,6 +20,12 @@
     "kind": "primary"
   },
   "studiosLabel": "",
+  "homeStage": {
+    "bubble": "topLeftSm",
+    "drops": "cornerBLsm",
+    "gem": "heroRightBig",
+    "intensity": 1
+  },
   "stage": {
     "bubble": "offstage",
     "drops": "offstage",

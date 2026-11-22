@@ -2,7 +2,7 @@
  * OG image generator.
  *
  * Screenshots the prerendered `/og/[[lang=locale]]/[slug]` routes to
- * 1200×630 PNGs in `static/img/og/`. Those PNGs are what the main
+ * 1200×630 PNGs in `static/gen/og/`. Those PNGs are what the main
  * pages reference as `og:image` — already a filesystem artifact, no
  * runtime rendering in production.
  *
@@ -31,7 +31,7 @@
 
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -48,23 +48,21 @@ const SETTLE_MS = SOFTWARE ? 150_000 : 6_000;
 type Variant = {
   /** URL path to navigate to, relative to the dev server. */
   path: string;
-  /** Output filename under static/img/og/ (without extension). */
+  /** Output filename under static/gen/og/ (without extension). */
   name: string;
 };
 
 /*
-  Add new variants here — matches entries in the OG route's
-  +page.ts. OG slugs use the stable service `id` (content
-  filename), NOT the locale-specific URL slug, so each OG URL
-  stays the same across locales.
+  One image per locale for the home page and for every service in the
+  content. OG slugs use the stable service `id` (the content filename),
+  NOT the locale-specific URL slug, so each OG URL stays the same across
+  locales. The OG route's +page.ts builds its list the same way.
 */
-const OG_SLUGS = [
-  'home',
-  'terapi',
-  'intimacy-coordination',
-  'aeldrepleje',
-  'undervisning'
-] as const;
+const SERVICE_IDS = readdirSync(resolve(repoRoot, 'src', 'content', 'services', 'da'))
+  .filter((file) => file.endsWith('.json'))
+  .map((file) => file.replace(/\.json$/, ''))
+  .sort();
+const OG_SLUGS = ['home', ...SERVICE_IDS];
 const variants: Variant[] = OG_SLUGS.flatMap((slug) => [
   { path: `/og/${slug}`, name: `${slug}.da` },
   { path: `/og/en/${slug}`, name: `${slug}.en` }
@@ -130,7 +128,7 @@ async function main() {
     */
     const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 2 });
 
-    const outDir = resolve(repoRoot, 'static', 'img', 'og');
+    const outDir = resolve(repoRoot, 'static', 'gen', 'og');
     mkdirSync(outDir, { recursive: true });
 
     for (const v of variants) {
