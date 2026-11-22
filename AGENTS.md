@@ -443,6 +443,11 @@ a field on the service.
   finalising any Svelte code
 - Never install binaries globally — always via pkgx (`pkgx pnpm …`,
   `pkgx node …`)
+- Admin copy (`static/admin/config.yml`) follows the Apple Style Guide:
+  a label is a plain noun in sentence case; a hint is one short
+  sentence, only where the label is not enough; no implementation
+  terms, no reasons. Every field has a label. Developer explanations
+  go in YAML comments
 - Record design / architectural decisions in `./docs` (create as needed)
 - Don't mention Claude or AI-authored changes in commit messages or UI
   copy unless the user asks — Signe's voice only

@@ -40,6 +40,15 @@
 # leave the browser tab.
 #
 # ============================================================
+# COPY
+# ============================================================
+# Labels and hints follow the Apple Style Guide. A label is a plain
+# noun in sentence case. A hint is one short sentence, present only
+# where the label is not enough, and says what the editor sees or
+# should do. No implementation terms, no reasons, no "optional".
+# Explanations for developers go in comments like this one.
+#
+# ============================================================
 # MEDIA
 # ============================================================
 # static/img/ is the editor's asset library and holds nothing but
@@ -173,13 +182,13 @@ i18n:
 collections:
   # ---- Site metadata ----
   - name: site
-    label: Site metadata
+    label: Site
     label_singular: Site
     editor: { preview: false }
     i18n: true
     files:
       - name: site
-        label: Site metadata
+        label: Site
         file: 'src/content/site.{{locale}}.json'
         format: json
         i18n: true
@@ -190,65 +199,56 @@ collections:
             widget: string
             i18n: duplicate
             readonly: true
-            hint: >-
-              ISO 639-1 code — bound to the filename locale
-              suffix (site.da.json → `da`, site.en.json → `en`).
-              Read-only to prevent accidental mismatches that
-              would break the JSON-LD `inLanguage` generation.
+            hint: Set by the site.
           - { name: tagline, label: Tagline, widget: string, i18n: true }
-          - { name: leadIn, label: Lead-in paragraph, widget: text, i18n: true }
+          - { name: leadIn, label: Introduction, widget: text, i18n: true }
           - name: footerCopyright
             label: Footer copyright
             widget: string
             i18n: true
-            hint: 'Template tokens: {year}, {name}, {cvr}.'
+            hint: 'Use {year}, {name} and {cvr}.'
 
   # ---- Contact info ----
   - name: contact
-    label: Contact info
+    label: Contact
     label_singular: Contact
     editor: { preview: false }
     i18n: true
     files:
       - name: contact
-        label: Contact info
+        label: Contact
         file: 'src/content/contact.{{locale}}.json'
         format: json
         i18n: true
         fields:
           - { name: label, label: Section label, widget: string, i18n: true }
-          - { name: heading, widget: string, i18n: true }
-          - { name: lede, widget: text, i18n: true }
-          - { name: email, widget: string, i18n: duplicate }
-          - { name: phone, widget: string, i18n: duplicate }
-          - { name: address, widget: string, i18n: true }
+          - { name: heading, label: Heading, widget: string, i18n: true }
+          - { name: lede, label: Introduction, widget: text, i18n: true }
+          - { name: email, label: Email, widget: string, i18n: duplicate }
+          - { name: phone, label: Phone, widget: string, i18n: duplicate }
+          - { name: address, label: Address, widget: string, i18n: true }
           - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
           - { name: hours, label: Opening hours, widget: string, i18n: true }
-          - { name: responseTime, label: Response time note, widget: text, i18n: true }
+          - { name: responseTime, label: Response time, widget: text, i18n: true }
           - name: fieldLabels
-            label: Inline field labels (contact card)
+            label: Field labels
             widget: object
             i18n: true
             fields:
-              - { name: email, widget: string, i18n: true }
-              - { name: phone, widget: string, i18n: true }
-              - { name: address, widget: string, i18n: true }
-              - { name: hours, widget: string, i18n: true }
+              - { name: email, label: Email, widget: string, i18n: true }
+              - { name: phone, label: Phone, widget: string, i18n: true }
+              - { name: address, label: Address, widget: string, i18n: true }
+              - { name: hours, label: Opening hours, widget: string, i18n: true }
           - name: socials
-            label: Social profiles (optional)
+            label: Social profiles
             widget: list
             required: false
             i18n: duplicate
-            hint: >-
-              Listed in the footer as monochrome icons AND emitted
-              in JSON-LD as `sameAs` on the business + person nodes
-              (signals entity consolidation to search engines).
-              Leave a URL blank to keep the platform on the list
-              but hidden. Same URLs across locales — edit in DA
-              and EN auto-syncs.
+            hint: Shown as icons in the footer.
             summary: '{{fields.platform}} · {{fields.url}}'
             fields:
               - name: platform
+                label: Platform
                 widget: select
                 options:
                   - { label: LinkedIn, value: linkedin }
@@ -258,13 +258,14 @@ collections:
                   - { label: 'X (Twitter)', value: x }
                   - { label: YouTube, value: youtube }
               - name: url
+                label: Link
                 widget: string
                 required: false
-                hint: Full https:// URL to the profile. Blank to hide.
+                hint: Leave empty to hide.
 
   # ---- Bio ----
   - name: bio
-    label: Biography
+    label: Bio
     label_singular: Bio
     editor: { preview: false }
     i18n: true
@@ -276,39 +277,29 @@ collections:
         i18n: true
         fields:
           - { name: label, label: Section label, widget: string, i18n: true }
-          - { name: heading, widget: string, i18n: true }
-          - { name: pronouns, widget: string, i18n: true }
+          - { name: heading, label: Heading, widget: string, i18n: true }
+          - { name: pronouns, label: Pronouns, widget: string, i18n: true }
           - name: portrait
-            label: Portrait photo
+            label: Portrait
             widget: image
             i18n: duplicate
             media_folder: /static/img/portrait
             public_folder: /img/portrait
-            hint: >-
-              Shown in the bio section and on the link-preview images.
-              Works best taken against a plain, evenly lit wall: the
-              figure is cut out and placed on the background chosen
-              below. The frame is upright (6:7) and keeps the top of the
-              photo. At least 1200 px wide stays sharp on large screens.
-              Same photo in both locales.
+            hint: Use a photo taken against a plain, evenly lit wall, at least 1200 px wide.
           - name: portraitGround
-            label: Portrait background
+            label: Background
             widget: select
             i18n: duplicate
             default: transparent
             options:
-              - { label: 'None: the figure stands directly on the page', value: transparent }
-              - { label: 'Quiet floor: a low shade under the figure, fading out', value: floor }
+              - { label: None, value: transparent }
+              - { label: Quiet floor, value: floor }
               - { label: White, value: white }
-              - { label: 'Warm: paper into rose', value: warm }
-              - { label: 'Chartreuse: cool paper into the highlighter green', value: chartreuse }
-              - { label: 'Cool: pale into mercury blue', value: cool }
-            hint: >-
-              What the cut-out portrait stands in front of. The figure is
-              cut out of the photograph when the site builds, and its
-              shadow falls on whichever background is chosen here. The
-              link-preview images show the quiet floor as none.
-          - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
+              - { label: Warm, value: warm }
+              - { label: Chartreuse, value: chartreuse }
+              - { label: Cool, value: cool }
+            hint: Link previews show Quiet floor as None.
+          - { name: portraitAlt, label: Portrait description, widget: string, i18n: true, hint: For screen readers. }
           - name: body
             label: Body
             widget: markdown
@@ -319,13 +310,11 @@ collections:
             # fades in with a slight stagger on the page.
             buttons: [bold, italic, link]
             editor_components: []
-            hint: >-
-              Signe's bio. Separate paragraphs with a blank line. Bold,
-              italic, and links are available.
+            hint: Leave an empty line between paragraphs.
 
   # ---- Home page (includes stage choreography) ----
   - name: home
-    label: Home page
+    label: Home
     label_singular: Home
     editor: { preview: false }
     i18n: true
@@ -337,13 +326,14 @@ collections:
         i18n: true
         fields:
           - name: hero
+            label: Hero
             widget: object
             i18n: true
             fields:
-              - { name: name, label: Brand name (hero), widget: string, i18n: true }
-              - { name: city, widget: string, i18n: true }
+              - { name: name, label: Name, widget: string, i18n: true }
+              - { name: city, label: City, widget: string, i18n: true }
               - name: statement
-                label: Hero statement
+                label: Statement
                 widget: markdown
                 i18n: true
                 # Single field replacing the old start/end/em split.
@@ -352,51 +342,48 @@ collections:
                 # marquee statement.
                 buttons: [italic]
                 editor_components: []
-                hint: >-
-                  The big hero line. Press Enter to break it onto a new
-                  display line. Italicise a word to give it the accent
-                  underline (as in "ikke som du *burde*"). A decorative
-                  period is added automatically at the end.
-              - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
-              - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
+                hint: Press Return for a new line. Italic text is underlined.
+              - { name: attribution, label: Role line, widget: text, i18n: true }
+              - { name: scrollLabel, label: Scroll label, widget: string, i18n: true }
 
           - name: nameSection
-            label: 'Who: name + role block'
+            label: Name and role
             widget: object
             i18n: true
             fields:
-              - { name: eyebrow, widget: string, i18n: true }
+              - { name: eyebrow, label: Top line, widget: string, i18n: true }
               # firstName + lastName: structurally shared — DA edits copy to EN
-              - { name: firstName, widget: string, i18n: duplicate }
-              - { name: lastName, widget: string, i18n: duplicate }
-              - { name: pronouns, widget: string, i18n: true }
-              - { name: roleLine, widget: text, i18n: true }
-              - { name: roleSub, widget: text, i18n: true }
+              - { name: firstName, label: First name, widget: string, i18n: duplicate }
+              - { name: lastName, label: Last name, widget: string, i18n: duplicate }
+              - { name: pronouns, label: Pronouns, widget: string, i18n: true }
+              - { name: roleLine, label: Role, widget: text, i18n: true }
+              - { name: roleSub, label: Role details, widget: text, i18n: true }
 
           - name: chapter1
-            label: Chapter I header (Terapi)
+            label: 'Chapter I: Terapi'
             widget: object
             i18n: true
             fields:
-              - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
-              - { name: title, widget: string, i18n: true }
-              - { name: lede, widget: text, i18n: true }
+              - { name: mark, label: Numeral, widget: string, i18n: duplicate }
+              - { name: title, label: Title, widget: string, i18n: true }
+              - { name: lede, label: Introduction, widget: text, i18n: true }
           - name: chapter2
-            label: Chapter II header (Konsulentydelser)
+            label: 'Chapter II: Konsulentydelser'
             widget: object
             i18n: true
             fields:
-              - { name: mark, widget: string, i18n: duplicate }
-              - { name: title, widget: string, i18n: true }
-              - { name: lede, widget: text, i18n: true }
+              - { name: mark, label: Numeral, widget: string, i18n: duplicate }
+              - { name: title, label: Title, widget: string, i18n: true }
+              - { name: lede, label: Introduction, widget: text, i18n: true }
 
           - name: manifest
-            label: Manifest (Chapter I)
+            label: Manifest
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string, i18n: true }
+              - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
+                label: Lines
                 widget: list
                 i18n: true
                 summary: '{{fields.text}}'
@@ -407,90 +394,87 @@ collections:
                     buttons: [italic]
                     editor_components: []
                     i18n: true
-                    hint: >-
-                      One manifest line. Italicise the keyword to give it
-                      the accent underline (e.g. "Grænser er ikke en
-                      *test*").
+                    hint: Italic text is underlined.
           - name: ritual
-            label: Ritual (Chapter I)
+            label: Ritual
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string, i18n: true }
-              - { name: subtitle, widget: string, i18n: true }
+              - { name: label, label: Section label, widget: string, i18n: true }
+              - { name: subtitle, label: Subtitle, widget: string, i18n: true }
               - name: steps
+                label: Steps
                 widget: list
                 i18n: true
                 fields:
-                  - { name: n, widget: string, i18n: duplicate }
-                  - { name: title, widget: string, i18n: true }
-                  - { name: body, widget: text, i18n: true }
+                  - { name: n, label: Number, widget: string, i18n: duplicate }
+                  - { name: title, label: Title, widget: string, i18n: true }
+                  - { name: body, label: Text, widget: text, i18n: true }
           - name: forPersonal
-            label: 'Kom forbi hvis du — personal'
+            label: Kom forbi hvis du
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string, i18n: true }
+              - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
+                label: Lines
                 widget: list
                 i18n: true
-                field: { name: line, widget: string, i18n: true }
+                field: { name: line, label: Line, widget: string, i18n: true }
 
           - name: forWork
-            label: 'Skriv hvis I — work'
+            label: Skriv hvis I
             widget: object
             i18n: true
             fields:
-              - { name: label, widget: string, i18n: true }
+              - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
+                label: Lines
                 widget: list
                 i18n: true
-                field: { name: line, widget: string, i18n: true }
+                field: { name: line, label: Line, widget: string, i18n: true }
 
           - name: testimonials
-            label: Featured testimonials (between bio + contact)
+            label: Testimonials
             widget: object
             required: false
             i18n: true
             fields:
               - { name: label, label: Section label, widget: string, i18n: true }
               - name: items
+                label: Quotes
                 widget: list
                 i18n: true
                 summary: '{{fields.source}}'
                 fields:
-                  - { name: quote, widget: text, i18n: true }
-                  - { name: source, widget: string, i18n: true }
+                  - { name: quote, label: Quote, widget: text, i18n: true }
+                  - { name: source, label: Source, widget: string, i18n: true }
 
           # Stage choreography is part of the page's STRUCTURE,
           # not its copy — `i18n: duplicate` keeps DA + EN on
           # identical pose sequences so the WebGL scroll
           # choreography stays in lock-step across locales.
           - name: stage
-            label: Stage choreography
+            label: Stage
             widget: object
             i18n: duplicate
             fields:
               - name: sections
+                label: Sections
                 widget: list
                 allow_add: false
                 collapsed: false
-                hint: >-
-                  Each entry configures the WebGL stage when its
-                  section scrolls into view. IDs must match
-                  data-stage-anchor="<id>" attributes in the homepage
-                  template — do not add, remove, or rename sections
-                  without a developer. The service sections are not in
-                  this list: each service carries its own homepage pose.
+                hint: One entry per section. Don’t change an ID. Services set their own.
                 fields:
-                  - { name: id, widget: string }
+                  - { name: id, label: ID, widget: string }
                   - name: stage
+                    label: Pose
                     widget: object
                     fields:
-                      - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
-                      - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
-                      - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
-                      - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+                      - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+                      - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+                      - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+                      - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
 
   # ---- Services (folder; one file per service × per locale) ----
   #
@@ -522,26 +506,29 @@ collections:
     i18n: true
     fields:
       - name: slug
+        label: Web address
         widget: string
         i18n: true
-        hint: 'URL segment — different per locale (e.g. terapi / therapy).'
+        hint: The last part of the page link, such as terapi.
       - name: number
+        label: Number
         widget: string
         i18n: duplicate
-        hint: 'Two-digit display number, e.g. "01". Also the order on the homepage and in the menu. Same across locales.'
+        hint: Two digits, such as 01. Sets the order.
       - name: chapter
+        label: Chapter
         widget: select
         i18n: duplicate
         default: terapi
         options:
-          - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
-          - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
-        hint: 'Drives palette + homepage grouping. Same across DA + EN.'
-      - { name: title, widget: string, i18n: true }
-      - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
-      - { name: blurb, widget: text, i18n: true }
+          - { label: 'Chapter I: Terapi', value: terapi }
+          - { label: 'Chapter II: Konsulentydelser', value: konsulent }
+        hint: Sets the colours and where the service appears.
+      - { name: title, label: Title, widget: string, i18n: true }
+      - { name: kicker, label: Audience, widget: string, i18n: true, hint: Such as film · tv · teater. }
+      - { name: blurb, label: Summary, widget: text, i18n: true }
       - name: body
-        label: Body (prose)
+        label: Body
         widget: markdown
         required: false
         i18n: true
@@ -553,96 +540,87 @@ collections:
         # plain italic.
         buttons: [bold, italic, link, heading-two, heading-three]
         editor_components: []
-        hint: >-
-          Optional longer prose, shown on the detail page after the
-          blurb. Use the two heading levels to break it into sections;
-          italic inside a heading becomes the highlighted accent. The
-          feature bullets are controlled separately — see the toggle
-          below.
+        hint: Shown on the service page. Italic text in a heading is highlighted.
       - name: bullets
-        label: Feature bullets
+        label: Bullets
         widget: list
         i18n: true
-        field: { name: bullet, widget: string, i18n: true }
+        field: { name: bullet, label: Bullet, widget: string, i18n: true }
       - name: showDetailBullets
-        label: Show feature bullets on the detail page
+        label: Show bullets on the service page
         widget: boolean
         default: true
         i18n: duplicate
-        hint: >-
-          On by default. Turn off to hide the bullet list on this
-          service's detail page (e.g. when the prose body says it
-          better, or to drop the list entirely). The homepage service
-          card always shows the bullets regardless. Same in both
-          locales.
-      - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
+        hint: The home page always shows them.
+      - { name: supportsLabel, label: Keywords heading, widget: string, i18n: true, required: false }
       - name: supports
-        label: Supporting keywords (optional)
+        label: Keywords
         widget: list
         required: false
         i18n: true
-        field: { name: keyword, widget: string, i18n: true }
+        field: { name: keyword, label: Keyword, widget: string, i18n: true }
       - name: testimonials
-        label: Testimonials (optional)
+        label: Testimonials
         widget: list
         required: false
         i18n: true
         summary: '{{fields.source}}'
         fields:
-          - { name: quote, widget: text, i18n: true }
-          - { name: source, widget: string, i18n: true }
+          - { name: quote, label: Quote, widget: text, i18n: true }
+          - { name: source, label: Source, widget: string, i18n: true }
       - name: pullQuote
-        label: Pull-quote on the homepage (optional)
+        label: Pull quote
         widget: text
         required: false
         i18n: true
-        hint: 'Set large inside this service''s section on the homepage.'
+        hint: Shown large on the home page.
       - name: cta
-        label: Call-to-action button (optional)
+        label: Button
         widget: object
         required: false
         i18n: true
         fields:
-          - { name: label, widget: string, i18n: true }
-          - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
+          - { name: label, label: Text, widget: string, i18n: true }
+          - { name: href, label: Link, widget: string, i18n: duplicate, hint: 'A web, mailto: or tel: link.' }
           - name: kind
+            label: Style
             widget: select
             i18n: duplicate
             default: primary
-            options: [primary, secondary]
-      - { name: studiosLabel, label: Studios list label (optional), widget: string, i18n: true, required: false }
+            options:
+              - { label: Primary, value: primary }
+              - { label: Secondary, value: secondary }
+      - { name: studiosLabel, label: Studios heading, widget: string, i18n: true, required: false }
       - name: studios
-        label: Studio credits (optional)
+        label: Studios
         widget: list
         required: false
         i18n: duplicate
-        hint: 'Black cut-out silhouette SVGs on transparent backgrounds. Shared across locales.'
         fields:
-          - { name: name, widget: string }
+          - { name: name, label: Name, widget: string }
           - name: logo
+            label: Logo
             widget: image
             media_folder: /static/img/studios
             public_folder: /img/studios
-          - { name: url, widget: string, required: false }
+            hint: A black SVG on a transparent background.
+          - { name: url, label: Link, widget: string, required: false }
       - name: homeStage
-        label: Homepage stage pose
+        label: Stage on the home page
         widget: object
         i18n: duplicate
-        hint: >-
-          Where the orb, the drops and the gem sit while this service's
-          section is in view on the homepage. Same across locales.
+        hint: Where the orb, drops and gem sit while this service is in view.
         fields:
-          - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
-          - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
-          - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
-          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+          - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+          - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+          - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
       - name: stage
-        label: Detail-page stage pose
+        label: Stage on the service page
         widget: object
         i18n: duplicate
-        hint: 'Structural — same across locales.'
         fields:
-          - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
-          - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
-          - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
-          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+          - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+          - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+          - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
