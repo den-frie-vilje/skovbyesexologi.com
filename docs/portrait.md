@@ -5,7 +5,7 @@ Signe picks the photograph and the ground in the CMS; the build does the rest.
 
 ## What the editor controls
 
-Two fields in the Bio collection, both shared across locales:
+Two fields in Bio, both shared across locales:
 
 - `portrait`: the photograph, from the media library.
 - `portraitGround`: `transparent` (the default: no ground, the figure and its

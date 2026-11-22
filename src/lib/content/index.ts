@@ -125,11 +125,19 @@ export type ServiceCTA = {
   kind?: 'primary' | 'secondary';
 };
 
-/** Studio credit / client logo. */
-export type StudioCredit = {
+/** One past client or collaborator, shown as a logo. */
+export type Reference = {
   name: string;
   logo: string;
   url?: string;
+};
+
+/** A service's references: the heading above the logo strip and the
+ *  logos in it. The heading names what the references are for that
+ *  service, so it translates with the service. */
+export type References = {
+  heading: string;
+  items: Reference[];
 };
 
 export type Testimonial = { quote: string; source: string };
@@ -182,8 +190,7 @@ export type Service = {
   /** Optional pull-quote set inside the service's homepage section. */
   pullQuote?: string;
   cta?: ServiceCTA;
-  studiosLabel?: string;
-  studios?: StudioCredit[];
+  references?: References;
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */
   chapter: ServiceChapter;

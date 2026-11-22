@@ -31,7 +31,10 @@
     "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
     "kind": "primary"
   },
-  "studiosLabel": "",
+  "references": {
+    "heading": "",
+    "items": []
+  },
   "homeStage": {
     "bubble": "topRightSm",
     "drops": "disperseLowC",

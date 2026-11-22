@@ -36,7 +36,7 @@ pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing src/lib/stage
 - **[deploy/](deploy/)** — Dockerfile, compose files, Caddyfiles,
   nginx config.
 - **[static/admin/config.yml](static/admin/config.yml)** — Sveltia CMS
-  collection definitions.
+  content definitions.
 
 ## Deploy
 

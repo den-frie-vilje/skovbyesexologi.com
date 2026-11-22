@@ -16,7 +16,7 @@
   import { resolveAnchor } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import SeoHead from '$lib/components/SeoHead.svelte';
-  import StudioLogos from '$lib/components/StudioLogos.svelte';
+  import ReferenceLogos from '$lib/components/ReferenceLogos.svelte';
   import Portrait, { isOpenGround } from '$lib/components/Portrait.svelte';
   import { buildHomePageSeo } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
@@ -245,12 +245,12 @@
       No inline testimonials here: the `<Testimonials>` section at the
       bottom of the page already curates voices across services.
     -->
-    {#if service.studios?.length && service.studiosLabel}
-      <div class="studios reveal">
-        <p class="studios-lede">{service.studiosLabel}</p>
-        <StudioLogos
-          studios={service.studios}
-          label={service.studiosLabel}
+    {#if service.references?.items?.length && service.references.heading}
+      <div class="references reveal">
+        <p class="references-lede">{service.references.heading}</p>
+        <ReferenceLogos
+          items={service.references.items}
+          label={service.references.heading}
           locale={data.locale}
           scale={1.25}
         />
@@ -1090,13 +1090,13 @@
     margin-top: calc(-1 * (var(--cta-h-box) + var(--cta-v)));
   }
 
-  /* ============== STUDIO CREDITS ============== */
-  .studios {
+  /* ============== REFERENCES ============== */
+  .references {
     margin-top: 2.25rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--rule);
   }
-  .studios-lede {
+  .references-lede {
     font-family: var(--font-mono);
     font-size: 0.68rem;
     letter-spacing: 0.14em;
@@ -1104,7 +1104,7 @@
     color: var(--text-muted);
     margin: 0 0 1.1rem;
   }
-  /* Logo row rendered via $lib/components/StudioLogos.svelte —
+  /* Logo row rendered via $lib/components/ReferenceLogos.svelte —
      equal-area sizing + overflow marquee + manual-scroll fallback
      live there, shared with the service detail pages. */
 
