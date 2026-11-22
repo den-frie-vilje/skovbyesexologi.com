@@ -24,7 +24,7 @@
   import RitualSection from './RitualSection.svelte';
   import NumberedList from './NumberedList.svelte';
   import { renderServiceBody } from '$lib/markdown';
-  import StudioLogos from './StudioLogos.svelte';
+  import ReferenceLogos from './ReferenceLogos.svelte';
 
   interface Props {
     service: Service;
@@ -245,18 +245,18 @@
       </section>
     {/if}
 
-    <!-- ============== STUDIOS ============== -->
+    <!-- ============== REFERENCES ============== -->
     <!--
-        Studios sit between the concrete "what's included" bullets
+        References sit between the concrete "what's included" bullets
         and the testimonials — logos read as "I've worked with" and
         flow naturally into "here's what they said".
       -->
-    {#if service.studios && service.studiosLabel}
-      <section class="s-block s-studios-block">
-        <p class="s-label">{service.studiosLabel}</p>
-        <StudioLogos
-          studios={service.studios}
-          label={service.studiosLabel}
+    {#if service.references?.items?.length && service.references.heading}
+      <section class="s-block s-references-block">
+        <p class="s-label">{service.references.heading}</p>
+        <ReferenceLogos
+          items={service.references.items}
+          label={service.references.heading}
           locale={bundle.site.lang}
         />
       </section>
@@ -560,9 +560,9 @@
      styles live there so the same component can be used on the
      homepage featured section. */
 
-  /* Studios strip rendered via $lib/components/StudioLogos.svelte —
+  /* References strip rendered via $lib/components/ReferenceLogos.svelte —
      equal-area logo sizing + overflow marquee live there so the
-     homepage intimacy block stays visually identical. */
+     homepage service sections stay visually identical. */
 
   /* CTA moved from inline `.s-cta-block` to `<StickyCta>` at the
      top of the article — styles live in the component. */

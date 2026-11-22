@@ -115,7 +115,7 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 src/
   app.html                       Font imports, base head
   app.css                        @theme tokens + base resets
-  content/                       JSON-per-collection content tree
+  content/                       JSON content tree
     {site,contact,bio,home}.{da,en}.json
     services/{da,en}/{terapi,intimacy-coordination,aeldrepleje,undervisning}.json
   lib/
@@ -142,7 +142,7 @@ static/
   favicon.svg
   img/                           The editor's asset library: only what an editor uploaded
     portrait/                    Bio portrait (`bio.portrait`)
-    studios/                     Studio logos
+    references/                  Reference logos (`service.references.items`)
   gen/                           Written by scripts, committed, never listed in the CMS
     portrait/                    Keyed portrait cutouts — see docs/portrait.md
     og/                          Link-preview images (`pnpm og`)
@@ -371,6 +371,12 @@ src/content/
                             stable cross-locale id, `slug` the URL segment
 ```
 
+In `static/admin/config.yml` the four top-level files are `singletons`:
+each is one entry in the admin sidebar and opens straight into its form.
+Services is the one collection. A service's past clients sit in one
+group, `references`: a `heading` that translates with the service, and
+`items` (name, logo, link) shared across locales.
+
 **The site enumerates the services collection.** A service created in the
 CMS gets, with no template change:
 
@@ -381,7 +387,7 @@ CMS gets, with no template change:
 
 One snippet in `routes/(app)/[[lang=locale]]/+page.svelte` renders every
 service section. Its optional blocks (supporting keywords, pull-quote,
-studio credits) appear when the service has the content for them. Each
+references) appear when the service has the content for them. Each
 service carries its own stage poses: `homeStage` for its homepage section,
 `stage` for its detail page. `homeStageSections` joins them to the fixed
 sections from `home.json`.
