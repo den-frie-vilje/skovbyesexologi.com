@@ -16,7 +16,7 @@
 <script lang="ts">
   import { contentFor } from '$lib/content';
   import Stage from '$lib/components/Stage.svelte';
-  import Portrait from '$lib/components/Portrait.svelte';
+  import Portrait, { isOpenGround } from '$lib/components/Portrait.svelte';
   // The name and the kicker set Fraunces in italic; the site's own CSS loads the upright only.
   import '@fontsource-variable/fraunces/opsz-italic.css';
   import type { PageProps } from './$types';
@@ -26,6 +26,10 @@
   const site = $derived(bundle.site);
   const home = $derived(bundle.home);
   const bio = $derived(bundle.bio);
+  // The floor shade grounds the figure where the page's frame cuts it
+  // off. The card has no such edge, so here it is no ground at all. A
+  // painted ground carries over as it is.
+  const ogGround = $derived(isOpenGround(bio.portraitGround) ? 'transparent' : bio.portraitGround);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   /*
@@ -178,7 +182,7 @@
       <Portrait
         src={bio.portrait}
         alt={bio.portraitAlt}
-        ground={bio.portraitGround}
+        ground={ogGround}
         sizes="420px"
         loading="eager"
         fill

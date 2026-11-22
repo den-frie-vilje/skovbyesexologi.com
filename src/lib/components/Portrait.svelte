@@ -6,7 +6,9 @@
   kept as shadow, so the ground below is plain CSS and can be anything:
   the editor picks one of `GROUNDS` in the CMS (`bio.portraitGround`).
   `transparent`, the default, paints none: the figure and its shadow stand
-  directly on the page.
+  directly on the page. `floor` adds a low shade that rises from the
+  bottom edge and fades out, so the figure has something to stand on
+  where the frame cuts it off.
 
   A portrait with no cutout in the manifest (a new upload before its build,
   or a photograph that could not be cut out) is shown as it is, filling the
@@ -17,8 +19,18 @@
 -->
 <script lang="ts" module>
   /** The grounds an editor can choose. Keep in step with `portraitGround` in `static/admin/config.yml`. */
-  export const GROUNDS = ['transparent', 'white', 'warm', 'chartreuse', 'cool'] as const;
+  export const GROUNDS = ['transparent', 'floor', 'white', 'warm', 'chartreuse', 'cool'] as const;
   export type PortraitGround = (typeof GROUNDS)[number];
+
+  /**
+   * Grounds that leave the frame open: the figure stands on the page, with
+   * at most a shade at its feet. A frame around them would be a frame
+   * around nothing, so a caller that draws one (a card shadow, a border)
+   * checks this first.
+   */
+  export function isOpenGround(ground: string): boolean {
+    return ground === 'transparent' || ground === 'floor';
+  }
 </script>
 
 <script lang="ts">
@@ -97,6 +109,10 @@
     Light grounds only: the jacket is near black and needs something to
     stand against. `transparent` has no rule; it is the default above.
   */
+  .portrait[data-ground='floor'] {
+    /* A neutral shade at the foot of the frame, gone a third of the way up. */
+    --ground: linear-gradient(to top, oklch(0.3 0.03 60 / 0.2) 0%, oklch(0.3 0.03 60 / 0) 34%);
+  }
   .portrait[data-ground='white'] {
     --ground: #fff;
   }

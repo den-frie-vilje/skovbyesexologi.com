@@ -17,7 +17,7 @@
   import { stage } from '$lib/stage/store.svelte';
   import SeoHead from '$lib/components/SeoHead.svelte';
   import StudioLogos from '$lib/components/StudioLogos.svelte';
-  import Portrait from '$lib/components/Portrait.svelte';
+  import Portrait, { isOpenGround } from '$lib/components/Portrait.svelte';
   import { buildHomePageSeo } from '$lib/seo/structured-data';
   import type { PageProps } from './$types';
 
@@ -444,7 +444,7 @@
     <p class="section-label reveal">{bio.label}</p>
     <div class="bio-grid">
       <figure class="bio-portrait reveal">
-        <div class="bio-portrait-frame" class:framed={bio.portraitGround !== 'transparent'}>
+        <div class="bio-portrait-frame" class:framed={!isOpenGround(bio.portraitGround)}>
           <Portrait
             src={bio.portrait}
             alt={bio.portraitAlt}
@@ -1164,9 +1164,9 @@
     position: relative;
     max-width: 420px;
   }
-  /* A painted ground is a card and casts one. A transparent ground is
-     only the figure, and a card's shadow around nothing would draw the
-     frame back in. */
+  /* A painted ground is a card and casts one. An open ground (none, or
+     the floor shade) is only the figure, and a card's shadow around
+     nothing would draw the frame back in. */
   .bio-portrait-frame.framed {
     /* Subtle warm tint border echoes the konsulent paper */
     box-shadow:
