@@ -1,8 +1,8 @@
 /**
  * Floating "Publicér" button on /admin.
  *
- * Adds a sage-green pill labelled "Publicér" to Sveltia's top
- * toolbar that takes the editor user to /publish (which merges
+ * Adds a sage-green pill labelled "Publicér" over Sveltia's top
+ * row that takes the editor user to /publish (which merges
  * staging→main and triggers a production deploy).
  *
  * Why this is JS-injected from a separate file rather than just a
@@ -29,22 +29,27 @@
  *
  *   - Inject a <style> tag into <head> on first load (Sveltia
  *     doesn't manipulate <head>, so the styles persist).
- *   - Poll every second: if authed, ensure a <a class="..."> is in
- *     the body; otherwise remove it. Anchor the button's `top` CSS
- *     property to Sveltia's primary toolbar `getBoundingClientRect().top`
- *     so the button rides along with whatever Sveltia is doing.
- *   - We anchor to `[role="toolbar"]` rather than the search input
- *     because the search input is only present on the collection-
- *     listing view; on the entry-editor view it's removed (or kept
- *     in DOM with zero dimensions, which would silently anchor the
- *     FAB to top:0). The primary toolbar exists on every Sveltia
- *     view (listing, editor, asset library, account menu, etc.).
- *   - We skip toolbars whose getBoundingClientRect is empty —
+ *   - Keep the button in step with Sveltia's own top row, on every
+ *     DOM change and navigation: centre it vertically on that row,
+ *     so it rides along when the announcement banner pushes the
+ *     toolbar down.
+ *   - The top row is the first visible `[role="toolbar"]` that is
+ *     NOT the bottom navigation. On a phone Sveltia's root views
+ *     (Contents, Assets) have no top toolbar at all, only a heading,
+ *     and the one toolbar in the DOM is the tab bar at the bottom of
+ *     the screen. There the button centres on the heading instead.
+ *   - We skip toolbars whose getBoundingClientRect is empty:
  *     Sveltia keeps stale editor toolbars in the DOM during route
  *     transitions, and they sit at top:0 width:0 height:0 until GC.
- *   - Mobile fallback: when no visible toolbar is found (rare —
- *     mostly during the auth screen, where the FAB is hidden anyway
- *     by the isAuthed() guard), we use top: 14px.
+ *
+ * Layouts (Sveltia switches to its phone layout below 768px):
+ *
+ *   - Wide: 120px in from the right edge, left of Sveltia's create
+ *     and account buttons.
+ *   - Phone: 10px in from the right edge, where the top row is
+ *     empty. Hidden while an entry is being edited: that row is
+ *     then full (title, options, Save), and there is nothing to
+ *     publish until the entry is saved and closed.
  *
  * Auth detection: Sveltia stores its OAuth token at
  * `localStorage["sveltia-cms.user"].token`. The same key is used
@@ -75,35 +80,47 @@
     if (document.getElementById('skovbye-fab-style')) return;
     const style = document.createElement('style');
     style.id = 'skovbye-fab-style';
-    // Inline literal — keeps the file standalone and avoids dynamic
-    // class names (CSP-friendly: the style sheet is part of the
-    // same-origin asset, no inline `style=` attributes needed).
-    style.textContent =
-      '.' +
-      FAB_CLASS +
-      ' {' +
-      'position: fixed;' +
-      'right: 120px;' +
-      'top: 14px;' +
-      'z-index: 99999;' +
-      'background: oklch(0.5 0.13 152);' +
-      'color: #fff;' +
-      'padding: 8px 14px;' +
-      'border-radius: 6px;' +
-      'text-decoration: none;' +
-      'font: 600 14px/1.2 system-ui, -apple-system, sans-serif;' +
-      'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);' +
-      'letter-spacing: 0.01em;' +
-      'white-space: nowrap;' +
-      'transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;' +
-      '}' +
-      '.' +
-      FAB_CLASS +
-      ':hover {' +
-      'transform: translateY(-1px);' +
-      'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);' +
-      'background: oklch(0.45 0.13 152);' +
-      '}';
+    // Part of this same-origin file, so the admin CSP needs nothing
+    // extra. Below 1024px Sveltia's own toolbar buttons grow to 40px
+    // for touch, and so does this one.
+    style.textContent = `
+      .${FAB_CLASS} {
+        position: fixed;
+        right: 120px;
+        top: 12px;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        height: 32px;
+        padding: 0 14px;
+        border-radius: 6px;
+        background: oklch(0.5 0.13 152);
+        color: #fff;
+        text-decoration: none;
+        font: 600 14px/1 system-ui, -apple-system, sans-serif;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: box-shadow 0.15s ease, background 0.15s ease;
+      }
+      .${FAB_CLASS}:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        background: oklch(0.45 0.13 152);
+      }
+      .${FAB_CLASS}[hidden] {
+        display: none;
+      }
+      @media (width < 1024px) {
+        .${FAB_CLASS} {
+          height: 40px;
+        }
+      }
+      @media (width < 768px) {
+        .${FAB_CLASS} {
+          right: 10px;
+        }
+      }
+    `;
     document.head.appendChild(style);
   }
 
@@ -116,56 +133,99 @@
     return a;
   }
 
-  function findVisibleToolbar() {
-    // Sveltia renders one or more `[role="toolbar"]` per view. On the
-    // collection-listing view there's a single primary toolbar. On the
-    // entry-editor view a second toolbar overlays it. During route
-    // transitions, stale toolbars are kept in the DOM at width=0/height=0
-    // before garbage collection — pick the first visible one so the
-    // FAB doesn't snap to top:0 while a stale element is at the top
-    // of the DOM.
-    const toolbars = document.querySelectorAll('[role="toolbar"]');
-    for (const tb of toolbars) {
-      const r = tb.getBoundingClientRect();
-      if (r.height > 0 && r.width > 0) return tb;
+  const PHONE = window.matchMedia('(width < 768px)');
+  /** Height of Sveltia's top row, and the centre line used before it has rendered. */
+  const TOP_ROW_CENTRE = 28;
+
+  function isVisible(el) {
+    const r = el.getBoundingClientRect();
+    return r.height > 0 && r.width > 0;
+  }
+
+  /** Sveltia's top toolbar, or null on a view that has none. */
+  function findTopToolbar() {
+    for (const tb of document.querySelectorAll('[role="toolbar"]')) {
+      if (tb.closest('.bottom-navigation')) continue;
+      if (isVisible(tb)) return tb;
     }
     return null;
   }
 
+  /** The view's heading, for the phone root views that have no toolbar. */
+  function findTopHeading() {
+    for (const h of document.querySelectorAll('h1, h2, [role="heading"]')) {
+      if (isVisible(h) && h.getBoundingClientRect().top < 120) return h;
+    }
+    return null;
+  }
+
+  /** True while an entry is open in the editor. */
+  function isEditing() {
+    for (const el of document.querySelectorAll('.content-editor')) {
+      if (isVisible(el)) return true;
+    }
+    return false;
+  }
+
   function sync() {
     let fab = document.querySelector('.' + FAB_CLASS);
-    if (isAuthed()) {
-      // Anchor vertically to Sveltia's primary toolbar. The toolbar
-      // is at top:0 normally and shifts down by ~36px when the
-      // announcement banner is shown — the FAB rides along.
-      //
-      // +12px is measured directly off Sveltia's own toolbar
-      // children (its buttons + search input all sit at top:12,
-      // height:32 inside the 56px-tall toolbar — geometric centre
-      // 28). The FAB's box is 32.8px tall (8+8 padding + 14×1.2
-      // line-height), so top:12 gives centerY:28.4 — 0.4px below
-      // Sveltia's own button centres, sub-pixel and visually
-      // identical. The FAB's top edge sits flush with Sveltia's
-      // button top edges.
-      const anchor = findVisibleToolbar();
-      const top = anchor ? anchor.getBoundingClientRect().top + 12 : 12;
-      if (!fab) {
-        fab = makeFab();
-        document.body.appendChild(fab);
-      }
-      fab.style.top = top + 'px';
-    } else if (fab) {
-      fab.remove();
+    if (!isAuthed()) {
+      if (fab) fab.remove();
+      return;
     }
+    if (!fab) {
+      fab = makeFab();
+      document.body.appendChild(fab);
+    }
+
+    const hide = PHONE.matches && isEditing();
+    if (fab.hidden !== hide) fab.hidden = hide;
+    if (hide) return;
+
+    // Centre on Sveltia's top row: the toolbar's first 56px, or the
+    // heading where there is no toolbar.
+    const toolbar = findTopToolbar();
+    const heading = toolbar ? null : findTopHeading();
+    let centre = TOP_ROW_CENTRE;
+    if (toolbar) {
+      centre = toolbar.getBoundingClientRect().top + TOP_ROW_CENTRE;
+    } else if (heading) {
+      const r = heading.getBoundingClientRect();
+      centre = r.top + r.height / 2;
+    }
+    const top = Math.round(centre - fab.offsetHeight / 2) + 'px';
+    if (fab.style.top !== top) fab.style.top = top;
   }
 
   function start() {
     injectStyles();
     sync();
-    // Cross-tab auth changes fire `storage` events. Same-tab changes
-    // (sign-in/sign-out within the current window) don't, so we also
-    // poll on an interval. 1s is fast enough that the FAB appears
-    // within ~a second of sign-in completing.
+
+    // Follow Sveltia as it renders: one sync per frame at most, on any
+    // DOM change. Writes to the button are guarded above, so its own
+    // updates do not feed the observer.
+    let queued = false;
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        sync();
+      });
+    };
+    new MutationObserver(queue).observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden', 'inert']
+    });
+    window.addEventListener('hashchange', queue);
+    window.addEventListener('resize', queue);
+    PHONE.addEventListener('change', queue);
+
+    // Sign-in and sign-out. Other tabs fire `storage`; this tab does
+    // not, and signing out changes no DOM the observer is sure to
+    // see, so a slow poll covers it.
     window.addEventListener('storage', sync);
     setInterval(sync, SYNC_INTERVAL_MS);
   }
