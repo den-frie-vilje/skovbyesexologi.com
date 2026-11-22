@@ -80,7 +80,6 @@
       "har haft en grænse overskredet — for nyligt eller for længe siden"
     ]
   },
-  "pillQuote": "At få gennemgået scener omhyggeligt, så skuespillere og instruktør har afstemt hvad der skal ske på optagelse",
   "forWork": {
     "label": "Skriv til mig hvis I —",
     "items": [
@@ -166,15 +165,6 @@
         }
       },
       {
-        "id": "service-terapi",
-        "stage": {
-          "bubble": "topRightSm",
-          "drops": "disperseLowC",
-          "gem": "cornerBRsm",
-          "intensity": 1.05
-        }
-      },
-      {
         "id": "for-personal",
         "stage": {
           "bubble": "topLeftSm",
@@ -190,33 +180,6 @@
           "drops": "cornerBRsm",
           "gem": "cornerTRsm",
           "intensity": 1.05
-        }
-      },
-      {
-        "id": "service-intimacy",
-        "stage": {
-          "bubble": "heroRightBig",
-          "drops": "bottomLeftMed",
-          "gem": "topRightSm",
-          "intensity": 1.2
-        }
-      },
-      {
-        "id": "service-elderly",
-        "stage": {
-          "bubble": "topLeftSm",
-          "drops": "cornerBLsm",
-          "gem": "heroRightBig",
-          "intensity": 1
-        }
-      },
-      {
-        "id": "service-teaching",
-        "stage": {
-          "bubble": "topRightSm",
-          "drops": "disperseLowC",
-          "gem": "cornerBRsm",
-          "intensity": 1
         }
       },
       {

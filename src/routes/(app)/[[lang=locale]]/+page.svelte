@@ -1,7 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { contentFor, type Locale } from '$lib/content';
+  import {
+    chapterCta,
+    contentFor,
+    homeStageSections,
+    serviceAnchorId,
+    servicesInChapter,
+    type Locale,
+    type Service
+  } from '$lib/content';
   import { renderInlineParagraphs, renderInlineLines, renderInline } from '$lib/markdown';
   import StickyCta from '$lib/components/StickyCta.svelte';
   import Testimonials from '$lib/components/Testimonials.svelte';
@@ -39,16 +47,6 @@
   // an italicised word renders as the accent-underline emphasis.
   const statementLines = $derived(renderInlineLines(home.hero.statement));
   const services = $derived(bundle.services);
-  /*
-    Look up services by their stable cross-locale `id` (derived from
-    the content filename), NOT by `slug` — slugs are localised
-    (e.g. DA `intimitetskoordinering` vs EN `intimacy-coordination`)
-    and differ per locale, while the id stays constant. Was `s.slug`
-    before per-locale slugs landed, which made intimacy-coordination
-    disappear on the DA homepage.
-  */
-  const findService = (id: string) => services.find((s) => s.id === id);
-
   /*
     Per-locale detail-page URL for a service — used by the four
     service sections below to link into their /ydelser/{slug} (DA)
@@ -158,7 +156,7 @@
     eases the stage to the new pose without remounting.
   */
   $effect(() => {
-    stage.anchors = home.stage.sections.map(resolveAnchor);
+    stage.anchors = homeStageSections(bundle).map(resolveAnchor);
   });
   $effect(() => {
     stage.chapterMode = chapterMode;
@@ -168,11 +166,12 @@
   });
 
   // Section sequence:
-  //   hero → who → CHAPTER I · Terapi (manifest, ritual, therapy service, for-personal)
-  //        → CHAPTER II · Konsulentydelser (intimacy + embedded testimonial, elderly, teaching, for-work)
+  //   hero → who → CHAPTER I · Terapi (manifest, ritual, its services, for-personal)
+  //        → CHAPTER II · Konsulentydelser (its services, for-work)
   //        → bio → contact
   //
-  // Page content + per-section stage config live in `src/content/da/home.json`.
+  // Page content and the stage config of the fixed sections live in
+  // `src/content/home.{da,en}.json`; each service carries its own.
   // Each section declares named poses from $lib/stage/poses for the three
   // WebGL elements (mercury orb, gold metaballs, faceted gem). Poses resolve
   // to NDC coordinates at runtime. Section ids become `data-stage-anchor`
@@ -188,18 +187,89 @@
   const ritual = $derived(home.ritual);
   const forPersonal = $derived(home.forPersonal);
   const chapter2 = $derived(home.chapter2);
-  const pillQuote = $derived(home.pillQuote);
   const forWork = $derived(home.forWork);
-  // Individual services by id so each section can compose its own
-  // bespoke layout (services are intentionally NOT rendered by one
-  // shared component — see AGENTS.md).
-  const therapyService = $derived(findService('terapi'));
-  const intimacyService = $derived(findService('intimacy-coordination'));
-  const elderlyService = $derived(findService('aeldrepleje'));
-  const teachingService = $derived(findService('undervisning'));
+  // The services are whatever the CMS holds. Each chapter renders one
+  // section per service that belongs to it, in `number` order, and the
+  // chapter's sticky call-to-action is that of its first service with one.
+  const therapyServices = $derived(servicesInChapter(services, 'terapi'));
+  const konsulentServices = $derived(servicesInChapter(services, 'konsulent'));
+  const therapyCta = $derived(chapterCta(services, 'terapi'));
+  const konsulentCta = $derived(chapterCta(services, 'konsulent'));
 </script>
 
 <SeoHead {seo} />
+
+<!--
+  One service on the homepage: overview plus a doorway to its detail
+  page. Every block below the bullets is optional and appears when the
+  service has the content for it, so a service added in the CMS gets
+  the same section as the others without a template change.
+-->
+{#snippet serviceSection(service: Service)}
+  <section
+    class="service"
+    id={service.slug}
+    data-service={service.id}
+    data-stage-anchor={serviceAnchorId(service)}
+  >
+    <div class="service-head reveal">
+      <span class="s-num">{service.number}</span>
+      <span class="s-kicker">{service.kicker}</span>
+    </div>
+    <h2 class="service-title reveal">
+      <a class="service-title-link" href={servicePath(service.slug)}>
+        {service.title}
+      </a>
+    </h2>
+    <p class="s-blurb reveal">{service.blurb}</p>
+    <ul class="s-bullets reveal">
+      {#each service.bullets as bullet}
+        <li>{bullet}</li>
+      {/each}
+    </ul>
+
+    {#if service.supports?.length && service.supportsLabel}
+      <div class="s-supports-block reveal">
+        <p class="s-supports-label">{service.supportsLabel}</p>
+        <p class="s-supports">{service.supports.join(' · ')}</p>
+      </div>
+    {/if}
+
+    {#if service.pullQuote}
+      <blockquote class="inline-quote reveal">
+        <p>{service.pullQuote}</p>
+      </blockquote>
+    {/if}
+
+    <!--
+      No inline testimonials here: the `<Testimonials>` section at the
+      bottom of the page already curates voices across services.
+    -->
+    {#if service.studios?.length && service.studiosLabel}
+      <div class="studios reveal">
+        <p class="studios-lede">{service.studiosLabel}</p>
+        <StudioLogos
+          studios={service.studios}
+          label={service.studiosLabel}
+          locale={data.locale}
+          scale={1.25}
+        />
+      </div>
+    {/if}
+
+    <!--
+      The aria-label names the service, since every section ends in the
+      same visible "Read more".
+    -->
+    <a
+      class="service-read-more reveal"
+      href={servicePath(service.slug)}
+      aria-label="{readMoreLabel}: {service.title}"
+    >
+      {readMoreLabel} <span aria-hidden="true">→</span>
+    </a>
+  </section>
+{/snippet}
 
 <!--
   Chapter I wrapper. The therapy CTA sits as the first child so its
@@ -209,8 +279,8 @@
     the button scrolls up naturally with the container. No JS required.
   -->
 <div class="chapter-wrap chapter-wrap-therapi">
-  {#if therapyService?.cta}
-    <StickyCta cta={therapyService.cta} />
+  {#if therapyCta}
+    <StickyCta cta={therapyCta} />
   {/if}
 
   <!--
@@ -314,49 +384,9 @@
     </ol>
   </section>
 
-  {#if therapyService}
-    <section
-      class="service service-terapi"
-      id={therapyService.slug}
-      data-stage-anchor="service-terapi"
-    >
-      <div class="service-head reveal">
-        <span class="s-num">{therapyService.number}</span>
-        <span class="s-kicker">{therapyService.kicker}</span>
-      </div>
-      <h2 class="service-title reveal">
-        <a class="service-title-link" href={servicePath(therapyService.slug)}>
-          {therapyService.title}
-        </a>
-      </h2>
-      <p class="s-blurb reveal">{therapyService.blurb}</p>
-      <ul class="s-bullets reveal">
-        {#each therapyService.bullets as bullet}
-          <li>{bullet}</li>
-        {/each}
-      </ul>
-      {#if therapyService.supports && therapyService.supportsLabel}
-        <div class="s-supports-block reveal">
-          <p class="s-supports-label">{therapyService.supportsLabel}</p>
-          <p class="s-supports">{therapyService.supports.join(' · ')}</p>
-        </div>
-      {/if}
-      <!--
-        Read-more link to the service detail page. Repeated at the
-        end of each of the four service sections so each is a
-        self-contained "overview + doorway" block. Aria-label
-        disambiguates since there are four identically-worded
-        "Read more" links in the page (→ <service title>).
-      -->
-      <a
-        class="service-read-more reveal"
-        href={servicePath(therapyService.slug)}
-        aria-label="{readMoreLabel}: {therapyService.title}"
-      >
-        {readMoreLabel} <span aria-hidden="true">→</span>
-      </a>
-    </section>
-  {/if}
+  {#each therapyServices as service (service.id)}
+    {@render serviceSection(service)}
+  {/each}
 
   <section class="for-personal" data-stage-anchor="for-personal">
     <p class="section-label reveal">{forPersonal.label}</p>
@@ -382,8 +412,8 @@
     chapter-konsulent would pin it to that small section instead).
   -->
 <div class="chapter-wrap chapter-wrap-konsulent">
-  {#if intimacyService?.cta}
-    <StickyCta cta={intimacyService.cta} />
+  {#if konsulentCta}
+    <StickyCta cta={konsulentCta} />
   {/if}
 
   <section class="chapter chapter-konsulent" data-stage-anchor="chapter-konsulent">
@@ -394,120 +424,9 @@
     </div>
   </section>
 
-  {#if intimacyService}
-    <section
-      class="service service-intimacy"
-      id={intimacyService.slug}
-      data-stage-anchor="service-intimacy"
-    >
-      <div class="service-head reveal">
-        <span class="s-num">{intimacyService.number}</span>
-        <span class="s-kicker">{intimacyService.kicker}</span>
-      </div>
-      <h2 class="service-title reveal">
-        <a class="service-title-link" href={servicePath(intimacyService.slug)}>
-          {intimacyService.title}
-        </a>
-      </h2>
-      <p class="s-blurb reveal">{intimacyService.blurb}</p>
-      <ul class="s-bullets reveal">
-        {#each intimacyService.bullets as bullet}
-          <li>{bullet}</li>
-        {/each}
-      </ul>
-      <!-- The pull-quote LIVES here, inline with intimacy coordination -->
-      <blockquote class="inline-quote reveal">
-        <p>{pillQuote}</p>
-      </blockquote>
-      <!--
-        No inline testimonials here — the `<Testimonials>`
-        section at the bottom of the page ("Stemmer") already
-        curates voices across services, so repeating the
-        intimacy-specific list mid-scroll doubled the content.
-      -->
-
-      {#if intimacyService.studios?.length && intimacyService.studiosLabel}
-        <div class="studios reveal">
-          <p class="studios-lede">{intimacyService.studiosLabel}</p>
-          <StudioLogos
-            studios={intimacyService.studios}
-            label={intimacyService.studiosLabel}
-            locale={data.locale}
-            scale={1.25}
-          />
-        </div>
-      {/if}
-      <a
-        class="service-read-more reveal"
-        href={servicePath(intimacyService.slug)}
-        aria-label="{readMoreLabel}: {intimacyService.title}"
-      >
-        {readMoreLabel} <span aria-hidden="true">→</span>
-      </a>
-    </section>
-  {/if}
-
-  {#if elderlyService}
-    <section
-      class="service service-elderly"
-      id={elderlyService.slug}
-      data-stage-anchor="service-elderly"
-    >
-      <div class="service-head reveal">
-        <span class="s-num">{elderlyService.number}</span>
-        <span class="s-kicker">{elderlyService.kicker}</span>
-      </div>
-      <h2 class="service-title reveal">
-        <a class="service-title-link" href={servicePath(elderlyService.slug)}>
-          {elderlyService.title}
-        </a>
-      </h2>
-      <p class="s-blurb reveal">{elderlyService.blurb}</p>
-      <ul class="s-bullets reveal">
-        {#each elderlyService.bullets as bullet}
-          <li>{bullet}</li>
-        {/each}
-      </ul>
-      <a
-        class="service-read-more reveal"
-        href={servicePath(elderlyService.slug)}
-        aria-label="{readMoreLabel}: {elderlyService.title}"
-      >
-        {readMoreLabel} <span aria-hidden="true">→</span>
-      </a>
-    </section>
-  {/if}
-
-  {#if teachingService}
-    <section
-      class="service service-teaching"
-      id={teachingService.slug}
-      data-stage-anchor="service-teaching"
-    >
-      <div class="service-head reveal">
-        <span class="s-num">{teachingService.number}</span>
-        <span class="s-kicker">{teachingService.kicker}</span>
-      </div>
-      <h2 class="service-title reveal">
-        <a class="service-title-link" href={servicePath(teachingService.slug)}>
-          {teachingService.title}
-        </a>
-      </h2>
-      <p class="s-blurb reveal">{teachingService.blurb}</p>
-      <ul class="s-bullets reveal">
-        {#each teachingService.bullets as bullet}
-          <li>{bullet}</li>
-        {/each}
-      </ul>
-      <a
-        class="service-read-more reveal"
-        href={servicePath(teachingService.slug)}
-        aria-label="{readMoreLabel}: {teachingService.title}"
-      >
-        {readMoreLabel} <span aria-hidden="true">→</span>
-      </a>
-    </section>
-  {/if}
+  {#each konsulentServices as service (service.id)}
+    {@render serviceSection(service)}
+  {/each}
 
   <section class="for-work" data-stage-anchor="for-work">
     <p class="section-label reveal">{forWork.label}</p>
@@ -1059,13 +978,13 @@
   }
 
   /* Intimacy coordination — pull-quote + testimonial live inside the section */
-  .service-intimacy .inline-quote {
+  .service .inline-quote {
     margin: 2rem 0 0;
     padding: 1.5rem 0 0;
     border-top: 2px solid var(--text);
     max-width: 32ch;
   }
-  .service-intimacy .inline-quote p {
+  .service .inline-quote p {
     font-family: var(--font-serif);
     font-style: italic;
     font-size: clamp(1.35rem, 3vw, 2rem);

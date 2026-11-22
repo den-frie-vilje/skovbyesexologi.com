@@ -423,7 +423,6 @@ collections:
                 i18n: true
                 field: { name: line, widget: string, i18n: true }
 
-          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text, i18n: true }
           - name: forWork
             label: 'Skriv hvis I — work'
             widget: object
@@ -468,7 +467,8 @@ collections:
                   section scrolls into view. IDs must match
                   data-stage-anchor="<id>" attributes in the homepage
                   template — do not add, remove, or rename sections
-                  without a developer.
+                  without a developer. The service sections are not in
+                  this list: each service carries its own homepage pose.
                 fields:
                   - { name: id, widget: string }
                   - name: stage
@@ -497,12 +497,12 @@ collections:
     folder: src/content/services
     format: json
     extension: json
-    # The homepage lays out exactly these four services by id, each with
-    # its own section, stage pose and link-preview image. A service added
-    # here would get a detail page and nothing else, and one deleted
-    # would fail the build, so the editor can do neither.
-    create: false
-    delete: false
+    # The site enumerates this collection: every service here gets a
+    # section on the homepage (under its chapter, in `number` order), a
+    # menu entry, a detail page and a sitemap entry. Its link-preview
+    # image falls back to the home image until `pnpm og` has run.
+    create: true
+    delete: true
     slug: '{{fields.slug}}'
     identifier_field: title
     editor: { preview: false }
@@ -515,7 +515,7 @@ collections:
       - name: number
         widget: string
         i18n: duplicate
-        hint: 'Two-digit display number, e.g. "01". Same across locales.'
+        hint: 'Two-digit display number, e.g. "01". Also the order on the homepage and in the menu. Same across locales.'
       - name: chapter
         widget: select
         i18n: duplicate
@@ -578,6 +578,12 @@ collections:
         fields:
           - { name: quote, widget: text, i18n: true }
           - { name: source, widget: string, i18n: true }
+      - name: pullQuote
+        label: Pull-quote on the homepage (optional)
+        widget: text
+        required: false
+        i18n: true
+        hint: 'Set large inside this service''s section on the homepage.'
       - name: cta
         label: Call-to-action button (optional)
         widget: object
@@ -605,6 +611,18 @@ collections:
             media_folder: /static/img/studios
             public_folder: /img/studios
           - { name: url, widget: string, required: false }
+      - name: homeStage
+        label: Homepage stage pose
+        widget: object
+        i18n: duplicate
+        hint: >-
+          Where the orb, the drops and the gem sit while this service's
+          section is in view on the homepage. Same across locales.
+        fields:
+          - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
+          - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
+          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
       - name: stage
         label: Detail-page stage pose
         widget: object
