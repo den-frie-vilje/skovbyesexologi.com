@@ -287,6 +287,7 @@ collections:
             default: transparent
             options:
               - { label: 'None: the figure stands directly on the page', value: transparent }
+              - { label: 'Quiet floor: a low shade under the figure, fading out', value: floor }
               - { label: White, value: white }
               - { label: 'Warm: paper into rose', value: warm }
               - { label: 'Chartreuse: cool paper into the highlighter green', value: chartreuse }
@@ -294,7 +295,8 @@ collections:
             hint: >-
               What the cut-out portrait stands in front of. The figure is
               cut out of the photograph when the site builds, and its
-              shadow falls on whichever background is chosen here.
+              shadow falls on whichever background is chosen here. The
+              link-preview images show the quiet floor as none.
           - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
           - name: body
             label: Body
