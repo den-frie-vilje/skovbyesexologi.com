@@ -18,65 +18,65 @@ version: 2
 
 updates:
   # Site dependencies (Svelte, Vite, Tailwind, Three.js, Sveltia, …)
-  - package-ecosystem: "npm"
-    directory: "/"
-    target-branch: "staging"
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: 'staging'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Copenhagen'
     open-pull-requests-limit: 10
     labels:
-      - "dependencies"
-      - "npm"
+      - 'dependencies'
+      - 'npm'
     groups:
       npm-minor-patch:
-        patterns: ["*"]
+        patterns: ['*']
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
   # Workflow actions (checkout, setup-buildx, metadata-action, …).
   # These move fast and are usually safe to bulk-merge.
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: "staging"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    target-branch: 'staging'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Copenhagen'
     open-pull-requests-limit: 10
     labels:
-      - "dependencies"
-      - "github-actions"
+      - 'dependencies'
+      - 'github-actions'
     groups:
       github-actions-minor-patch:
-        patterns: ["*"]
+        patterns: ['*']
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
   # Site Dockerfile base images (pkgxdev/pkgx, nginx-unprivileged).
   # Watching for security patches on the runtime base in particular.
   # Tracks digest pins (FROM image:tag@sha256:…) — Dependabot updates
   # both tag and digest when an upgrade is available.
-  - package-ecosystem: "docker"
-    directory: "/deploy"
-    target-branch: "staging"
+  - package-ecosystem: 'docker'
+    directory: '/deploy'
+    target-branch: 'staging'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Copenhagen'
     open-pull-requests-limit: 5
     labels:
-      - "dependencies"
-      - "docker"
+      - 'dependencies'
+      - 'docker'
     groups:
       docker-minor-patch:
-        patterns: ["*"]
+        patterns: ['*']
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'

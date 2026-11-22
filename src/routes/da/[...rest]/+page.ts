@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { EntryGenerator } from './$types';
-import { contentFor, serviceById, serviceBySlug } from '$lib/content';
+import { contentFor } from '$lib/content';
 
 /**
  * /da/<rest> → redirect to /<rest> (strip the 'da/' prefix).
@@ -16,7 +16,6 @@ import { contentFor, serviceById, serviceBySlug } from '$lib/content';
  * /da/+page.ts).
  */
 export const prerender = true;
-
 
 export const entries: EntryGenerator = () => {
   // Enumerate every DA service's URL slug so adapter-static writes

@@ -37,14 +37,14 @@ const COL = { x: 28, y: 12, w: 24, h: 26 };
 // ---- palette colours ----
 
 const colors = {
-  bg:       '#f3ede2', // paper
+  bg: '#f3ede2', // paper
   bgStroke: '#d0cab8',
-  col:      '#e4dec9', // text column hint
-  label:    '#766e5a',
-  bubble:        { fill: '#c5c9d0', stroke: '#8f949d' },
-  bubbleEdge:    '#8f949d',
-  drops:         { fill: '#e0b359', stroke: '#a8842c' },
-  gem:           { fill: '#7a5a8e', stroke: '#4d3659' }
+  col: '#e4dec9', // text column hint
+  label: '#766e5a',
+  bubble: { fill: '#c5c9d0', stroke: '#8f949d' },
+  bubbleEdge: '#8f949d',
+  drops: { fill: '#e0b359', stroke: '#a8842c' },
+  gem: { fill: '#7a5a8e', stroke: '#4d3659' }
 };
 
 // ---- coordinate helpers ----
@@ -158,8 +158,8 @@ const outRoot = resolve(rootDir, 'static', 'admin', 'pose-icons');
 type Palette = { element: Element; poses: Record<string, Pose>; title: string };
 const palettes: Palette[] = [
   { element: 'bubble', poses: bubblePoses, title: 'Bubble (mercury orb)' },
-  { element: 'drops',  poses: dropsPoses,  title: 'Drops (gold metaballs)' },
-  { element: 'gem',    poses: gemPoses,    title: 'Gem (faceted icosahedron)' }
+  { element: 'drops', poses: dropsPoses, title: 'Drops (gold metaballs)' },
+  { element: 'gem', poses: gemPoses, title: 'Gem (faceted icosahedron)' }
 ];
 
 // Nuke and recreate the output tree so deleted poses don't leave stale

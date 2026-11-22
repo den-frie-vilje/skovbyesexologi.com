@@ -19,7 +19,16 @@
     "href": "https://ældreseksualitet.dk",
     "kind": "primary"
   },
-  "studiosLabel": "",
+  "references": {
+    "heading": "",
+    "items": []
+  },
+  "homeStage": {
+    "bubble": "topLeftSm",
+    "drops": "cornerBLsm",
+    "gem": "heroRightBig",
+    "intensity": 1
+  },
   "stage": {
     "bubble": "offstage",
     "drops": "offstage",

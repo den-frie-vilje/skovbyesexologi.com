@@ -1,0 +1,14 @@
+{
+  "/img/portrait/IMG_7660.jpeg": {
+    "hash": "0e275845cbae",
+    "quality": "ai",
+    "cutout": {
+      "method": "fused",
+      "width": 1600,
+      "height": 1903,
+      "avif": "/gen/portrait/portrait-0e275845cbae-480.avif 480w, /gen/portrait/portrait-0e275845cbae-720.avif 720w, /gen/portrait/portrait-0e275845cbae-960.avif 960w, /gen/portrait/portrait-0e275845cbae-1280.avif 1280w, /gen/portrait/portrait-0e275845cbae-1600.avif 1600w",
+      "webp": "/gen/portrait/portrait-0e275845cbae-480.webp 480w, /gen/portrait/portrait-0e275845cbae-720.webp 720w, /gen/portrait/portrait-0e275845cbae-960.webp 960w, /gen/portrait/portrait-0e275845cbae-1280.webp 1280w, /gen/portrait/portrait-0e275845cbae-1600.webp 1600w",
+      "fallback": "/gen/portrait/portrait-0e275845cbae-720.webp"
+    }
+  }
+}

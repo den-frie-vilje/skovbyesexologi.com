@@ -7,42 +7,30 @@
  *   • `home` — the site's top-level unfurl. Title is the proprietor's
  *     name with the family name highlighted (the "Skovbye" chartreuse
  *     underline, echoing the live hero's em).
- *   • one per service id (terapi, intimacy-coordination, aeldrepleje,
- *     undervisning) — the title is the service's title, no em. Each
- *     service detail page references its matching PNG as `og:image`.
+ *   • one per service in the content — the title is the service's
+ *     title, no em. Each service detail page references its matching
+ *     image as `og:image`.
  *
  * Service slugs used in OG URLs are the *stable service id*
  * (filename), not the localised URL slug — so the OG URL stays the
  * same across locales even when the service slug differs in DA vs EN.
  */
 
-import {
-  contentFor,
-  DEFAULT_LOCALE,
-  type Locale,
-  type ServiceChapter
-} from '$lib/content';
+import { contentFor, DEFAULT_LOCALE, type Locale, type ServiceChapter } from '$lib/content';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const prerender = true;
 
-/** The stable ids of services we render an OG image for. Matches the
- *  filenames under `src/content/{locale}/services/`. */
-const SERVICE_IDS = ['terapi', 'intimacy-coordination', 'aeldrepleje', 'undervisning'] as const;
-type ServiceId = (typeof SERVICE_IDS)[number];
-
-/** `home` + each service id — this is the list adapter-static
- *  prerenders via the `entries()` hook below. */
-const OG_SLUGS = ['home', ...SERVICE_IDS] as const;
-type OgSlug = (typeof OG_SLUGS)[number];
+/** `home` plus the id of every service in the content: the list
+ *  adapter-static prerenders via the `entries()` hook below. Ids are
+ *  the content filenames and are the same in both locales. */
+const OG_SLUGS = ['home', ...contentFor(DEFAULT_LOCALE).services.map((s) => s.id)];
 
 export const entries = () => {
   // `undefined` optional lang = DA (prefix-less); explicit `en` = EN.
   const locales: (Locale | undefined)[] = [undefined, 'en'];
-  return locales.flatMap((lang) =>
-    OG_SLUGS.map((slug) => (lang ? { lang, slug } : { slug }))
-  );
+  return locales.flatMap((lang) => OG_SLUGS.map((slug) => (lang ? { lang, slug } : { slug })));
 };
 
 type OgData =
@@ -71,7 +59,7 @@ type OgData =
       chapter: ServiceChapter;
     };
 
-function dataForSlug(slug: OgSlug, locale: Locale): OgData {
+function dataForSlug(slug: string, locale: Locale): OgData {
   const bundle = contentFor(locale);
   const name = bundle.home.nameSection;
   if (slug === 'home') {
@@ -94,7 +82,7 @@ function dataForSlug(slug: OgSlug, locale: Locale): OgData {
 
 export const load: PageLoad = ({ params }) => {
   const locale: Locale = params.lang === 'en' ? 'en' : DEFAULT_LOCALE;
-  const slug = params.slug as OgSlug;
+  const slug = params.slug;
   if (!OG_SLUGS.includes(slug)) throw error(404, `Unknown OG slug: ${slug}`);
   return { locale, slug, ...dataForSlug(slug, locale) };
 };

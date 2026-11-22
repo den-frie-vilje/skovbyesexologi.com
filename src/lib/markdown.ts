@@ -48,14 +48,16 @@ export function renderServiceBody(md: string): string {
  * applied here by design — these are prose paragraphs.
  */
 export function renderInlineParagraphs(md: string): string[] {
-  return md
-    .trim()
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean)
-    // parseInline is synchronous (async defaults off) — the union return
-    // type includes Promise, so assert the string branch.
-    .map((p) => marked.parseInline(p) as string);
+  return (
+    md
+      .trim()
+      .split(/\n{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+      // parseInline is synchronous (async defaults off) — the union return
+      // type includes Promise, so assert the string branch.
+      .map((p) => marked.parseInline(p) as string)
+  );
 }
 
 /**

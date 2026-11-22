@@ -40,10 +40,28 @@
 # leave the browser tab.
 #
 # ============================================================
+# COPY
+# ============================================================
+# Labels and hints follow the Apple Style Guide. A label is a plain
+# noun in sentence case. A hint is one short sentence, present only
+# where the label is not enough, and says what the editor sees or
+# should do. No implementation terms, no reasons, no "optional".
+# Explanations for developers go in comments like this one.
+#
+# ============================================================
 # MEDIA
 # ============================================================
-# Images live under static/img/ and are referenced as /img/<file>
-# in rendered HTML. Sveltia uploads land in the media_folder.
+# static/img/ is the editor's asset library and holds nothing but
+# what an editor put there. Each image field has its own subfolder,
+# so the library reads as a list of purposes:
+#
+#   static/img/portrait/   the bio portrait
+#   static/img/references/ reference logos on a service
+#
+# A new image field gets its own media_folder and public_folder
+# beside these. Files the build or a script writes (portrait
+# cutouts, link-preview images) live under static/gen/, which the
+# CMS never lists.
 #
 # ============================================================
 # I18N — native Sveltia multiple_folders structure
@@ -53,9 +71,9 @@
 # instead of two parallel collections:
 #
 #   src/content/
-#     site.{da,en}.json           ← file collection (the
-#     contact.{da,en}.json          {{locale}} placeholder goes in
-#     bio.{da,en}.json              the FILENAME)
+#     site.{da,en}.json           ← singletons (the {{locale}}
+#     contact.{da,en}.json          placeholder goes in the
+#     bio.{da,en}.json              FILENAME)
 #     home.{da,en}.json
 #     services/
 #       {da,en}/*.json            ← folder collection (the locale
@@ -161,306 +179,284 @@ i18n:
   locales: [da, en]
   default_locale: da
 
-collections:
+singletons:
   # ---- Site metadata ----
   - name: site
-    label: Site metadata
-    label_singular: Site
+    label: Site
+    file: 'src/content/site.{{locale}}.json'
+    format: json
     editor: { preview: false }
     i18n: true
-    files:
-      - name: site
-        label: Site metadata
-        file: 'src/content/site.{{locale}}.json'
-        format: json
+    fields:
+      - { name: name, label: Site name, widget: string, i18n: duplicate }
+      - name: lang
+        label: Language code
+        widget: string
+        i18n: duplicate
+        readonly: true
+        hint: Set by the site.
+      - { name: tagline, label: Tagline, widget: string, i18n: true }
+      - { name: leadIn, label: Introduction, widget: text, i18n: true }
+      - name: footerCopyright
+        label: Footer copyright
+        widget: string
         i18n: true
-        fields:
-          - { name: name, label: Site name, widget: string, i18n: duplicate }
-          - name: lang
-            label: Language code
-            widget: string
-            i18n: duplicate
-            readonly: true
-            hint: >-
-              ISO 639-1 code — bound to the filename locale
-              suffix (site.da.json → `da`, site.en.json → `en`).
-              Read-only to prevent accidental mismatches that
-              would break the JSON-LD `inLanguage` generation.
-          - { name: tagline, label: Tagline, widget: string, i18n: true }
-          - { name: leadIn, label: Lead-in paragraph, widget: text, i18n: true }
-          - name: footerCopyright
-            label: Footer copyright
-            widget: string
-            i18n: true
-            hint: 'Template tokens: {year}, {name}, {cvr}.'
+        hint: 'Use {year}, {name} and {cvr}.'
 
   # ---- Contact info ----
   - name: contact
-    label: Contact info
-    label_singular: Contact
+    label: Contact
+    file: 'src/content/contact.{{locale}}.json'
+    format: json
     editor: { preview: false }
     i18n: true
-    files:
-      - name: contact
-        label: Contact info
-        file: 'src/content/contact.{{locale}}.json'
-        format: json
+    fields:
+      - { name: label, label: Section label, widget: string, i18n: true }
+      - { name: heading, label: Heading, widget: string, i18n: true }
+      - { name: lede, label: Introduction, widget: text, i18n: true }
+      - { name: email, label: Email, widget: string, i18n: duplicate }
+      - { name: phone, label: Phone, widget: string, i18n: duplicate }
+      - { name: address, label: Address, widget: string, i18n: true }
+      - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
+      - { name: hours, label: Opening hours, widget: string, i18n: true }
+      - { name: responseTime, label: Response time, widget: text, i18n: true }
+      - name: fieldLabels
+        label: Field labels
+        widget: object
         i18n: true
         fields:
-          - { name: label, label: Section label, widget: string, i18n: true }
-          - { name: heading, widget: string, i18n: true }
-          - { name: lede, widget: text, i18n: true }
-          - { name: email, widget: string, i18n: duplicate }
-          - { name: phone, widget: string, i18n: duplicate }
-          - { name: address, widget: string, i18n: true }
-          - { name: cvr, label: CVR number, widget: string, i18n: duplicate }
+          - { name: email, label: Email, widget: string, i18n: true }
+          - { name: phone, label: Phone, widget: string, i18n: true }
+          - { name: address, label: Address, widget: string, i18n: true }
           - { name: hours, label: Opening hours, widget: string, i18n: true }
-          - { name: responseTime, label: Response time note, widget: text, i18n: true }
-          - name: fieldLabels
-            label: Inline field labels (contact card)
-            widget: object
-            i18n: true
-            fields:
-              - { name: email, widget: string, i18n: true }
-              - { name: phone, widget: string, i18n: true }
-              - { name: address, widget: string, i18n: true }
-              - { name: hours, widget: string, i18n: true }
-          - name: socials
-            label: Social profiles (optional)
-            widget: list
+      - name: socials
+        label: Social profiles
+        widget: list
+        required: false
+        i18n: duplicate
+        hint: Shown as icons in the footer.
+        summary: '{{fields.platform}} · {{fields.url}}'
+        fields:
+          - name: platform
+            label: Platform
+            widget: select
+            options:
+              - { label: LinkedIn, value: linkedin }
+              - { label: Instagram, value: instagram }
+              - { label: Facebook, value: facebook }
+              - { label: Bluesky, value: bluesky }
+              - { label: 'X (Twitter)', value: x }
+              - { label: YouTube, value: youtube }
+          - name: url
+            label: Link
+            widget: string
             required: false
-            i18n: duplicate
-            hint: >-
-              Listed in the footer as monochrome icons AND emitted
-              in JSON-LD as `sameAs` on the business + person nodes
-              (signals entity consolidation to search engines).
-              Leave a URL blank to keep the platform on the list
-              but hidden. Same URLs across locales — edit in DA
-              and EN auto-syncs.
-            summary: '{{fields.platform}} · {{fields.url}}'
-            fields:
-              - name: platform
-                widget: select
-                options:
-                  - { label: LinkedIn, value: linkedin }
-                  - { label: Instagram, value: instagram }
-                  - { label: Facebook, value: facebook }
-                  - { label: Bluesky, value: bluesky }
-                  - { label: 'X (Twitter)', value: x }
-                  - { label: YouTube, value: youtube }
-              - name: url
-                widget: string
-                required: false
-                hint: Full https:// URL to the profile. Blank to hide.
+            hint: Leave empty to hide.
 
   # ---- Bio ----
   - name: bio
-    label: Biography
-    label_singular: Bio
+    label: Bio
+    file: 'src/content/bio.{{locale}}.json'
+    format: json
     editor: { preview: false }
     i18n: true
-    files:
-      - name: bio
-        label: Bio
-        file: 'src/content/bio.{{locale}}.json'
-        format: json
+    fields:
+      - { name: label, label: Section label, widget: string, i18n: true }
+      - { name: heading, label: Heading, widget: string, i18n: true }
+      - { name: pronouns, label: Pronouns, widget: string, i18n: true }
+      - name: portrait
+        label: Portrait
+        widget: image
+        i18n: duplicate
+        media_folder: /static/img/portrait
+        public_folder: /img/portrait
+        hint: Use a photo taken against a plain, evenly lit wall, at least 1200 px wide.
+      - name: portraitGround
+        label: Background
+        widget: select
+        i18n: duplicate
+        default: transparent
+        options:
+          - { label: None, value: transparent }
+          - { label: Quiet floor, value: floor }
+          - { label: White, value: white }
+          - { label: Warm, value: warm }
+          - { label: Chartreuse, value: chartreuse }
+          - { label: Cool, value: cool }
+        hint: Link previews show Quiet floor as None.
+      - { name: portraitAlt, label: Portrait description, widget: string, i18n: true, hint: For screen readers. }
+      - name: body
+        label: Body
+        widget: markdown
         i18n: true
-        fields:
-          - { name: label, label: Section label, widget: string, i18n: true }
-          - { name: heading, widget: string, i18n: true }
-          - { name: pronouns, widget: string, i18n: true }
-          - { name: portraitAlt, label: Portrait alt text, widget: string, i18n: true }
-          - name: body
-            label: Body
-            widget: markdown
-            i18n: true
-            # Inline marks only — bio paragraphs, not a document. No
-            # headings (the section already has its own heading) and no
-            # image/code inserts. Each blank-line-separated paragraph
-            # fades in with a slight stagger on the page.
-            buttons: [bold, italic, link]
-            editor_components: []
-            hint: >-
-              Signe's bio. Separate paragraphs with a blank line. Bold,
-              italic, and links are available.
+        # Inline marks only — bio paragraphs, not a document. No
+        # headings (the section already has its own heading) and no
+        # image/code inserts. Each blank-line-separated paragraph
+        # fades in with a slight stagger on the page.
+        buttons: [bold, italic, link]
+        editor_components: []
+        hint: Leave an empty line between paragraphs.
 
   # ---- Home page (includes stage choreography) ----
   - name: home
-    label: Home page
-    label_singular: Home
+    label: Home
+    file: 'src/content/home.{{locale}}.json'
+    format: json
     editor: { preview: false }
     i18n: true
-    files:
-      - name: home
-        label: Home
-        file: 'src/content/home.{{locale}}.json'
-        format: json
+    fields:
+      - name: hero
+        label: Hero
+        widget: object
         i18n: true
         fields:
-          - name: nav
-            label: Top-nav links
+          - { name: name, label: Name, widget: string, i18n: true }
+          - { name: city, label: City, widget: string, i18n: true }
+          - name: statement
+            label: Statement
+            widget: markdown
+            i18n: true
+            # Single field replacing the old start/end/em split.
+            # Each line break is a display line; italic = the accent
+            # underline. No headings/bold/links — it's a one-line
+            # marquee statement.
+            buttons: [italic]
+            editor_components: []
+            hint: Press Return for a new line. Italic text is underlined.
+          - { name: attribution, label: Role line, widget: text, i18n: true }
+          - { name: scrollLabel, label: Scroll label, widget: string, i18n: true }
+
+      - name: nameSection
+        label: Name and role
+        widget: object
+        i18n: true
+        fields:
+          - { name: eyebrow, label: Top line, widget: string, i18n: true }
+          # firstName + lastName: structurally shared — DA edits copy to EN
+          - { name: firstName, label: First name, widget: string, i18n: duplicate }
+          - { name: lastName, label: Last name, widget: string, i18n: duplicate }
+          - { name: pronouns, label: Pronouns, widget: string, i18n: true }
+          - { name: roleLine, label: Role, widget: text, i18n: true }
+          - { name: roleSub, label: Role details, widget: text, i18n: true }
+
+      - name: chapter1
+        label: 'Chapter I: Terapi'
+        widget: object
+        i18n: true
+        fields:
+          - { name: mark, label: Numeral, widget: string, i18n: duplicate }
+          - { name: title, label: Title, widget: string, i18n: true }
+          - { name: lede, label: Introduction, widget: text, i18n: true }
+      - name: chapter2
+        label: 'Chapter II: Konsulentydelser'
+        widget: object
+        i18n: true
+        fields:
+          - { name: mark, label: Numeral, widget: string, i18n: duplicate }
+          - { name: title, label: Title, widget: string, i18n: true }
+          - { name: lede, label: Introduction, widget: text, i18n: true }
+
+      - name: manifest
+        label: Manifest
+        widget: object
+        i18n: true
+        fields:
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - name: items
+            label: Lines
+            widget: list
+            i18n: true
+            summary: '{{fields.text}}'
+            fields:
+              - name: text
+                label: Line
+                widget: markdown
+                buttons: [italic]
+                editor_components: []
+                i18n: true
+                hint: Italic text is underlined.
+      - name: ritual
+        label: Ritual
+        widget: object
+        i18n: true
+        fields:
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - { name: subtitle, label: Subtitle, widget: string, i18n: true }
+          - name: steps
+            label: Steps
             widget: list
             i18n: true
             fields:
-              - { name: label, widget: string, i18n: true }
-              - { name: href, widget: string, i18n: true, hint: 'Use #anchor for in-page links.' }
+              - { name: n, label: Number, widget: string, i18n: duplicate }
+              - { name: title, label: Title, widget: string, i18n: true }
+              - { name: body, label: Text, widget: text, i18n: true }
+      - name: forPersonal
+        label: Kom forbi hvis du
+        widget: object
+        i18n: true
+        fields:
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - name: items
+            label: Lines
+            widget: list
+            i18n: true
+            field: { name: line, label: Line, widget: string, i18n: true }
 
-          - name: hero
-            widget: object
+      - name: forWork
+        label: Skriv hvis I
+        widget: object
+        i18n: true
+        fields:
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - name: items
+            label: Lines
+            widget: list
             i18n: true
-            fields:
-              - { name: name, label: Brand name (hero), widget: string, i18n: true }
-              - { name: city, widget: string, i18n: true }
-              - name: statement
-                label: Hero statement
-                widget: markdown
-                i18n: true
-                # Single field replacing the old start/end/em split.
-                # Each line break is a display line; italic = the accent
-                # underline. No headings/bold/links — it's a one-line
-                # marquee statement.
-                buttons: [italic]
-                editor_components: []
-                hint: >-
-                  The big hero line. Press Enter to break it onto a new
-                  display line. Italicise a word to give it the accent
-                  underline (as in "ikke som du *burde*"). A decorative
-                  period is added automatically at the end.
-              - { name: attribution, widget: text, i18n: true, hint: 'Role line under the hero statement.' }
-              - { name: scrollLabel, label: Scroll-cue label, widget: string, i18n: true }
+            field: { name: line, label: Line, widget: string, i18n: true }
 
-          - name: nameSection
-            label: 'Who: name + role block'
-            widget: object
+      - name: testimonials
+        label: Testimonials
+        widget: object
+        required: false
+        i18n: true
+        fields:
+          - { name: label, label: Section label, widget: string, i18n: true }
+          - name: items
+            label: Quotes
+            widget: list
             i18n: true
+            summary: '{{fields.source}}'
             fields:
-              - { name: eyebrow, widget: string, i18n: true }
-              # firstName + lastName: structurally shared — DA edits copy to EN
-              - { name: firstName, widget: string, i18n: duplicate }
-              - { name: lastName, widget: string, i18n: duplicate }
-              - { name: pronouns, widget: string, i18n: true }
-              - { name: roleLine, widget: text, i18n: true }
-              - { name: roleSub, widget: text, i18n: true }
+              - { name: quote, label: Quote, widget: text, i18n: true }
+              - { name: source, label: Source, widget: string, i18n: true }
 
-          - name: chapter1
-            label: Chapter I header (Terapi)
-            widget: object
-            i18n: true
+      # Stage choreography is part of the page's STRUCTURE,
+      # not its copy — `i18n: duplicate` keeps DA + EN on
+      # identical pose sequences so the WebGL scroll
+      # choreography stays in lock-step across locales.
+      - name: stage
+        label: Stage
+        widget: object
+        i18n: duplicate
+        fields:
+          - name: sections
+            label: Sections
+            widget: list
+            allow_add: false
+            collapsed: false
+            hint: One entry per section. Don’t change an ID. Services set their own.
             fields:
-              - { name: mark, widget: string, i18n: duplicate, hint: 'Roman numeral marker.' }
-              - { name: title, widget: string, i18n: true }
-              - { name: lede, widget: text, i18n: true }
-          - name: chapter2
-            label: Chapter II header (Konsulentydelser)
-            widget: object
-            i18n: true
-            fields:
-              - { name: mark, widget: string, i18n: duplicate }
-              - { name: title, widget: string, i18n: true }
-              - { name: lede, widget: text, i18n: true }
-
-          - name: manifest
-            label: Manifest (Chapter I)
-            widget: object
-            i18n: true
-            fields:
-              - { name: label, widget: string, i18n: true }
-              - name: items
-                widget: list
-                i18n: true
-                summary: '{{fields.text}}'
+              - { name: id, label: ID, widget: string }
+              - name: stage
+                label: Pose
+                widget: object
                 fields:
-                  - name: text
-                    label: Line
-                    widget: markdown
-                    buttons: [italic]
-                    editor_components: []
-                    i18n: true
-                    hint: >-
-                      One manifest line. Italicise the keyword to give it
-                      the accent underline (e.g. "Grænser er ikke en
-                      *test*").
-          - name: ritual
-            label: Ritual (Chapter I)
-            widget: object
-            i18n: true
-            fields:
-              - { name: label, widget: string, i18n: true }
-              - { name: subtitle, widget: string, i18n: true }
-              - name: steps
-                widget: list
-                i18n: true
-                fields:
-                  - { name: n, widget: string, i18n: duplicate }
-                  - { name: title, widget: string, i18n: true }
-                  - { name: body, widget: text, i18n: true }
-          - name: forPersonal
-            label: 'Kom forbi hvis du — personal'
-            widget: object
-            i18n: true
-            fields:
-              - { name: label, widget: string, i18n: true }
-              - name: items
-                widget: list
-                i18n: true
-                field: { name: line, widget: string, i18n: true }
+                  - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+                  - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+                  - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+                  - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
 
-          - { name: pillQuote, label: Pull-quote (intimacy section), widget: text, i18n: true }
-          - name: forWork
-            label: 'Skriv hvis I — work'
-            widget: object
-            i18n: true
-            fields:
-              - { name: label, widget: string, i18n: true }
-              - name: items
-                widget: list
-                i18n: true
-                field: { name: line, widget: string, i18n: true }
-
-          - name: testimonials
-            label: Featured testimonials (between bio + contact)
-            widget: object
-            required: false
-            i18n: true
-            fields:
-              - { name: label, label: Section label, widget: string, i18n: true }
-              - name: items
-                widget: list
-                i18n: true
-                summary: '{{fields.source}}'
-                fields:
-                  - { name: quote, widget: text, i18n: true }
-                  - { name: source, widget: string, i18n: true }
-
-          # Stage choreography is part of the page's STRUCTURE,
-          # not its copy — `i18n: duplicate` keeps DA + EN on
-          # identical pose sequences so the WebGL scroll
-          # choreography stays in lock-step across locales.
-          - name: stage
-            label: Stage choreography
-            widget: object
-            i18n: duplicate
-            fields:
-              - name: sections
-                widget: list
-                allow_add: false
-                collapsed: false
-                hint: >-
-                  Each entry configures the WebGL stage when its
-                  section scrolls into view. IDs must match
-                  data-stage-anchor="<id>" attributes in the homepage
-                  template — do not add, remove, or rename sections
-                  without a developer.
-                fields:
-                  - { name: id, widget: string }
-                  - name: stage
-                    widget: object
-                    fields:
-                      - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
-                      - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
-                      - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
-                      - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
-
+collections:
   # ---- Services (folder; one file per service × per locale) ----
   #
   # Sveltia's multiple_folders pattern puts the locale as a
@@ -479,6 +475,10 @@ collections:
     folder: src/content/services
     format: json
     extension: json
+    # The site enumerates this collection: every service here gets a
+    # section on the homepage (under its chapter, in `number` order), a
+    # menu entry, a detail page and a sitemap entry. Its link-preview
+    # image falls back to the home image until `pnpm og` has run.
     create: true
     delete: true
     slug: '{{fields.slug}}'
@@ -487,26 +487,29 @@ collections:
     i18n: true
     fields:
       - name: slug
+        label: Web address
         widget: string
         i18n: true
-        hint: 'URL segment — different per locale (e.g. terapi / therapy).'
+        hint: The last part of the page link, such as terapi.
       - name: number
+        label: Number
         widget: string
         i18n: duplicate
-        hint: 'Two-digit display number, e.g. "01". Same across locales.'
+        hint: Two digits, such as 01. Sets the order.
       - name: chapter
+        label: Chapter
         widget: select
         i18n: duplicate
         default: terapi
         options:
-          - { label: 'Chapter I — Terapi (cool bone, iridescent orb)', value: terapi }
-          - { label: 'Chapter II — Konsulent (warm bone, chrome orb)', value: konsulent }
-        hint: 'Drives palette + homepage grouping. Same across DA + EN.'
-      - { name: title, widget: string, i18n: true }
-      - { name: kicker, widget: string, i18n: true, hint: 'Short audience line, e.g. "film · tv · teater".' }
-      - { name: blurb, widget: text, i18n: true }
+          - { label: 'Chapter I: Terapi', value: terapi }
+          - { label: 'Chapter II: Konsulentydelser', value: konsulent }
+        hint: Sets the colours and where the service appears.
+      - { name: title, label: Title, widget: string, i18n: true }
+      - { name: kicker, label: Audience, widget: string, i18n: true, hint: Such as film · tv · teater. }
+      - { name: blurb, label: Summary, widget: text, i18n: true }
       - name: body
-        label: Body (prose)
+        label: Body
         widget: markdown
         required: false
         i18n: true
@@ -518,78 +521,95 @@ collections:
         # plain italic.
         buttons: [bold, italic, link, heading-two, heading-three]
         editor_components: []
-        hint: >-
-          Optional longer prose, shown on the detail page after the
-          blurb. Use the two heading levels to break it into sections;
-          italic inside a heading becomes the highlighted accent. The
-          feature bullets are controlled separately — see the toggle
-          below.
+        hint: Shown on the service page. Italic text in a heading is highlighted.
       - name: bullets
-        label: Feature bullets
+        label: Bullets
         widget: list
         i18n: true
-        field: { name: bullet, widget: string, i18n: true }
+        field: { name: bullet, label: Bullet, widget: string, i18n: true }
       - name: showDetailBullets
-        label: Show feature bullets on the detail page
+        label: Show bullets on the service page
         widget: boolean
         default: true
         i18n: duplicate
-        hint: >-
-          On by default. Turn off to hide the bullet list on this
-          service's detail page (e.g. when the prose body says it
-          better, or to drop the list entirely). The homepage service
-          card always shows the bullets regardless. Same in both
-          locales.
-      - { name: supportsLabel, label: Supports list label (optional), widget: string, i18n: true, required: false }
+        hint: The home page always shows them.
+      - { name: supportsLabel, label: Keywords heading, widget: string, i18n: true, required: false }
       - name: supports
-        label: Supporting keywords (optional)
+        label: Keywords
         widget: list
         required: false
         i18n: true
-        field: { name: keyword, widget: string, i18n: true }
+        field: { name: keyword, label: Keyword, widget: string, i18n: true }
       - name: testimonials
-        label: Testimonials (optional)
+        label: Testimonials
         widget: list
         required: false
         i18n: true
         summary: '{{fields.source}}'
         fields:
-          - { name: quote, widget: text, i18n: true }
-          - { name: source, widget: string, i18n: true }
+          - { name: quote, label: Quote, widget: text, i18n: true }
+          - { name: source, label: Source, widget: string, i18n: true }
+      - name: pullQuote
+        label: Pull quote
+        widget: text
+        required: false
+        i18n: true
+        hint: Shown large on the home page.
       - name: cta
-        label: Call-to-action button (optional)
+        label: Button
         widget: object
         required: false
         i18n: true
         fields:
-          - { name: label, widget: string, i18n: true }
-          - { name: href,  widget: string, i18n: duplicate, hint: 'mailto:…, tel:…, or https://…' }
+          - { name: label, label: Text, widget: string, i18n: true }
+          - { name: href, label: Link, widget: string, i18n: duplicate, hint: 'A web, mailto: or tel: link.' }
           - name: kind
+            label: Style
             widget: select
             i18n: duplicate
             default: primary
-            options: [primary, secondary]
-      - { name: studiosLabel, label: Studios list label (optional), widget: string, i18n: true, required: false }
-      - name: studios
-        label: Studio credits (optional)
-        widget: list
+            options:
+              - { label: Primary, value: primary }
+              - { label: Secondary, value: secondary }
+      - name: references
+        label: References
+        widget: object
         required: false
-        i18n: duplicate
-        hint: 'Black cut-out silhouette SVGs on transparent backgrounds. Shared across locales.'
+        i18n: true
+        collapsed: true
         fields:
-          - { name: name, widget: string }
-          - name: logo
-            widget: image
-            media_folder: /static/img/studios
-            public_folder: /img/studios
-          - { name: url, widget: string, required: false }
-      - name: stage
-        label: Detail-page stage pose
+          - { name: heading, label: Heading, widget: string, i18n: true, required: false, hint: Leave empty to hide. }
+          - name: items
+            label: Logos
+            label_singular: Logo
+            widget: list
+            required: false
+            i18n: duplicate
+            fields:
+              - { name: name, label: Name, widget: string }
+              - name: logo
+                label: Logo
+                widget: image
+                media_folder: /static/img/references
+                public_folder: /img/references
+                hint: A black SVG on a transparent background.
+              - { name: url, label: Link, widget: string, required: false }
+      - name: homeStage
+        label: Stage on the home page
         widget: object
         i18n: duplicate
-        hint: 'Structural — same across locales.'
+        hint: Where the orb, drops and gem sit while this service is in view.
         fields:
-          - { name: bubble, widget: select, default: offstage, options: *pose_options_bubble }
-          - { name: drops, widget: select, default: offstage, options: *pose_options_drops }
-          - { name: gem,  widget: select, default: offstage, options: *pose_options_gem  }
-          - { name: intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+          - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+          - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+          - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }
+      - name: stage
+        label: Stage on the service page
+        widget: object
+        i18n: duplicate
+        fields:
+          - { name: bubble, label: Orb, widget: select, default: offstage, options: *pose_options_bubble }
+          - { name: drops, label: Drops, widget: select, default: offstage, options: *pose_options_drops }
+          - { name: gem, label: Gem,  widget: select, default: offstage, options: *pose_options_gem  }
+          - { name: intensity, label: Intensity, widget: number, value_type: float, min: 0.5, max: 2.0, step: 0.05, default: 1.0 }

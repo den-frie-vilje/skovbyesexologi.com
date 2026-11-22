@@ -63,9 +63,4 @@
   homepage and the page's heaviest list-load — dropped. Re-add a prop
   here if a future terapi-chapter service wants one back.
 -->
-<ServicePage
-  service={data.service}
-  {bundle}
-  backLabel="Forsiden"
-  backHref="/"
-/>
+<ServicePage service={data.service} {bundle} backLabel="Forsiden" backHref="/" />

@@ -64,13 +64,7 @@ export type Site = {
  *      contact.socials options list
  *  Keep the set curated — a footer row of 30 platforms reads as
  *  SEO spam rather than a real presence. */
-export type SocialPlatform =
-  | 'linkedin'
-  | 'instagram'
-  | 'facebook'
-  | 'bluesky'
-  | 'x'
-  | 'youtube';
+export type SocialPlatform = 'linkedin' | 'instagram' | 'facebook' | 'bluesky' | 'x' | 'youtube';
 
 /** One social profile link. URL is optional so editors can stub
  *  out platforms they plan to add later without breaking the
@@ -114,6 +108,12 @@ export type Bio = {
   label: string;
   heading: string;
   pronouns: string;
+  /** Public path of the portrait, e.g. `/img/portrait.jpg`. Shared
+   *  across locales (`i18n: duplicate` in the Sveltia config). */
+  portrait: string;
+  /** Ground behind the cut-out portrait: one of `GROUNDS` in
+   *  `Portrait.svelte`, `transparent` for none. Shared across locales. */
+  portraitGround: string;
   portraitAlt: string;
   body: string;
 };
@@ -125,11 +125,19 @@ export type ServiceCTA = {
   kind?: 'primary' | 'secondary';
 };
 
-/** Studio credit / client logo. */
-export type StudioCredit = {
+/** One past client or collaborator, shown as a logo. */
+export type Reference = {
   name: string;
   logo: string;
   url?: string;
+};
+
+/** A service's references: the heading above the logo strip and the
+ *  logos in it. The heading names what the references are for that
+ *  service, so it translates with the service. */
+export type References = {
+  heading: string;
+  items: Reference[];
 };
 
 export type Testimonial = { quote: string; source: string };
@@ -179,12 +187,16 @@ export type Service = {
    *  the array form lets a service accumulate quotes over time
    *  without a schema change. */
   testimonials?: Testimonial[];
+  /** Optional pull-quote set inside the service's homepage section. */
+  pullQuote?: string;
   cta?: ServiceCTA;
-  studiosLabel?: string;
-  studios?: StudioCredit[];
+  references?: References;
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */
   chapter: ServiceChapter;
+  /** Stage configuration while the service's section is in view on
+   *  the homepage. */
+  homeStage: StageConfig;
   /** Stage configuration for the service detail page. Typically
    *  one of the three elements uses the `fullBleed` pose as a
    *  background wash, with the others `offstage`. */
@@ -248,7 +260,6 @@ export type HomeStage = { sections: SectionStage[] };
 
 /** Homepage content, grouped by section in the order it renders. */
 export type HomePage = {
-  nav: NavLink[];
   hero: HomeHero;
   nameSection: HomeNameSection;
   chapter1: ChapterHeader;
@@ -256,7 +267,6 @@ export type HomePage = {
   ritual: HomeRitual;
   forPersonal: HomeList;
   chapter2: ChapterHeader;
-  pillQuote: string;
   forWork: HomeList;
   /** Curated featured testimonials — a mix across services rather
    *  than per-service, shown between the bio and contact sections.
@@ -286,14 +296,12 @@ export type LocaleBundle = {
 */
 type RawServiceModule = { default: Omit<Service, 'id'> };
 
-const daServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/services/da/*.json',
-  { eager: true }
-);
-const enServiceModules = import.meta.glob<RawServiceModule>(
-  '../../content/services/en/*.json',
-  { eager: true }
-);
+const daServiceModules = import.meta.glob<RawServiceModule>('../../content/services/da/*.json', {
+  eager: true
+});
+const enServiceModules = import.meta.glob<RawServiceModule>('../../content/services/en/*.json', {
+  eager: true
+});
 
 function idFromPath(path: string): string {
   const match = path.match(/\/([^/]+)\.json$/);
@@ -328,12 +336,17 @@ const bundles: Record<Locale, LocaleBundle> = {
 /** Return the full content bundle for a locale. Unknown locales fall
  *  back to the default (Danish). */
 export function contentFor(locale: Locale | string | undefined): LocaleBundle {
-  const key = (locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE) as Locale;
+  const key = (
+    locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE
+  ) as Locale;
   return bundles[key];
 }
 
 /** Service lookup within a given locale. */
-export function serviceBySlug(locale: Locale | string | undefined, slug: string): Service | undefined {
+export function serviceBySlug(
+  locale: Locale | string | undefined,
+  slug: string
+): Service | undefined {
   return contentFor(locale).services.find((s) => s.slug === slug);
 }
 
@@ -342,6 +355,34 @@ export function serviceBySlug(locale: Locale | string | undefined, slug: string)
  *  language-switch links. */
 export function serviceById(locale: Locale | string | undefined, id: string): Service | undefined {
   return contentFor(locale).services.find((s) => s.id === id);
+}
+
+/** The services of one chapter, in display order (by `number`). The
+ *  homepage renders one section per entry, so the set of services is
+ *  whatever the CMS holds. */
+export function servicesInChapter(services: Service[], chapter: ServiceChapter): Service[] {
+  return services.filter((s) => s.chapter === chapter);
+}
+
+/** The call-to-action that covers a whole chapter: that of its first
+ *  service that has one. */
+export function chapterCta(services: Service[], chapter: ServiceChapter): ServiceCTA | undefined {
+  return servicesInChapter(services, chapter).find((s) => s.cta)?.cta;
+}
+
+/** `data-stage-anchor` id of a service's section on the homepage. */
+export function serviceAnchorId(service: Service): string {
+  return `service-${service.id}`;
+}
+
+/** Every stage anchor on the homepage: the fixed sections from the
+ *  Home content, then one per service. The hero stays first; the stage
+ *  starts from the first anchor. */
+export function homeStageSections(bundle: LocaleBundle): SectionStage[] {
+  return [
+    ...bundle.home.stage.sections,
+    ...bundle.services.map((s) => ({ id: serviceAnchorId(s), stage: s.homeStage }))
+  ];
 }
 
 /** Locale-specific detail-page path for a service slug. Matches the
@@ -414,12 +455,10 @@ function homePath(locale: Locale): string {
  * `title`; slugs come from `slug`; the URL prefix switches by
  * locale.
  */
-export function primaryNav(
-  locale: Locale | string | undefined
-): NavLink[] {
-  const key = (locale && (LOCALES as readonly string[]).includes(locale)
-    ? locale
-    : DEFAULT_LOCALE) as Locale;
+export function primaryNav(locale: Locale | string | undefined): NavLink[] {
+  const key = (
+    locale && (LOCALES as readonly string[]).includes(locale) ? locale : DEFAULT_LOCALE
+  ) as Locale;
   const bundle = bundles[key];
   const servicePrefix = key === 'en' ? '/en/services' : '/ydelser';
   return [

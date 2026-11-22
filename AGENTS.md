@@ -24,8 +24,8 @@ signature verifies. There is no inbound deploy endpoint. See
 - ✅ Sveltia CMS at `/admin` — GitHub backend + self-hosted OAuth
   proxy + path-pinned npm bundle (no third-party CDN)
 - ✅ Content model migration — `src/content/{site,contact,bio,home}.{da,en}.json`
-  + per-service files under `src/content/services/{da,en}/...`
-  (`src/lib/content.ts` is no longer imported anywhere)
+  - per-service files under `src/content/services/{da,en}/...`
+    (`src/lib/content.ts` is no longer imported anywhere)
 - ✅ Bilingual routing — `[[lang=locale]]` param matcher; DA at `/`,
   EN at `/en/...`; `hreflang` links
 - ✅ Per-service detail pages — DA at `/ydelser/[slug]`, EN at
@@ -46,21 +46,21 @@ signature verifies. There is no inbound deploy endpoint. See
 ### Open
 
 - [ ] **JSON-LD structured data** — `LocalBusiness`, `Person`,
-  `Service` (per service), `Review` (testimonials). `sitemap.xml`
-  and `robots.txt` if not yet emitted.
+      `Service` (per service), `Review` (testimonials). `sitemap.xml`
+      and `robots.txt` if not yet emitted.
 - [ ] **Accessibility audit** — `prefers-reduced-motion` full
-  fallback for the WebGL stage (static hero image + skipped canvas
-  mount), visible focus states, ARIA on the chapter transition,
-  keyboard navigation review.
+      fallback for the WebGL stage (static hero image + skipped canvas
+      mount), visible focus states, ARIA on the chapter transition,
+      keyboard navigation review.
 - [ ] **Booking integration** — currently `mailto:` only; consider
-  Calendly/Simply.coach embed if/when warranted.
+      Calendly/Simply.coach embed if/when warranted.
 - [ ] **Site security hardening (in progress)** — what is left of the
-  post-security-review plan: gitleaks instead of regex scan (Phase 6),
-  `type=gha` build cache (Phase 7). Phases 5 and 8 are done and have
-  moved up. Phase 4, an HMAC and timestamp freshness check, is dropped
-  rather than done: it hardened the inbound webhook, and the webhook
-  was removed when the harness went pull-only, so there is nothing
-  left for it to protect.
+      post-security-review plan: gitleaks instead of regex scan (Phase 6),
+      `type=gha` build cache (Phase 7). Phases 5 and 8 are done and have
+      moved up. Phase 4, an HMAC and timestamp freshness check, is dropped
+      rather than done: it hardened the inbound webhook, and the webhook
+      was removed when the harness went pull-only, so there is nothing
+      left for it to protect.
 
 ### Intentionally out of scope for now
 
@@ -77,7 +77,8 @@ installed globally.
 pkgx pnpm install     # install deps
 pkgx pnpm dev         # vite dev server on :5173, host 0.0.0.0
 pkgx pnpm build       # static build → build/
-pkgx pnpm check       # svelte-check + tsc — run BEFORE every push
+pkgx pnpm check       # svelte-check + tsc, then ESLint + Prettier — run BEFORE every push
+pkgx pnpm format      # write Prettier formatting
 ```
 
 **Pre-push routine**: `pkgx pnpm check` before `git push`. Vite's
@@ -103,10 +104,10 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
   JetBrains Mono, Instrument Serif, DM Sans. The Flod page uses Instrument
   Serif + Fraunces + DM Sans.
 - **Content** lives in `src/content/{site,contact,bio,home}.{da,en}.json`
-  + `src/content/services/{da,en}/*.json` per service. Loaded via
-  `src/lib/content/` (a `$lib/content` import resolves there) which
-  exposes `contentFor(locale)` and `loadService(slug, locale)` plus
-  the typed shapes (`Locale`, `Contact`, `Testimonial`, etc.).
+  - `src/content/services/{da,en}/*.json` per service. Loaded via
+    `src/lib/content/` (a `$lib/content` import resolves there) which
+    exposes `contentFor(locale)` and `loadService(slug, locale)` plus
+    the typed shapes (`Locale`, `Contact`, `Testimonial`, etc.).
 
 ## Repo Layout
 
@@ -114,14 +115,15 @@ native TypeScript support for `scripts/*.ts` (no tsx/ts-node needed).
 src/
   app.html                       Font imports, base head
   app.css                        @theme tokens + base resets
-  content/                       JSON-per-collection content tree
+  content/                       JSON content tree
     {site,contact,bio,home}.{da,en}.json
     services/{da,en}/{terapi,intimacy-coordination,aeldrepleje,undervisning}.json
   lib/
     content/index.ts             Loaders + types — `$lib/content` resolves here
     components/
-      FlodStage.svelte           Three.js stage
+      Stage.svelte               Three.js stage
       SiteFooter.svelte          Footer with build-marker linking the deployed commit
+      Portrait.svelte            Bio portrait: keyed cutout over a CSS ground chosen in the CMS
     three/
       warmEnv.ts                 4 equirectangular env-map painters
   routes/
@@ -138,7 +140,12 @@ static/
     config.yml                   Sveltia config
     sveltia-cms.js               Self-hosted bundle (gitignored, copied at build time)
   favicon.svg
-  img/signe.jpg                  Portrait (from live Wix site)
+  img/                           The editor's asset library: only what an editor uploaded
+    portrait/                    Bio portrait (`bio.portrait`)
+    references/                  Reference logos (`service.references.items`)
+  gen/                           Written by scripts, committed, never listed in the CMS
+    portrait/                    Keyed portrait cutouts — see docs/portrait.md
+    og/                          Link-preview images (`pnpm og`)
 ```
 
 ## The Flod Page (root `/`)
@@ -172,12 +179,12 @@ hero → name-section
   offset. `.flod`'s background is a `linear-gradient` with hard-stops at
   `--konsulent-y`, so the warm paper bg appears to scroll up from the
   divider naturally.
-- `chapterMode` is passed as a prop to `FlodStage`, which lerps materials,
+- `chapterMode` is passed as a prop to `Stage`, which lerps materials,
   colours, and env-map crossfade along the same value.
 
 ### Three.js stage
 
-`src/lib/components/FlodStage.svelte` — fixed full-viewport canvas at
+`src/lib/components/Stage.svelte` — fixed full-viewport canvas at
 `z-index: -1` inside the `.flod { isolation: isolate }` stacking context
 (so it paints between `.flod`'s bg gradient and the in-flow sections).
 
@@ -201,7 +208,7 @@ Three active elements:
 **Layer 1: named pose palette** — `src/lib/stage/poses.ts` exports three
 records (`mainPoses`, `goldPoses`, `gemPoses`) mapping pose names to
 `{ x, y, scale }` NDC coordinates. Raw numbers live here and here only.
-Poses are named by *position* (`heroRight`, `cornerBR`, `topLeftSm`), not
+Poses are named by _position_ (`heroRight`, `cornerBR`, `topLeftSm`), not
 narrative role, so they stay reusable across new sections.
 
 **Layer 2: section registry** — `src/content/da/home.json` lists each
@@ -210,7 +217,7 @@ of pose names. Editors (Sveltia) choose from the palette; never type raw
 NDC. The `offstage` pose uses `scale: 0.01`, guaranteeing the perf skip.
 
 **Resolution** — `resolveAnchor(section)` in `poses.ts` turns a
-`SectionStage` into the runtime shape FlodStage consumes:
+`SectionStage` into the runtime shape Stage consumes:
 
 ```ts
 {
@@ -226,6 +233,7 @@ Section roots in `+page.svelte` carry `data-stage-anchor="<id>"` so the
 stage queries by stable identity, not positional CSS selectors.
 
 Each frame the stage:
+
 1. Reads each section's visibility ratio (bounding rect overlap with viewport)
 2. Cubic-eases weights, blends weighted target for main/drip1/drip2/intensity
 3. Double-lerps (`k1 = 0.012, k2 = 0.015`) toward the blended target for
@@ -274,7 +282,10 @@ toward.
 if (!chunkHolder[chunkPatchFlag]) {
   const original = THREE.ShaderChunk.envmap_physical_pars_fragment;
   THREE.ShaderChunk.envmap_physical_pars_fragment = original
-    .replace(/.../, `vec4 envMapColor = mix(textureCubeUV(envMap,…), textureCubeUV(uEnvMapB,…), uEnvMix);`)
+    .replace(
+      /.../,
+      `vec4 envMapColor = mix(textureCubeUV(envMap,…), textureCubeUV(uEnvMapB,…), uEnvMix);`
+    )
     .replace(/.../, `…`);
   chunkHolder[chunkPatchFlag] = true;
 }
@@ -317,7 +328,8 @@ overlay. Asymmetric lerp: 0.08 climbing, 0.03 returning.
   opaque `var(--bone)` fill
 - Hardware-accel hints on the canvas element:
   ```css
-  transform: translateZ(0); backface-visibility: hidden;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   ```
   to prevent Safari flashing the element bg white during scroll
 
@@ -326,16 +338,12 @@ overlay. Asymmetric lerp: 0.08 climbing, 0.03 returning.
 Defined as scoped custom properties on `.flod`:
 
 ```css
---bone:         oklch(0.96 0.009 215)   /* cool paper — Terapi bg */
---bone-warm:    oklch(0.94 0.03 72)     /* warm paper — Konsulent bg */
---bone-2:       oklch(0.93 0.012 210)
---graphite:     oklch(0.17 0.012 240)   /* primary text */
---graphite-soft: 70% mix of graphite + transparent
---tangerine:    oklch(0.94 0.26 120)    /* chartreuse highlighter */
---violet:       oklch(0.36 0.14 150)    /* dark moss green — repurposed name */
---rose-deep:    oklch(0.48 0.14 20)
---mercury:      oklch(0.78 0.015 220)
---rule:         18% mix of graphite + transparent
+--bone: oklch(0.96 0.009 215) /* cool paper — Terapi bg */ --bone-warm: oklch(0.94 0.03 72)
+  /* warm paper — Konsulent bg */ --bone-2: oklch(0.93 0.012 210) --graphite: oklch(0.17 0.012 240)
+  /* primary text */ --graphite-soft: 70% mix of graphite + transparent
+  --tangerine: oklch(0.94 0.26 120) /* chartreuse highlighter */ --violet: oklch(0.36 0.14 150)
+  /* dark moss green — repurposed name */ --rose-deep: oklch(0.48 0.14 20)
+  --mercury: oklch(0.78 0.015 220) --rule: 18% mix of graphite + transparent;
 ```
 
 `--violet` is a misnomer kept for diff continuity — it's actually dark moss
@@ -345,49 +353,53 @@ updating every reference.
 The contact footer uses `oklch(0.48 0.09 152)` (muted sage) as a warm green
 companion to the cool bone above.
 
-## Content Model (today → tomorrow)
+## Content Model
 
-**Today** — `src/lib/content.ts` exports a frozen `site` object:
-
-```ts
-export const site = {
-  lang: 'da',
-  name, tagline, leadIn,
-  contact: { email, phone, address, cvr, hours, responseTime },
-  services: [ { slug, number, title, kicker, blurb, bullets, supports?, testimonial? }, … ],
-  bio: { heading, pronouns, body: string[] },
-  pillQuote,
-  nav: [ { label, href }, … ]
-} as const;
-```
-
-Each section in `routes/+page.svelte` reads a slice and composes its own
-layout — services are intentionally NOT rendered by one shared
-`<ServiceCard>`: each has a bespoke layout in the Flod editorial rhythm.
-
-**Tomorrow (Phase 2)** — collections under `src/content/{da,en}/`:
+All copy lives in JSON under `src/content/`, edited through Sveltia at
+`/admin` and loaded at build time by `src/lib/content/index.ts`
+(`contentFor(locale)`). Nothing is fetched in the browser.
 
 ```
 src/content/
-  da/
-    site.json               name, tagline, leadIn
-    contact.json
-    bio.md                  frontmatter + MDX body
-    services/
-      terapi.md             frontmatter: slug, number, title, kicker, bullets; body: blurb
-      intimacy-coordination.md
-      aeldrepleje.md
-      undervisning.md
-    testimonials.json       [{ service, quote, source }]
-  en/
-    … same structure, English translation
+  site.{da,en}.json         name, tagline, footer
+  contact.{da,en}.json
+  bio.{da,en}.json          body, portrait, portraitGround
+  home.{da,en}.json         hero, chapters, manifest, ritual, lists, and the
+                            stage pose of each fixed homepage section
+  services/
+    {da,en}/<id>.json       one file per service and locale; <id> is the
+                            stable cross-locale id, `slug` the URL segment
 ```
 
-Loaded through a typed loader in `src/lib/content/` that reads file imports
-(Vite's `import.meta.glob`) at build time. Zero client-side content requests.
+In `static/admin/config.yml` the four top-level files are `singletons`:
+each is one entry in the admin sidebar and opens straight into its form.
+Services is the one collection. A service's past clients sit in one
+group, `references`: a `heading` that translates with the service, and
+`items` (name, logo, link) shared across locales.
 
-Sveltia config: `admin/config.yml` pointing at the same folders, git
-backend (GitHub or the self-hosted GitLab instance), DA + EN locale pickers.
+**The site enumerates the services collection.** A service created in the
+CMS gets, with no template change:
+
+- a section on the homepage, under the chapter its `chapter` field names,
+  in `number` order (`servicesInChapter`),
+- a menu entry (`primaryNav`), a detail page, a sitemap entry and an OG
+  route.
+
+One snippet in `routes/(app)/[[lang=locale]]/+page.svelte` renders every
+service section. Its optional blocks (supporting keywords, pull-quote,
+references) appear when the service has the content for them. Each
+service carries its own stage poses: `homeStage` for its homepage section,
+`stage` for its detail page. `homeStageSections` joins them to the fixed
+sections from `home.json`.
+
+A chapter's sticky call-to-action is that of its first service that has one
+(`chapterCta`), on the homepage and as the fallback on detail pages.
+
+Link-preview images are generated by hand (`pnpm og`). Until that has run
+for a new service, its `og:image` is the home image (`ogImagePath`).
+
+No code may name a service id. A rule that holds for one service belongs in
+a field on the service.
 
 ## Hard-Won Lessons
 
@@ -419,6 +431,10 @@ backend (GitHub or the self-hosted GitLab instance), DA + EN locale pickers.
 ## Code Style
 
 - TypeScript everywhere — `.ts` config files, `lang="ts"` in Svelte
+- ESLint (`eslint.config.ts`) and Prettier (`.prettierrc`) are part of
+  `pnpm check`, so the image build fails on a lint error or an
+  unformatted file. `any` is an error. A rule that is switched off
+  says why, in the config
 - Tailwind utility classes inline where they make sense; scoped `<style>`
   for page-level specifics until a shared component system emerges
 - Design tokens via CSS custom properties (`var(--color-ink)`)
@@ -433,6 +449,11 @@ backend (GitHub or the self-hosted GitLab instance), DA + EN locale pickers.
   finalising any Svelte code
 - Never install binaries globally — always via pkgx (`pkgx pnpm …`,
   `pkgx node …`)
+- Admin copy (`static/admin/config.yml`) follows the Apple Style Guide:
+  a label is a plain noun in sentence case; a hint is one short
+  sentence, only where the label is not enough; no implementation
+  terms, no reasons. Every field has a label. Developer explanations
+  go in YAML comments
 - Record design / architectural decisions in `./docs` (create as needed)
 - Don't mention Claude or AI-authored changes in commit messages or UI
   copy unless the user asks — Signe's voice only

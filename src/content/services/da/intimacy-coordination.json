@@ -15,44 +15,53 @@
   ],
   "supportsLabel": "",
   "testimonials": [],
+  "pullQuote": "At få gennemgået scener omhyggeligt, så skuespillere og instruktør har afstemt hvad der skal ske på optagelse",
   "cta": {
     "label": "Kom i kontakt",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
     "kind": "primary"
   },
-  "studiosLabel": "Tidligere samarbejder",
-  "studios": [
-    {
-      "name": "Zentropa",
-      "logo": "/img/studios/zentropa.svg",
-      "url": "https://www.zentropa.dk"
-    },
-    {
-      "name": "Nordisk Film",
-      "logo": "/img/studios/nordisk-film.svg",
-      "url": "https://www.nordiskfilm.com"
-    },
-    {
-      "name": "Den Danske Filmskole",
-      "logo": "/img/studios/filmskolen-logo.svg",
-      "url": "https://www.filmskolen.dk"
-    },
-    {
-      "name": "Får302",
-      "logo": "/img/studios/faar302-logo.svg",
-      "url": "https://www.faar302.dk"
-    },
-    {
-      "name": "Makropol",
-      "logo": "/img/studios/makropol-logo.svg",
-      "url": "https://makropol.dk"
-    },
-    {
-      "name": "Bedside Productions",
-      "logo": "/img/studios/bedside-productions-logo.svg",
-      "url": "https://www.bedside-productions.com"
-    }
-  ],
+  "references": {
+    "heading": "Tidligere samarbejder",
+    "items": [
+      {
+        "name": "Zentropa",
+        "logo": "/img/references/zentropa.svg",
+        "url": "https://www.zentropa.dk"
+      },
+      {
+        "name": "Nordisk Film",
+        "logo": "/img/references/nordisk-film.svg",
+        "url": "https://www.nordiskfilm.com"
+      },
+      {
+        "name": "Den Danske Filmskole",
+        "logo": "/img/references/filmskolen-logo.svg",
+        "url": "https://www.filmskolen.dk"
+      },
+      {
+        "name": "Får302",
+        "logo": "/img/references/faar302-logo.svg",
+        "url": "https://www.faar302.dk"
+      },
+      {
+        "name": "Makropol",
+        "logo": "/img/references/makropol-logo.svg",
+        "url": "https://makropol.dk"
+      },
+      {
+        "name": "Bedside Productions",
+        "logo": "/img/references/bedside-productions-logo.svg",
+        "url": "https://www.bedside-productions.com"
+      }
+    ]
+  },
+  "homeStage": {
+    "bubble": "heroRightBig",
+    "drops": "bottomLeftMed",
+    "gem": "topRightSm",
+    "intensity": 1.2
+  },
   "stage": {
     "bubble": "offstage",
     "drops": "topRightMed",

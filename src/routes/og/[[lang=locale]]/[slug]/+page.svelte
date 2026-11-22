@@ -16,6 +16,9 @@
 <script lang="ts">
   import { contentFor } from '$lib/content';
   import Stage from '$lib/components/Stage.svelte';
+  import Portrait, { isOpenGround } from '$lib/components/Portrait.svelte';
+  // The name and the kicker set Fraunces in italic; the site's own CSS loads the upright only.
+  import '@fontsource-variable/fraunces/opsz-italic.css';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -23,7 +26,10 @@
   const site = $derived(bundle.site);
   const home = $derived(bundle.home);
   const bio = $derived(bundle.bio);
-  const services = $derived(bundle.services);
+  // The floor shade grounds the figure where the page's frame cuts it
+  // off. The card has no such edge, so here it is no ground at all. A
+  // painted ground carries over as it is.
+  const ogGround = $derived(isOpenGround(bio.portraitGround) ? 'transparent' : bio.portraitGround);
   const hero = $derived(home.hero);
   const nameSection = $derived(home.nameSection);
   /*
@@ -58,8 +64,8 @@
     {
       selector: '.og-stage-zone',
       bubble: { x: 1.15, y: -0.1, scale: 1.05 },
-      drops:  { x: 0.35, y: 0.8,  scale: 0.45 },
-      gem:    { x: 0.9,  y: -0.9, scale: 1.5 },
+      drops: { x: 0.35, y: 0.8, scale: 0.45 },
+      gem: { x: 0.9, y: -0.9, scale: 1.5 },
       intensity: 1.1
     }
   ];
@@ -73,6 +79,25 @@
   */
   const STAGE_W = 780;
   const STAGE_H = 630;
+
+  /**
+   * Shrink a heading until its longest word fits the text column. A Danish
+   * compound is one unbreakable word, and at the heading's set size it can be
+   * wider than the column, which would run it across the portrait.
+   */
+  function fitWidth(node: HTMLElement) {
+    const fit = () => {
+      node.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(node).fontSize);
+      while (node.scrollWidth > node.clientWidth && size > 48) {
+        size -= 1;
+        node.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    // Again once the webfonts are in: the fallback's widths are not theirs.
+    document.fonts.ready.then(fit);
+  }
 </script>
 
 <svelte:head>
@@ -125,7 +150,7 @@
           "Skovbye" italicised with chartreuse underline, then a
           bullet list of the three practice roles as the "what".
         -->
-        <h1 class="og-name">
+        <h1 class="og-name" use:fitWidth>
           {data.title} <em>{data.em}</em>
         </h1>
 
@@ -145,7 +170,7 @@
           at the densest titles (EN "Psychomotor sexological
           therapy" wraps three lines).
         -->
-        <h1 class="og-service-title">{data.title}</h1>
+        <h1 class="og-service-title" use:fitWidth>{data.title}</h1>
         <p class="og-kicker">{data.kicker}</p>
       {/if}
 
@@ -154,11 +179,13 @@
 
     <!-- Right: portrait + accent. -->
     <div class="og-portrait">
-      <img
-        src="/img/signe.jpg"
+      <Portrait
+        src={bio.portrait}
         alt={bio.portraitAlt}
-        width="1200"
-        height="1400"
+        ground={ogGround}
+        sizes="420px"
+        loading="eager"
+        fill
       />
       <span class="og-accent" aria-hidden="true"></span>
     </div>
@@ -185,7 +212,7 @@
     width: 1200px;
     height: 630px;
     color: oklch(0.17 0.012 240); /* --text */
-    font-family: 'Instrument Serif', 'Fraunces', serif;
+    font-family: var(--font-humanist);
     display: flex;
     align-items: stretch;
     box-sizing: border-box;
@@ -240,6 +267,10 @@
        to paint above .og's gradient background. */
     isolation: isolate;
     overflow: hidden;
+    /* The stage ends where the portrait column begins. A cut-out portrait
+       on a transparent ground shows that edge, so the stage fades out
+       over its last stretch instead of stopping at a line. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 200px), transparent);
   }
 
   /*
@@ -302,7 +333,7 @@
     messenger-preview sizes without drowning the title below.
   */
   .og-mark {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 30px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -324,7 +355,7 @@
     after padding).
   */
   .og-name {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 104px;
     font-weight: 400;
     line-height: 0.92;
@@ -339,13 +370,12 @@
     font-style: italic;
     font-weight: 500; /* matches .name-section h2 em on the home page */
     /* Echo the chartreuse highlight from the hero "burde/should" */
-    background:
-      linear-gradient(
-        to top,
-        var(--og-highlight) 10%,
-        var(--og-highlight) 35%,
-        transparent 35%
-      );
+    background: linear-gradient(
+      to top,
+      var(--og-highlight) 10%,
+      var(--og-highlight) 35%,
+      transparent 35%
+    );
     padding: 0 0.04em;
   }
 
@@ -360,7 +390,7 @@
     list-style: none;
     padding: 0;
     margin: 0 0 36px;
-    font-family: 'Fraunces', 'Instrument Serif', serif;
+    font-family: var(--font-serif);
     font-size: 38px;
     line-height: 1.2;
     color: color-mix(in oklch, var(--og-text) 88%, transparent);
@@ -404,7 +434,7 @@
     therapy" without pushing the URL off the bottom.
   */
   .og-service-title {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 96px;
     font-weight: 400;
     line-height: 0.95;
@@ -420,7 +450,7 @@
     body prose.
   */
   .og-kicker {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-family: var(--font-serif);
     font-style: italic;
     font-size: 32px;
     line-height: 1.25;
@@ -440,7 +470,7 @@
     left: 72px;
     bottom: 48px;
     margin: 0;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 28px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -455,15 +485,6 @@
     width: 420px;
     height: 100%;
     overflow: hidden;
-  }
-  .og-portrait img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Subtle warm filter so portrait feels part of the palette */
-    filter: saturate(0.94) contrast(1.02);
   }
   /* Small chartreuse accent mark lower-right — a nod to the site's
      highlighter underline without redrawing the WebGL stage. */

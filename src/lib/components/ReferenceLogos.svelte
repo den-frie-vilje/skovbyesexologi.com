@@ -1,5 +1,5 @@
 <!--
-  Studio-credit logo strip, shared by the homepage intimacy block
+  Reference logo strip, shared by the homepage service sections
   and the service detail pages.
 
   Two problems this solves over a plain fixed-height flex row:
@@ -36,11 +36,11 @@
   keyboard users (WCAG 2.2.2 pause-stop-hide).
 -->
 <script lang="ts">
-  import type { StudioCredit } from '$lib/content';
+  import type { Reference } from '$lib/content';
 
   interface Props {
-    studios: StudioCredit[];
-    /** Accessible name for the strip, e.g. the studios label. */
+    items: Reference[];
+    /** Accessible name for the strip, e.g. the references heading. */
     label: string;
     /** Drives the pause-button aria-labels. Accepts `site.lang`
      *  (a plain string) — anything but 'en' falls back to DA. */
@@ -50,7 +50,7 @@
     scale?: number;
   }
 
-  let { studios, label, locale = 'da', scale = 1 }: Props = $props();
+  let { items, label, locale = 'da', scale = 1 }: Props = $props();
 
   /*
     Equal-area constants at scale=1 (service page). K is tuned so a
@@ -126,10 +126,7 @@
         const travel = second.offsetLeft - first.offsetLeft;
         if (travel > 0) {
           node.style.setProperty('--travel', `${travel.toFixed(1)}px`);
-          node.style.setProperty(
-            '--marquee-duration',
-            `${(travel / PX_PER_SECOND).toFixed(2)}s`
-          );
+          node.style.setProperty('--marquee-duration', `${(travel / PX_PER_SECOND).toFixed(2)}s`);
         }
       }
     };
@@ -191,21 +188,21 @@
   <!-- `measureTravel` on both copies is idempotent — its real job
        is firing when the DUPLICATE mounts mid-life. -->
   <ul class="set" aria-hidden={hidden ? 'true' : undefined} use:measureTravel>
-    {#each studios as studio (studio.name)}
+    {#each items as item (item.name)}
       <li>
-        {#if studio.url && !hidden}
-          <a href={studio.url} target="_blank" rel="noopener noreferrer">
-            <img src={studio.logo} alt={studio.name} loading="eager" use:logoHeight />
+        {#if item.url && !hidden}
+          <a href={item.url} target="_blank" rel="noopener noreferrer">
+            <img src={item.logo} alt={item.name} loading="eager" use:logoHeight />
           </a>
         {:else}
-          <img src={studio.logo} alt={hidden ? '' : studio.name} loading="eager" use:logoHeight />
+          <img src={item.logo} alt={hidden ? '' : item.name} loading="eager" use:logoHeight />
         {/if}
       </li>
     {/each}
   </ul>
 {/snippet}
 
-{#if studios.length > 0}
+{#if items.length > 0}
   <div class="strip" class:marquee class:is-ready={ready} role="group" aria-label={label}>
     <div
       class="track"
@@ -314,7 +311,7 @@
     120s figure is an inert fallback for the pre-measurement beat.
   */
   .marquee .set {
-    animation: studio-marquee var(--marquee-duration, 120s) linear infinite;
+    animation: logo-marquee var(--marquee-duration, 120s) linear infinite;
     animation-play-state: paused;
   }
   .marquee.is-ready .set {
@@ -324,7 +321,7 @@
   .marquee.is-ready .track:hover .set {
     animation-play-state: paused;
   }
-  @keyframes studio-marquee {
+  @keyframes logo-marquee {
     from {
       transform: translateX(0);
     }

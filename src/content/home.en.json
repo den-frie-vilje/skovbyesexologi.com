@@ -1,26 +1,4 @@
 {
-  "nav": [
-    {
-      "label": "Therapy",
-      "href": "#terapi"
-    },
-    {
-      "label": "Intimacy coordination",
-      "href": "#intimacy-coordination"
-    },
-    {
-      "label": "Elder care",
-      "href": "#aeldrepleje"
-    },
-    {
-      "label": "Education",
-      "href": "#undervisning"
-    },
-    {
-      "label": "Contact",
-      "href": "#kontakt"
-    }
-  ],
   "hero": {
     "name": "Skovbye Sexology",
     "city": "Copenhagen",
@@ -102,7 +80,6 @@
       "have had a boundary crossed — recently or long ago"
     ]
   },
-  "pillQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimate relationships on screen.",
   "forWork": {
     "label": "Write to me if you —",
     "items": [
@@ -188,15 +165,6 @@
         }
       },
       {
-        "id": "service-terapi",
-        "stage": {
-          "bubble": "topRightSm",
-          "drops": "disperseLowC",
-          "gem": "cornerBRsm",
-          "intensity": 1.05
-        }
-      },
-      {
         "id": "for-personal",
         "stage": {
           "bubble": "topLeftSm",
@@ -212,33 +180,6 @@
           "drops": "cornerBRsm",
           "gem": "cornerTRsm",
           "intensity": 1.05
-        }
-      },
-      {
-        "id": "service-intimacy",
-        "stage": {
-          "bubble": "heroRightBig",
-          "drops": "bottomLeftMed",
-          "gem": "topRightSm",
-          "intensity": 1.2
-        }
-      },
-      {
-        "id": "service-elderly",
-        "stage": {
-          "bubble": "topLeftSm",
-          "drops": "cornerBLsm",
-          "gem": "heroRightBig",
-          "intensity": 1
-        }
-      },
-      {
-        "id": "service-teaching",
-        "stage": {
-          "bubble": "topRightSm",
-          "drops": "disperseLowC",
-          "gem": "cornerBRsm",
-          "intensity": 1
         }
       },
       {

@@ -26,10 +26,9 @@ backend (self-hosted bundle, CSP-locked). Production deploys via the
 nas-sites pull-only pipeline (CI signs, the NAS agent verifies and
 pulls, no inbound endpoint) with a reviewer-gated workflow.
 
-What's still open: JSON-LD structured data (LocalBusiness + Person +
-Service + Review), accessibility audit + `prefers-reduced-motion`
-fallback for the WebGL stage, possible booking integration. See
-[AGENTS.md](AGENTS.md) for the full state breakdown.
+What's still open: an accessibility audit (focus states, keyboard
+review), possible booking integration. See [AGENTS.md](AGENTS.md) for
+the full state breakdown.
 
 ## Quick Reference
 
@@ -38,8 +37,10 @@ fallback for the WebGL stage, possible booking integration. See
   pkgx pnpm install
   pkgx pnpm dev      # vite on :5173, host 0.0.0.0
   pkgx pnpm build    # static → build/
-  pkgx pnpm check    # svelte-check + tsc
+  pkgx pnpm check    # svelte-check + tsc, then ESLint and Prettier (pnpm lint)
+  pkgx pnpm format   # write Prettier formatting
   pkgx pnpm icons    # regenerate pose SVG thumbnails (after editing poses.ts)
+  pkgx pnpm portrait # key the bio portrait (runs in prebuild; see docs/portrait.md)
   ```
 - **Run `pkgx pnpm check` before pushing.** The CI Docker build runs
   `RUN pkgx pnpm check` BEFORE `pnpm build`; local `pnpm build` does
@@ -61,13 +62,13 @@ fallback for the WebGL stage, possible booking integration. See
 - **Static build** via `@sveltejs/adapter-static`; every route prerendered
   (root `+layout.ts` sets `prerender = true`); SPA fallback to
   `/200.html` for the runtime-only `/publish` route.
-- Content lives in `src/content/{da,en}/*.json` + `src/content/services/{da,en}/*.json`,
+- Content lives in `src/content/{site,contact,bio,home}.{da,en}.json` + `src/content/services/{da,en}/*.json`,
   loaded via `$lib/content`'s `contentFor(locale)` and
   `loadService(slug, locale)`.
 
 ## Three.js Stage in 60 Seconds
 
-`src/lib/components/FlodStage.svelte` is a fixed full-viewport canvas
+`src/lib/components/Stage.svelte` is a fixed full-viewport canvas
 (`z-index: -1`, `isolation: isolate` on `.flod` contains it). It renders:
 
 - a large iridescent **mercury orb** (displaced sphere, `MeshPhysicalMaterial`
@@ -76,9 +77,10 @@ fallback for the WebGL stage, possible booking integration. See
 - a **faceted gem** (low-poly icosahedron, flat-shaded, opaque chrome —
   NEVER re-enable `transmission > 0`, see perf notes)
 
-Positions/scales are driven by a `stageAnchors` array in `routes/+page.svelte`.
-Each section selector has `{ main, drip1, drip2, intensity }` NDC targets.
-The tick double-lerps toward the visibility-weighted blend of nearby
+Positions/scales are driven by `home.stage.sections` in the content, edited
+in the CMS. Each entry names a section and a pose for the bubble, the drops
+and the gem from `src/lib/stage/poses.ts`, plus an intensity; `resolveAnchor`
+turns it into NDC targets. The tick double-lerps toward the visibility-weighted blend of nearby
 anchors — smooth no matter how fast you scroll.
 
 **Chapter transition**: the page tracks a continuous `chapterMode` (0 in
