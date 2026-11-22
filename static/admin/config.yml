@@ -42,8 +42,17 @@
 # ============================================================
 # MEDIA
 # ============================================================
-# Images live under static/img/ and are referenced as /img/<file>
-# in rendered HTML. Sveltia uploads land in the media_folder.
+# static/img/ is the editor's asset library and holds nothing but
+# what an editor put there. Each image field has its own subfolder,
+# so the library reads as a list of purposes:
+#
+#   static/img/portrait/   the bio portrait
+#   static/img/studios/    studio logos on the intimacy-coordination page
+#
+# A new image field gets its own media_folder and public_folder
+# beside these. Files the build or a script writes (portrait
+# cutouts, link-preview images) live under static/gen/, which the
+# CMS never lists.
 #
 # ============================================================
 # I18N — native Sveltia multiple_folders structure
@@ -273,6 +282,8 @@ collections:
             label: Portrait photo
             widget: image
             i18n: duplicate
+            media_folder: /static/img/portrait
+            public_folder: /img/portrait
             hint: >-
               Shown in the bio section and on the link-preview images.
               Works best taken against a plain, evenly lit wall: the
