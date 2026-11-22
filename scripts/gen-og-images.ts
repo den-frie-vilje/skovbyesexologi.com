@@ -2,7 +2,7 @@
  * OG image generator.
  *
  * Screenshots the prerendered `/og/[[lang=locale]]/[slug]` routes to
- * 1200×630 PNGs in `static/img/og/`. Those PNGs are what the main
+ * 1200×630 PNGs in `static/gen/og/`. Those PNGs are what the main
  * pages reference as `og:image` — already a filesystem artifact, no
  * runtime rendering in production.
  *
@@ -48,7 +48,7 @@ const SETTLE_MS = SOFTWARE ? 150_000 : 6_000;
 type Variant = {
   /** URL path to navigate to, relative to the dev server. */
   path: string;
-  /** Output filename under static/img/og/ (without extension). */
+  /** Output filename under static/gen/og/ (without extension). */
   name: string;
 };
 
@@ -128,7 +128,7 @@ async function main() {
     */
     const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 2 });
 
-    const outDir = resolve(repoRoot, 'static', 'img', 'og');
+    const outDir = resolve(repoRoot, 'static', 'gen', 'og');
     mkdirSync(outDir, { recursive: true });
 
     for (const v of variants) {

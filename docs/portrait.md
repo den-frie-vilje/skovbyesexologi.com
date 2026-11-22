@@ -37,7 +37,7 @@ image work. When Signe replaces the portrait in the CMS, the staging build
 that her save triggers does the work inside the image build. It adds a few
 minutes to that one deploy.
 
-`static/gen/` sits outside the CMS media folder (`static/img/`), so generated
+`static/gen/` sits outside the CMS asset library (`static/img/`), so generated
 files never show up in the media library.
 
 ## How the cutout is made

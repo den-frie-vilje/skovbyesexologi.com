@@ -140,8 +140,12 @@ static/
     config.yml                   Sveltia config
     sveltia-cms.js               Self-hosted bundle (gitignored, copied at build time)
   favicon.svg
-  img/                           CMS media folder — the bio portrait (`bio.portrait`) is picked from here
-  gen/portrait/                  Keyed portrait cutouts (generated, committed) — see docs/portrait.md
+  img/                           The editor's asset library: only what an editor uploaded
+    portrait/                    Bio portrait (`bio.portrait`)
+    studios/                     Studio logos
+  gen/                           Written by scripts, committed, never listed in the CMS
+    portrait/                    Keyed portrait cutouts — see docs/portrait.md
+    og/                          Link-preview images (`pnpm og`)
 ```
 
 ## The Flod Page (root `/`)

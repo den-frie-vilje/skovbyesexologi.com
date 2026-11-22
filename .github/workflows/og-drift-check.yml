@@ -85,10 +85,10 @@ jobs:
           # positives (opening an issue when a pose tweak is
           # cosmetic-only) are cheap; false negatives (not noticing
           # a title change) ship stale previews to Slack/LinkedIn.
-          OG_INPUTS='^(src/routes/og/|src/content/|src/lib/stage/|src/lib/components/Stage\.svelte|src/lib/three/|scripts/gen-og-images\.ts|src/app\.css|\.env\.(production|staging))'
+          OG_INPUTS='^(src/routes/og/|src/content/|src/lib/stage/|src/lib/components/(Stage|Portrait)\.svelte|src/lib/three/|static/gen/portrait/|scripts/gen-og-images\.ts|src/app\.css|\.env\.(production|staging))'
 
           # OG outputs: the committed JPEGs.
-          OG_OUTPUTS='^static/img/og/.*\.jpg$'
+          OG_OUTPUTS='^static/gen/og/.*\.jpg$'
 
           changed_inputs=$(grep -E "$OG_INPUTS" /tmp/changed.txt || true)
           changed_outputs=$(grep -E "$OG_OUTPUTS" /tmp/changed.txt || true)
@@ -176,7 +176,7 @@ jobs:
           SHORT_SHA="${SHA:0:8}"
 
           BODY=$(cat <<MD
-          OG-input files changed on \`$BRANCH\` (commit [\`$SHORT_SHA\`]($GITHUB_SERVER_URL/${{ github.repository }}/commit/$SHA)) but \`static/img/og/*.jpg\` wasn't updated in the same push. The OG previews on \`skovbyesexologi.com\` may now be out of date for Slack, LinkedIn, Facebook, and other platforms that cache them.
+          OG-input files changed on \`$BRANCH\` (commit [\`$SHORT_SHA\`]($GITHUB_SERVER_URL/${{ github.repository }}/commit/$SHA)) but \`static/gen/og/*.jpg\` wasn't updated in the same push. The OG previews on \`skovbyesexologi.com\` may now be out of date for Slack, LinkedIn, Facebook, and other platforms that cache them.
 
           ### Changed inputs
 
@@ -184,12 +184,12 @@ jobs:
 
           ### How to fix
 
-          Run the regen on a machine with a real GPU (Playwright headed Chrome needs it — CI runners don't qualify):
+          Run the regen, on a machine with a GPU or with \`--software\` anywhere (about 25 minutes on the CPU):
 
           \`\`\`sh
           git pull
-          pkgx pnpm og
-          git add static/img/og
+          pkgx pnpm og            # or: pkgx pnpm og --software
+          git add static/gen/og
           git commit -m "regen OG images"
           git push
           \`\`\`
