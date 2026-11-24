@@ -26,6 +26,14 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a workplace that wants to equip your staff to work with sexual health promotion",
+      "are a health education programme that wants to equip your students to work with sexual health promotion",
+      "need sparring on specific cases that challenge your staff at work, such as boundary-crossing behaviour"
+    ]
+  },
   "homeStage": {
     "bubble": "topLeftSm",
     "drops": "cornerBLsm",

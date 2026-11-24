@@ -24,6 +24,14 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a school or educational institution that wants sex education your pupils or students can feel, relevant to their time",
+      "are a pupil and want more relevant and in-depth sex education than what you get today",
+      "work with vulnerable people who have experienced boundary-crossing behaviour and/or show it themselves, and need tools to navigate sexuality and relationships"
+    ]
+  },
   "homeStage": {
     "bubble": "topRightSm",
     "drops": "disperseLowC",

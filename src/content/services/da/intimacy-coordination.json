@@ -58,6 +58,14 @@
       }
     ]
   },
+  "forYou": {
+    "label": "Skriv til mig hvis I —",
+    "items": [
+      "er instruktør, producent eller skuespiller og har brug for en intimkoordinator",
+      "arbejder med nøgenhed eller intimitet på scenen, i forestillinger, fotoshoots, musikvideoer eller kunstprojekter",
+      "er interesserede i at skabe det bedst mulige arbejdsmiljø for jeres medvirkende og ansatte"
+    ]
+  },
   "homeStage": {
     "bubble": "heroRightBig",
     "drops": "bottomLeftMed",

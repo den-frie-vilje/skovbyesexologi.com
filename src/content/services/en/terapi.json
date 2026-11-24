@@ -36,6 +36,16 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Come by if you —",
+    "items": [
+      "struggle to feel your desire",
+      "need to learn to say no before you can say yes",
+      "are coming out as queer and want to explore what that means for you",
+      "are in an open or polyamorous relationship and need a therapist who understands",
+      "have had a boundary crossed — recently or long ago"
+    ]
+  },
   "homeStage": {
     "bubble": "topRightSm",
     "drops": "disperseLowC",

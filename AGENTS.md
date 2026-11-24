@@ -158,11 +158,12 @@ Single scrolling document, two chapters:
 hero → name-section
   │
   ├─ CHAPTER I · Terapi
-  │    manifest → ritual → service-terapi → for-personal
+  │    manifest → ritual → service-terapi → for-you-terapi
   │
   ├─ CHAPTER II · Konsulentydelser    (warm paper bg takes over from here)
   │    service-intimacy (with embedded quote+testimonial)
-  │    → service-elderly → service-teaching → for-work
+  │    → service-elderly → service-teaching, each followed by its
+  │    for-you list
   │
   └─ bio → contact → foot
 ```
@@ -376,6 +377,13 @@ each is one entry in the admin sidebar and opens straight into its form.
 Services is the one collection. A service's past clients sit in one
 group, `references`: a `heading` that translates with the service, and
 `items` (name, logo, link) shared across locales.
+
+A service's `forYou` is a lead-in ("Skriv til mig hvis I —") and the
+lines that complete it. It renders as a numbered list under the
+service's section on the homepage, with its own stage anchor
+(`for-you-<id>`). The pose for those lists is per chapter: the
+`for-personal` entry in `home.stage.sections` for Terapi, `for-work`
+for Konsulentydelser.
 
 **The site enumerates the services collection.** A service created in the
 CMS gets, with no template change:

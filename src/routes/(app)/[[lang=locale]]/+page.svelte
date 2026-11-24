@@ -4,6 +4,8 @@
   import {
     chapterCta,
     contentFor,
+    forYouAnchorId,
+    hasForYou,
     homeStageSections,
     serviceAnchorId,
     servicesInChapter,
@@ -166,9 +168,11 @@
   });
 
   // Section sequence:
-  //   hero → who → CHAPTER I · Terapi (manifest, ritual, its services, for-personal)
-  //        → CHAPTER II · Konsulentydelser (its services, for-work)
+  //   hero → who → CHAPTER I · Terapi (manifest, ritual, its services)
+  //        → CHAPTER II · Konsulentydelser (its services)
   //        → bio → contact
+  //
+  // Each service is followed by its own "for you" list when it has one.
   //
   // Page content and the stage config of the fixed sections live in
   // `src/content/home.{da,en}.json`; each service carries its own.
@@ -185,9 +189,7 @@
   const chapter1 = $derived(home.chapter1);
   const manifest = $derived(home.manifest);
   const ritual = $derived(home.ritual);
-  const forPersonal = $derived(home.forPersonal);
   const chapter2 = $derived(home.chapter2);
-  const forWork = $derived(home.forWork);
   // The services are whatever the CMS holds. Each chapter renders one
   // section per service that belongs to it, in `number` order, and the
   // chapter's sticky call-to-action is that of its first service with one.
@@ -201,9 +203,10 @@
 
 <!--
   One service on the homepage: overview plus a doorway to its detail
-  page. Every block below the bullets is optional and appears when the
-  service has the content for it, so a service added in the CMS gets
-  the same section as the others without a template change.
+  page, followed by its "for you" list. Every block below the bullets
+  is optional and appears when the service has the content for it, so
+  a service added in the CMS gets the same section as the others
+  without a template change.
 -->
 {#snippet serviceSection(service: Service)}
   <section
@@ -269,13 +272,27 @@
       {readMoreLabel} <span aria-hidden="true">→</span>
     </a>
   </section>
+
+  {#if hasForYou(service)}
+    <section class="for-you" data-stage-anchor={forYouAnchorId(service)}>
+      <p class="section-label reveal">{service.forYou.label}</p>
+      <ul>
+        {#each service.forYou.items as reason, i}
+          <li class="reveal" style="--d: {i * 60}ms">
+            <span class="fy-num">{String(i + 1).padStart(2, '0')}</span>
+            <span>{reason}</span>
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {/if}
 {/snippet}
 
 <!--
   Chapter I wrapper. The therapy CTA sits as the first child so its
     sticky-bottom position engages from the top of the scrollable area;
-    it stays pinned until the chapter-wrap's bottom (the end of
-    for-personal) scrolls up past the sticky threshold, at which point
+    it stays pinned until the chapter-wrap's bottom (the end of the
+    last therapy block) scrolls up past the sticky threshold, at which point
     the button scrolls up naturally with the container. No JS required.
   -->
 <div class="chapter-wrap chapter-wrap-therapi">
@@ -387,18 +404,6 @@
   {#each therapyServices as service (service.id)}
     {@render serviceSection(service)}
   {/each}
-
-  <section class="for-personal" data-stage-anchor="for-personal">
-    <p class="section-label reveal">{forPersonal.label}</p>
-    <ul>
-      {#each forPersonal.items as reason, i}
-        <li class="reveal" style="--d: {i * 60}ms">
-          <span class="fy-num">{String(i + 1).padStart(2, '0')}</span>
-          <span>{reason}</span>
-        </li>
-      {/each}
-    </ul>
-  </section>
 </div>
 <!-- /.chapter-wrap-therapi -->
 
@@ -427,18 +432,6 @@
   {#each konsulentServices as service (service.id)}
     {@render serviceSection(service)}
   {/each}
-
-  <section class="for-work" data-stage-anchor="for-work">
-    <p class="section-label reveal">{forWork.label}</p>
-    <ul>
-      {#each forWork.items as reason, i}
-        <li class="reveal" style="--d: {i * 60}ms">
-          <span class="fy-num">{String(i + 1).padStart(2, '0')}</span>
-          <span>{reason}</span>
-        </li>
-      {/each}
-    </ul>
-  </section>
 
   <section class="bio" data-stage-anchor="bio">
     <p class="section-label reveal">{bio.label}</p>
@@ -1108,24 +1101,21 @@
      equal-area sizing + overflow marquee + manual-scroll fallback
      live there, shared with the service detail pages. */
 
-  /* ============== FOR YOU (shared styles for .for-personal + .for-work) ============== */
-  .for-personal,
-  .for-work {
+  /* ============== FOR YOU (the list under a service) ============== */
+  .for-you {
     max-width: 1320px;
     margin: 0 auto;
     padding: clamp(4rem, 9vw, 7rem) 1.25rem;
     border-top: 1px solid var(--text);
   }
-  .for-personal ul,
-  .for-work ul {
+  .for-you ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
     gap: 0;
   }
-  .for-personal li,
-  .for-work li {
+  .for-you li {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 1.5rem;
@@ -1136,8 +1126,7 @@
     line-height: 1.3;
     align-items: baseline;
   }
-  .for-personal li:last-child,
-  .for-work li:last-child {
+  .for-you li:last-child {
     border-bottom: 1px solid var(--rule);
   }
   .fy-num {
@@ -1252,8 +1241,7 @@
     .manifest,
     .ritual,
     .service,
-    .for-personal,
-    .for-work,
+    .for-you,
     .bio,
     .home-testimonials {
       padding-left: 2rem;
@@ -1265,8 +1253,7 @@
     }
     .manifest li,
     .ritual-list li,
-    .for-personal li,
-    .for-work li {
+    .for-you li {
       grid-template-columns: 4rem minmax(0, 1fr);
       gap: 2.5rem;
     }
@@ -1279,8 +1266,7 @@
     .manifest,
     .ritual,
     .service,
-    .for-personal,
-    .for-work,
+    .for-you,
     .bio,
     .home-testimonials {
       padding-left: 3rem;
