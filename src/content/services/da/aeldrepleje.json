@@ -26,6 +26,14 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Skriv til mig hvis I —",
+    "items": [
+      "er en arbejdsplads der ønsker at klæde jeres ansatte på til at arbejde med seksuel sundhedsfremme",
+      "er en sundhedsfaglig uddannelse der ønsker at klæde jeres studerende på til arbejdet med seksuel sundhedsfremme",
+      "har brug for sparring til specifikke sager der udfordrer jeres ansatte på arbejdspladsen, f.eks. grænseoverskridende adfærd"
+    ]
+  },
   "homeStage": {
     "bubble": "topLeftSm",
     "drops": "cornerBLsm",

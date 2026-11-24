@@ -191,6 +191,10 @@ export type Service = {
   pullQuote?: string;
   cta?: ServiceCTA;
   references?: References;
+  /** Who the service is for: a lead-in ("Skriv til mig hvis I —") and
+   *  the lines that complete it. Sits under the service's section on
+   *  the homepage. */
+  forYou?: LeadInList;
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */
   chapter: ServiceChapter;
@@ -252,7 +256,8 @@ export type HomeManifest = { label: string; items: ManifestEntry[] };
 export type RitualStep = { n: string; title: string; body: string };
 export type HomeRitual = { label: string; subtitle: string; steps: RitualStep[] };
 
-export type HomeList = { label: string; items: string[] };
+/** A lead-in and the lines that complete it, e.g. "Kom forbi hvis du —". */
+export type LeadInList = { label: string; items: string[] };
 
 export type HomeTestimonials = { label: string; items: Testimonial[] };
 
@@ -265,9 +270,7 @@ export type HomePage = {
   chapter1: ChapterHeader;
   manifest: HomeManifest;
   ritual: HomeRitual;
-  forPersonal: HomeList;
   chapter2: ChapterHeader;
-  forWork: HomeList;
   /** Curated featured testimonials — a mix across services rather
    *  than per-service, shown between the bio and contact sections.
    *  Optional: an empty array or missing field hides the section. */
@@ -375,14 +378,36 @@ export function serviceAnchorId(service: Service): string {
   return `service-${service.id}`;
 }
 
+/** `data-stage-anchor` id of the "for you" list under a service. */
+export function forYouAnchorId(service: Service): string {
+  return `for-you-${service.id}`;
+}
+
+/** Whether a service has a "for you" list to show. */
+export function hasForYou(service: Service): service is Service & { forYou: LeadInList } {
+  return (service.forYou?.items?.length ?? 0) > 0;
+}
+
+/** The Home stage section whose pose every "for you" list in a chapter
+ *  takes while it is in view. */
+const FOR_YOU_STAGE: Record<ServiceChapter, string> = {
+  terapi: 'for-personal',
+  konsulent: 'for-work'
+};
+
 /** Every stage anchor on the homepage: the fixed sections from the
- *  Home content, then one per service. The hero stays first; the stage
- *  starts from the first anchor. */
+ *  Home content, then one per service and one per "for you" list. The
+ *  hero stays first; the stage starts from the first anchor. */
 export function homeStageSections(bundle: LocaleBundle): SectionStage[] {
-  return [
-    ...bundle.home.stage.sections,
-    ...bundle.services.map((s) => ({ id: serviceAnchorId(s), stage: s.homeStage }))
-  ];
+  const sections = bundle.home.stage.sections;
+  const listIds = Object.values(FOR_YOU_STAGE);
+  const anchors: SectionStage[] = sections.filter((s) => !listIds.includes(s.id));
+  for (const service of bundle.services) {
+    anchors.push({ id: serviceAnchorId(service), stage: service.homeStage });
+    const pose = sections.find((s) => s.id === FOR_YOU_STAGE[service.chapter])?.stage;
+    if (pose && hasForYou(service)) anchors.push({ id: forYouAnchorId(service), stage: pose });
+  }
+  return anchors;
 }
 
 /** Locale-specific detail-page path for a service slug. Matches the

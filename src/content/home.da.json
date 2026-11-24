@@ -70,52 +70,9 @@
       }
     ]
   },
-  "forPersonal": {
-    "label": "Kom forbi hvis du —",
-    "items": [
-      "har svært ved at mærke din lyst",
-      "skal lære at sige nej før du kan sige ja",
-      "springer ud som queer og vil udforske hvad det betyder for dig",
-      "er i et åbent eller polyamorøst forhold og har brug for en terapeut, der forstår",
-      "har haft en grænse overskredet — for nyligt eller for længe siden"
-    ]
-  },
-  "forWork": {
-    "label": "Skriv til mig hvis I —",
-    "items": [
-      "er instruktør eller producent og har brug for en intimitetskoordinator",
-      "arbejder i plejesektoren og skal tale med beboere om seksualitet",
-      "er ung og vil have undervisning der ikke kun handler om biologi"
-    ]
-  },
   "testimonials": {
     "label": "Stemmer",
-    "items": [
-      {
-        "quote": "Jeg kan anbefale Signe Skovbye, hun er dybt professionel og rar at arbejde sammen med.",
-        "source": "Michael Panduro, filminstruktør"
-      },
-      {
-        "quote": "[mock] Signes tilstedeværelse på settet gjorde forskellen på, om skuespillerne følte sig trygge eller blev bedt om at præstere tryghed.",
-        "source": "[mock] Producent, spillefilm"
-      },
-      {
-        "quote": "[mock] Forløbet, hun holdt for plejepersonalet, ændrede, hvordan vi taler med beboerne om intimitet. Vi havde undgået emnet i årevis.",
-        "source": "[mock] Plejeleder, plejehjem"
-      },
-      {
-        "quote": "[mock] Som par gik vi ind og var kørt fast. Signe fiksede os ikke — hun lærte os at mærke, når vi var på vej til at køre fast igen.",
-        "source": "[mock] Par, København"
-      },
-      {
-        "quote": "[mock] Forløbet for de unge var første gang, vores elever stillede spørgsmål om lyst og samtykke uden at trække sig.",
-        "source": "[mock] Lærer, ungdomsuddannelse"
-      },
-      {
-        "quote": "[mock] Jeg kom ud som queer som 47-årig og havde ingen anelse om, hvad det hele betød i kroppen. Tre samtaler senere havde jeg et ordforråd, jeg ikke vidste fandtes.",
-        "source": "[mock] Terapiklient"
-      }
-    ]
+    "items": []
   },
   "stage": {
     "sections": [

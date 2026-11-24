@@ -24,6 +24,14 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Skriv til mig hvis I —",
+    "items": [
+      "er en skole eller uddannelsesinstitution der ønsker samtidsrelevant og mærkbar seksualundervisning til jeres elever eller studerende",
+      "er elev og ønsker mere relevant og dybdegående seksualundervisning end den du modtager allerede",
+      "arbejder med udsatte mennesker der har været udsat for grænseoverskridende adfærd og/eller selv udviser den og har brug for redskaber til at navigere seksualitet og relationer"
+    ]
+  },
   "homeStage": {
     "bubble": "topRightSm",
     "drops": "disperseLowC",

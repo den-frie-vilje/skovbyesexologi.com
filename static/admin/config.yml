@@ -390,30 +390,6 @@ singletons:
               - { name: n, label: Number, widget: string, i18n: duplicate }
               - { name: title, label: Title, widget: string, i18n: true }
               - { name: body, label: Text, widget: text, i18n: true }
-      - name: forPersonal
-        label: Kom forbi hvis du
-        widget: object
-        i18n: true
-        fields:
-          - { name: label, label: Section label, widget: string, i18n: true }
-          - name: items
-            label: Lines
-            widget: list
-            i18n: true
-            field: { name: line, label: Line, widget: string, i18n: true }
-
-      - name: forWork
-        label: Skriv hvis I
-        widget: object
-        i18n: true
-        fields:
-          - { name: label, label: Section label, widget: string, i18n: true }
-          - name: items
-            label: Lines
-            widget: list
-            i18n: true
-            field: { name: line, label: Line, widget: string, i18n: true }
-
       - name: testimonials
         label: Testimonials
         widget: object
@@ -444,7 +420,7 @@ singletons:
             widget: list
             allow_add: false
             collapsed: false
-            hint: One entry per section. Don’t change an ID. Services set their own.
+            hint: One entry per section. Don’t change an ID. Services set their own. Their lists use for-personal and for-work.
             fields:
               - { name: id, label: ID, widget: string }
               - name: stage
@@ -594,6 +570,23 @@ collections:
                 public_folder: /img/references
                 hint: A black SVG on a transparent background.
               - { name: url, label: Link, widget: string, required: false }
+      - name: forYou
+        label: Who it’s for
+        widget: object
+        required: false
+        i18n: true
+        collapsed: true
+        hint: A numbered list under the service on the home page.
+        fields:
+          - { name: label, label: Lead-in, widget: string, i18n: true, required: false, hint: Such as “Skriv til mig hvis I —”. }
+          - name: items
+            label: Lines
+            label_singular: Line
+            widget: list
+            required: false
+            i18n: true
+            hint: Leave empty to hide the list.
+            field: { name: line, label: Line, widget: string, i18n: true }
       - name: homeStage
         label: Stage on the home page
         widget: object

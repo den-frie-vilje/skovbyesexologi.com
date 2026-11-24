@@ -58,6 +58,14 @@
       }
     ]
   },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a director, producer or actor in need of an intimacy coordinator",
+      "work with nudity or intimacy on stage, in performances, photo shoots, music videos or art projects",
+      "want to create the best possible working environment for your cast and staff"
+    ]
+  },
   "homeStage": {
     "bubble": "heroRightBig",
     "drops": "bottomLeftMed",

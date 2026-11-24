@@ -36,6 +36,16 @@
     "heading": "",
     "items": []
   },
+  "forYou": {
+    "label": "Kom forbi hvis du —",
+    "items": [
+      "har svært ved at mærke din lyst",
+      "skal lære at sige nej før du kan sige ja",
+      "springer ud som queer og vil udforske hvad det betyder for dig",
+      "er i et åbent eller polyamorøst forhold og har brug for en terapeut, der forstår",
+      "har haft en grænse overskredet — for nyligt eller for længe siden"
+    ]
+  },
   "homeStage": {
     "bubble": "topRightSm",
     "drops": "disperseLowC",

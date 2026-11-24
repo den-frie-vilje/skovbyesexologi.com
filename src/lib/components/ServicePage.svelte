@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { chapterCta } from '$lib/content';
-  import type { HomeList, HomeManifest, HomeRitual, LocaleBundle, Service } from '$lib/content';
+  import type { HomeManifest, HomeRitual, LeadInList, LocaleBundle, Service } from '$lib/content';
   import { bubblePoses, dropsPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import { handleBackToHome } from '$lib/nav/backNav.svelte';
@@ -43,14 +43,14 @@
     /**
      * Optional chapter-context blocks carried over from the
      * homepage. For services in the terapi chapter we typically
-     * pass `home.manifest`, `home.ritual`, and `home.forPersonal`
+     * pass `home.manifest`, `home.ritual`, and the service's `forYou`
      * so the detail page echoes the therapy philosophy / session
      * rhythm / "this is for you if…" list rather than ending
      * abruptly after the bullets. Omit individually to hide.
      */
     manifest?: HomeManifest;
     ritual?: HomeRitual;
-    forPersonal?: HomeList;
+    forPersonal?: LeadInList;
   }
 
   let { service, bundle, backLabel, backHref, manifest, ritual, forPersonal }: Props = $props();
