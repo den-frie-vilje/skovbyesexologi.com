@@ -379,8 +379,9 @@ group, `references`: a `heading` that translates with the service, and
 `items` (name, logo, link) shared across locales.
 
 A service's `forYou` is a lead-in ("Skriv til mig hvis I —") and the
-lines that complete it. It renders as a numbered list under the
-service's section on the homepage, with its own stage anchor
+lines that complete it. It closes the service's detail page, and it
+renders as a numbered list under the service's section on the
+homepage, with its own stage anchor
 (`for-you-<id>`). The pose for those lists is per chapter: the
 `for-personal` entry in `home.stage.sections` for Terapi, `for-work`
 for Konsulentydelser.

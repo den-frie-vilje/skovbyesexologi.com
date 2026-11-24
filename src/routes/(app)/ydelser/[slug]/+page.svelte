@@ -56,11 +56,8 @@
 <SeoHead {seo} />
 
 <!--
-  The terapi detail page previously borrowed the homepage's manifest +
-  ritual + forPersonal blocks (three stacked numbered lists) so it
-  "didn't end abruptly after the bullets". With terapi now carrying its
-  own prose `body`, those borrowed blocks were pure duplication of the
-  homepage and the page's heaviest list-load — dropped. Re-add a prop
-  here if a future terapi-chapter service wants one back.
+  The page is the service's own content: its prose `body` and its
+  "for you" list. The homepage's manifest and ritual are not passed;
+  add a prop here if a service should echo them.
 -->
 <ServicePage service={data.service} {bundle} backLabel="Forsiden" backHref="/" />

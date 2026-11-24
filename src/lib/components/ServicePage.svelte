@@ -13,8 +13,8 @@
   content + publishes stage config to the shared `stage` store.
 -->
 <script lang="ts">
-  import { chapterCta } from '$lib/content';
-  import type { HomeManifest, HomeRitual, LeadInList, LocaleBundle, Service } from '$lib/content';
+  import { chapterCta, hasForYou } from '$lib/content';
+  import type { HomeManifest, HomeRitual, LocaleBundle, Service } from '$lib/content';
   import { bubblePoses, dropsPoses, gemPoses } from '$lib/stage/poses';
   import { stage } from '$lib/stage/store.svelte';
   import { handleBackToHome } from '$lib/nav/backNav.svelte';
@@ -42,18 +42,15 @@
     backHref: string;
     /**
      * Optional chapter-context blocks carried over from the
-     * homepage. For services in the terapi chapter we typically
-     * pass `home.manifest`, `home.ritual`, and the service's `forYou`
-     * so the detail page echoes the therapy philosophy / session
-     * rhythm / "this is for you if…" list rather than ending
-     * abruptly after the bullets. Omit individually to hide.
+     * homepage: pass `home.manifest` and `home.ritual` so the
+     * detail page echoes the therapy philosophy / session rhythm.
+     * Omit individually to hide.
      */
     manifest?: HomeManifest;
     ritual?: HomeRitual;
-    forPersonal?: LeadInList;
   }
 
-  let { service, bundle, backLabel, backHref, manifest, ritual, forPersonal }: Props = $props();
+  let { service, bundle, backLabel, backHref, manifest, ritual }: Props = $props();
 
   /*
     Resolve the sticky CTA with a chapter-level fallback:
@@ -215,17 +212,14 @@
     <!--
         Optional chapter-context blocks from the homepage —
         passed in explicitly by the route when the service's
-        `chapter` makes them relevant (today: terapi carries
-        manifest + ritual + forPersonal over). Keeps each detail
-        page from ending abruptly after bullets and gives the
-        philosophical / process / audience framing that the
-        homepage has the space to unfold.
+        `chapter` makes them relevant. Gives the philosophical /
+        process framing that the homepage has the space to unfold.
       -->
 
     <!--
         Chapter-context blocks rendered via reusable components.
         Each renders the same design the homepage uses for the
-        corresponding content (manifest / ritual / for-personal),
+        corresponding content (manifest / ritual),
         so a user arriving on a detail page encounters familiar
         type + rhythm rather than new typographic elements.
       -->
@@ -237,11 +231,6 @@
     {#if ritual}
       <section class="s-block">
         <RitualSection {ritual} />
-      </section>
-    {/if}
-    {#if forPersonal}
-      <section class="s-block">
-        <NumberedList list={forPersonal} />
       </section>
     {/if}
 
@@ -266,6 +255,18 @@
     {#if service.testimonials && service.testimonials.length > 0}
       <section class="s-block s-testimonials-block">
         <Testimonials items={service.testimonials} lang={bundle.site.lang} />
+      </section>
+    {/if}
+
+    <!-- ============== FOR YOU ============== -->
+    <!--
+        The service's own "write to me if…" list, the same one that
+        sits under its section on the homepage. It closes the article
+        as the invitation, just before the contact section.
+      -->
+    {#if hasForYou(service)}
+      <section class="s-block s-for-you-block">
+        <NumberedList list={service.forYou} />
       </section>
     {/if}
 
@@ -550,7 +551,7 @@
     color: color-mix(in oklch, var(--text) 88%, transparent);
   }
 
-  /* Manifest / ritual / for-personal blocks render via the
+  /* Manifest / ritual / for-you blocks render via the
      shared `<ManifestSection>`, `<RitualSection>`, and
      `<NumberedList>` components — styles live in those files
      so the detail page stays aligned with the homepage design
