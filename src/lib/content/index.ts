@@ -193,7 +193,7 @@ export type Service = {
   references?: References;
   /** Who the service is for: a lead-in ("Skriv til mig hvis I —") and
    *  the lines that complete it. Sits under the service's section on
-   *  the homepage. */
+   *  the homepage and closes its detail page. */
   forYou?: LeadInList;
   /** Which palette the service detail page inherits from the
    *  homepage (therapy chapter I vs konsulent chapter II). */

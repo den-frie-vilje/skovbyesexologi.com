@@ -576,7 +576,7 @@ collections:
         required: false
         i18n: true
         collapsed: true
-        hint: A numbered list under the service on the home page.
+        hint: A numbered list under the service on the home page and on its own page.
         fields:
           - { name: label, label: Lead-in, widget: string, i18n: true, required: false, hint: Such as “Skriv til mig hvis I —”. }
           - name: items
