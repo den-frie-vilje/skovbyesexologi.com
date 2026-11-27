@@ -5,21 +5,32 @@
   "title": "Sex education",
   "kicker": "youth · groups · workshops",
   "blurb": "Biology, psychology, and culture — woven together. A language for boundaries, desires, and needs, without shame.",
-  "body": "## More than _biology_\n\nStudents often know the mechanics already. What's missing are words for what happens between people: arousal, consent, touch, and the boundaries that shift along the way.\n\n## No one has to have it _figured out_\n\nWe also talk about sex and porn, and about everything else that's otherwise hard to say out loud. Not as a syllabus to get through, but as a conversation where doubt is allowed. The format adapts to the group and the setting.",
+  "body": "## More than _biology_\n\nYoungsters and adults alike often know the mechanics already. What's missing are words for what happens between people: arousal, consent, touch, and the boundaries that shift along the way.\n\n## No one has to have it _figured out_\n\nWe also talk about solo-sex and porn, and about everything that's otherwise hard to talk about. Not as a check-list to get through, but as a conversation where doubt is allowed. The format adapts to the group and the setting.",
   "bullets": [
     "Arousal",
     "Consent",
     "Touch",
     "Sex",
-    "Conversation",
+    "Relating",
     "Porn"
   ],
   "showDetailBullets": false,
   "supportsLabel": "",
+  "supports": [],
   "testimonials": [],
+  "pullQuote": "",
+  "cta": null,
   "references": {
     "heading": "",
     "items": []
+  },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a school or educational institution that wants sex education your pupils or students can feel, relevant to their time",
+      "are a pupil and want more relevant and in-depth sex education than what you get today",
+      "work with vulnerable people who have experienced boundary-crossing behaviour and/or show it themselves, and need tools to navigate sexuality and relationships"
+    ]
   },
   "homeStage": {
     "bubble": "topRightSm",

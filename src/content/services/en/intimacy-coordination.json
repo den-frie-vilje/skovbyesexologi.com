@@ -13,9 +13,11 @@
     "Upholding a safe set",
     "Support after the scene"
   ],
+  "showDetailBullets": true,
   "supportsLabel": "",
+  "supports": [],
   "testimonials": [],
-  "pullQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimate relationships on screen.",
+  "pullQuote": "Clear lines about how we may and may not speak, touch, or act enable an authentic portrayal of intimacy on screen.",
   "cta": {
     "label": "Get in touch",
     "href": "mailto:signeskovbye@gmail.com?subject=Intimitetskoordinering",
@@ -54,6 +56,14 @@
         "logo": "/img/references/bedside-productions-logo.svg",
         "url": "https://www.bedside-productions.com"
       }
+    ]
+  },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a director, producer or actor in need of an intimacy coordinator",
+      "work with nudity or intimacy on stage, in performances, photo shoots, music videos or art projects",
+      "want to create the best possible working environment for your cast and staff"
     ]
   },
   "homeStage": {

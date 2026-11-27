@@ -3,18 +3,17 @@
   me if you…", etc. Label on top, items rendered with a mono
   01..N prefix and serif body.
 
-  Design mirrors the homepage's `.for-personal` / `.for-work`
-  pattern so the therapy detail page can use the same component
-  without new styles.
+  Design mirrors the homepage's `.for-you` pattern so a detail page
+  can use the same component without new styles.
 
   Presentational only — relies on `.app-shell` tokens from the page
   root.
 -->
 <script lang="ts">
-  import type { HomeList } from '$lib/content';
+  import type { LeadInList } from '$lib/content';
 
   interface Props {
-    list: HomeList;
+    list: LeadInList;
   }
 
   let { list }: Props = $props();

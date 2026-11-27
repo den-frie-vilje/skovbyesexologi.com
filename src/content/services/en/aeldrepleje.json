@@ -4,16 +4,19 @@
   "chapter": "konsulent",
   "title": "Sexual health in elder care",
   "kicker": "care staff · residents",
-  "blurb": "Developed at the LGBT+ nursing home Slottet. Training and toolkits that meet older adults' sexuality with dignity.",
+  "blurb": "Developed at the LGBT+ nursing home Slottet. Training and toolkits that meet older adults' sexuality with dignity and supports health care staff in their work with sexual health.",
   "body": "My work in the elder care sector can be seen at ældreseksualitet.dk",
   "bullets": [
-    "Training for healthcare staff",
+    "Training healthcare staff",
     "Guidance on age-appropriate aids",
     "Talks and conversations with residents",
     "Case studies and concrete tools"
   ],
+  "showDetailBullets": true,
   "supportsLabel": "",
+  "supports": [],
   "testimonials": [],
+  "pullQuote": "",
   "cta": {
     "label": "ældreseksualitet.dk",
     "href": "https://ældreseksualitet.dk",
@@ -22,6 +25,14 @@
   "references": {
     "heading": "",
     "items": []
+  },
+  "forYou": {
+    "label": "Write to me if you —",
+    "items": [
+      "are a workplace that wants to equip your staff to work with sexual health promotion",
+      "are a health education programme that wants to equip your students to work with sexual health promotion",
+      "need sparring on specific cases that challenge your staff at work, such as boundary-crossing behaviour"
+    ]
   },
   "homeStage": {
     "bubble": "topLeftSm",

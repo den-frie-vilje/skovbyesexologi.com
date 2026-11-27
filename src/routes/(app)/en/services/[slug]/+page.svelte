@@ -38,8 +38,7 @@
 <SeoHead {seo} />
 
 <!--
-  See the DA mirror for the rationale: terapi's borrowed homepage
-  blocks (manifest + ritual + forPersonal) are dropped now that the
-  service carries its own prose `body`.
+  Same as the DA mirror: the service's own content only; the
+  homepage's manifest and ritual are not passed.
 -->
 <ServicePage service={data.service} {bundle} backLabel="Home" backHref="/en" />

@@ -4,7 +4,7 @@
   "chapter": "konsulent",
   "title": "Seksuel sundhed i ældresektoren",
   "kicker": "plejepersonale · beboere",
-  "blurb": "Udviklet på LGBT+ plejehjemmet Slottet. Undervisning og hjælpemiddelkasser, der møder ældres seksualitet med værdighed.",
+  "blurb": "Udviklet på LGBT+ plejehjemmet Slottet. Undervisning og hjælpemiddelkasser, der møder ældres seksualitet med værdighed og ekspanderer sundhedsfagligt personales evne til at understøtte ældres seksuelle sundhed.",
   "body": "Mit arbejde med ældresektoren kan findes på ældreseksualitet.dk",
   "bullets": [
     "Undervisning af sundhedsfagligt personale",
@@ -12,8 +12,11 @@
     "Oplæg og samtaler for beboere",
     "Kasuistikker og konkrete redskaber"
   ],
+  "showDetailBullets": true,
   "supportsLabel": "",
+  "supports": [],
   "testimonials": [],
+  "pullQuote": "",
   "cta": {
     "label": "ældreseksualitet.dk",
     "href": "https://ældreseksualitet.dk",
@@ -22,6 +25,14 @@
   "references": {
     "heading": "",
     "items": []
+  },
+  "forYou": {
+    "label": "Skriv til mig hvis I —",
+    "items": [
+      "er en arbejdsplads der ønsker at klæde jeres ansatte på til at arbejde med seksuel sundhedsfremme",
+      "er en sundhedsfaglig uddannelse der ønsker at klæde jeres studerende på til arbejdet med seksuel sundhedsfremme",
+      "har brug for sparring til specifikke sager der udfordrer jeres ansatte på arbejdspladsen, f.eks. grænseoverskridende adfærd"
+    ]
   },
   "homeStage": {
     "bubble": "topLeftSm",

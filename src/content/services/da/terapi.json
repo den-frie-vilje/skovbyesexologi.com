@@ -5,7 +5,7 @@
   "title": "Psykomotorisk sexologisk terapi",
   "kicker": "solo · par · poly",
   "blurb": "Vi arbejder både med samtale og krop. Psykomotorik forener kognition og sansning — en naturlig vej til seksuel trivsel.",
-  "body": "## Mødet\n\nDu får lov at være i rummet, før du skal forklare dig. Vi begynder med at lande og mærke efter, hvad der er — uden at det skal føre et bestemt sted hen. Der er ingen prøve, du skal bestå.\n\n### Når ordene ikke _slår til_\n\nNogle gange bliver vi ved samtalen. Andre gange arbejder vi med bevægelse, åndedræt og berøring, altid inden for det, du selv åbner for. Det er ofte dér, at noget, der har siddet fast længe, får lov at give slip.\n\n### I din egen _rækkefølge_\n\nEt forløb kan handle om lyst, grænser, relationer eller krop — sjældent i en fast orden. Du behøver ikke vide præcis, hvad du kommer med; vi finder retningen undervejs.",
+  "body": "## Mødet\n\nDu/I får lov at være i rummet, før du skal forklare dig. Vi begynder med at lande og mærke efter, hvad der er tilstede hos dig — uden at det skal føre et bestemt sted hen. \n\n### Når ordene ikke _slår til_\n\nNogle gange bliver vi ved samtale. Andre gange arbejder vi med bevægelse, åndedræt og berøring, altid inden for det, du/I ønsker at åbne op for, baseret på dine behov og ønsker. \n\n### I din egen _rækkefølge_\n\nEt forløb kan handle om lyst, grænser, relationer eller krop — sjældent i en fast orden. Du/I behøver ikke vide præcis, hvad du kommer med; vi finder retningen undervejs.",
   "bullets": [
     "Samtaleterapi",
     "Kropslige øvelser",
@@ -26,6 +26,7 @@
     "Sexliv"
   ],
   "testimonials": [],
+  "pullQuote": "",
   "cta": {
     "label": "Book en tid",
     "href": "mailto:signeskovbye@gmail.com?subject=Booking%20af%20terapi",
@@ -34,6 +35,16 @@
   "references": {
     "heading": "",
     "items": []
+  },
+  "forYou": {
+    "label": "Kom forbi hvis du —",
+    "items": [
+      "har svært ved at mærke din lyst",
+      "skal lære at sige nej før du kan sige ja",
+      "springer ud som queer og vil udforske hvad det betyder for dig",
+      "er i et åbent eller polyamorøst forhold og har brug for en terapeut, der forstår",
+      "har haft en grænse overskredet — for nyligt eller for længe siden"
+    ]
   },
   "homeStage": {
     "bubble": "topRightSm",
